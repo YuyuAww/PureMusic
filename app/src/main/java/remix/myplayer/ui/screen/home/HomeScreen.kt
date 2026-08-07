@@ -7,8 +7,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -80,7 +78,7 @@ import remix.myplayer.viewmodel.settingViewModel
 import remix.myplayer.viewmodel.smbViewModel
 import remix.myplayer.viewmodel.webDavViewModel
 
-private val DrawerWidth = 134.dp
+private val DrawerWidth = 224.dp
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
@@ -266,46 +264,27 @@ fun HomeScreen() {
             }
         )
       } else {
-        // 左边缘区域检测右滑打开，手动消费初始down事件防止被Scaffold内容抢占
+        // 左边缘 32dp 区域检测右滑打开
         Box(
           modifier = Modifier
             .width(32.dp)
             .fillMaxHeight()
             .pointerInput(Unit) {
-              awaitEachGesture {
-                val down = awaitFirstDown(requireUnconsumed = false)
-                down.consume()
-                var lastX = down.position.x
-                var isDragging = false
-                while (true) {
-                  val event = awaitPointerEvent()
-                  val change = event.changes.firstOrNull() ?: break
-                  if (!change.pressed) {
-                    if (isDragging) {
-                      change.consume()
-                      scope.launch {
-                        if (drawerOffset.value > 0.5f) {
-                          isDrawerOpen = true
-                          drawerOffset.animateTo(1f)
-                        } else {
-                          drawerOffset.animateTo(0f)
-                        }
-                      }
+              detectHorizontalDragGestures(
+                onDragEnd = {
+                  scope.launch {
+                    if (drawerOffset.value > 0.5f) {
+                      isDrawerOpen = true
+                      drawerOffset.animateTo(1f)
+                    } else {
+                      drawerOffset.animateTo(0f)
                     }
-                    break
-                  }
-                  val dragAmount = change.position.x - lastX
-                  if (!isDragging && kotlin.math.abs(change.position.x - down.position.x) > 8f) {
-                    isDragging = true
-                  }
-                  if (isDragging) {
-                    change.consume()
-                    lastX = change.position.x
-                    val newOffset = (drawerOffset.value + dragAmount / drawerWidthPx)
-                      .coerceIn(0f, 1f)
-                    scope.launch { drawerOffset.snapTo(newOffset) }
                   }
                 }
+              ) { _, dragAmount ->
+                val newOffset = (drawerOffset.value + dragAmount / drawerWidthPx)
+                  .coerceIn(0f, 1f)
+                scope.launch { drawerOffset.snapTo(newOffset) }
               }
             }
         )
