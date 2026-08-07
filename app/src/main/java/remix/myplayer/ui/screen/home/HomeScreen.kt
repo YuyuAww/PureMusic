@@ -2,22 +2,24 @@ package remix.myplayer.ui.screen.home
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.DecayAnimationSpec
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
@@ -27,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.TopAppBarState
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -38,10 +39,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Velocity
@@ -65,6 +69,8 @@ import remix.myplayer.viewmodel.settingViewModel
 import remix.myplayer.viewmodel.smbViewModel
 import remix.myplayer.viewmodel.webDavViewModel
 
+private val DrawerWidth = 256.dp
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
 fun HomeScreen() {
@@ -72,121 +78,158 @@ fun HomeScreen() {
   val libraryVM = libraryViewModel
 
   val multiSelectState by mainVM.multiSelectState.collectAsStateWithLifecycle()
-  val drawerState = rememberDrawerState(DrawerValue.Closed)
+
+  val drawerWidthPx = with(LocalDensity.current) { DrawerWidth.toPx() }
+  val drawerOffset = remember { Animatable(0f) }
   val scope = rememberCoroutineScope()
 
-  BackHandler(enabled = drawerState.isOpen || multiSelectState.isShowing()) {
-    if (drawerState.isOpen) {
-      scope.launch {
-        drawerState.close()
-      }
+  var isDrawerOpen by remember { mutableStateOf(false) }
+
+  val openDrawer = {
+    isDrawerOpen = true
+    scope.launch { drawerOffset.animateTo(1f) }
+  }
+  val closeDrawer = {
+    isDrawerOpen = false
+    scope.launch { drawerOffset.animateTo(0f) }
+  }
+
+  BackHandler(enabled = isDrawerOpen || multiSelectState.isShowing()) {
+    if (isDrawerOpen) {
+      closeDrawer()
     } else if (multiSelectState.isShowing()) {
       mainVM.closeMultiSelect()
     }
   }
 
-  ModalNavigationDrawer(
-    drawerState = drawerState,
-    drawerContent = { Drawer(drawerState) }) {
-
-    val libraries by settingViewModel.enabledLibraries.collectAsStateWithLifecycle()
-    val pagerState = rememberPagerState { libraries.size }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
-      flingAnimationSpec = null,
-      snapAnimationSpec = null
+  Box(modifier = Modifier.fillMaxSize()) {
+    // 侧边栏
+    Drawer(
+      modifier = Modifier
+        .width(DrawerWidth)
+        .fillMaxHeight(),
+      onClose = closeDrawer
     )
 
-    val showMultiSelect by remember {
-      derivedStateOf {
-        multiSelectState.isShowInLibrary()
-      }
-    }
-
-    Scaffold(
-      Modifier
+    // 主页内容，通过 graphicsLayer 平移实现"推开"效果
+    Box(
+      modifier = Modifier
         .fillMaxSize()
-        .nestedScroll(scrollBehavior.nestedScrollConnection),
-      containerColor = LocalTheme.current.libraryBackground,
-      topBar = {
-        AnimatedContent(
-          targetState = showMultiSelect,
-          transitionSpec = {
-            if (targetState) {
-              slideInVertically() togetherWith slideOutVertically { height -> height / 2 }
+        .graphicsLayer {
+          translationX = drawerOffset.value * drawerWidthPx
+        }
+        .background(LocalTheme.current.libraryBackground)
+    ) {
+      val libraries by settingViewModel.enabledLibraries.collectAsStateWithLifecycle()
+      val pagerState = rememberPagerState { libraries.size }
+      val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
+        flingAnimationSpec = null,
+        snapAnimationSpec = null
+      )
+
+      val showMultiSelect by remember {
+        derivedStateOf {
+          multiSelectState.isShowInLibrary()
+        }
+      }
+
+      Scaffold(
+        Modifier
+          .fillMaxSize()
+          .nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = LocalTheme.current.libraryBackground,
+        topBar = {
+          AnimatedContent(
+            targetState = showMultiSelect,
+            transitionSpec = {
+              if (targetState) {
+                slideInVertically() togetherWith slideOutVertically { height -> height / 2 }
+              } else {
+                slideInVertically { height -> height } togetherWith slideOutVertically()
+              }
+            }
+          ) { isMultiSelect ->
+            if (!isMultiSelect) {
+              HomeAppBar(scrollBehavior, openDrawer)
             } else {
-              slideInVertically { height -> height } togetherWith slideOutVertically()
+              MultiSelectBar(
+                state = multiSelectState,
+                scrollBehavior = scrollBehavior,
+              )
             }
           }
-        ) { isMultiSelect ->
-          if (!isMultiSelect) {
-            HomeAppBar(scrollBehavior, drawerState)
-          } else {
-            MultiSelectBar(
-              state = multiSelectState,
-              scrollBehavior = scrollBehavior,
-            )
+        },
+        floatingActionButton = {
+          val selectLibrary by remember(libraries) {
+            derivedStateOf {
+              libraries.getOrElse(pagerState.currentPage) { libraries.first() }
+            }
           }
-        }
-      },
-      floatingActionButton = {
-        val selectLibrary by remember(libraries) {
-          derivedStateOf {
-            libraries.getOrElse(pagerState.currentPage) { libraries.first() }
-          }
-        }
 
-        CreatePlayListDialog()
+          CreatePlayListDialog()
 
-        var showAddRemoteMenu by remember { mutableStateOf(false) }
+          var showAddRemoteMenu by remember { mutableStateOf(false) }
 
-        val webDavVM = webDavViewModel
-        val smbVM = smbViewModel
-        Column {
-          if (showAddRemoteMenu) {
-            DropdownMenu(
-              expanded = true,
-              containerColor = LocalTheme.current.dialogBackground,
-              onDismissRequest = { showAddRemoteMenu = false }
+          val webDavVM = webDavViewModel
+          val smbVM = smbViewModel
+          Column {
+            if (showAddRemoteMenu) {
+              DropdownMenu(
+                expanded = true,
+                containerColor = LocalTheme.current.dialogBackground,
+                onDismissRequest = { showAddRemoteMenu = false }
+              ) {
+                DropdownMenuItem(
+                  text = {
+                    Text(
+                      stringResource(R.string.webdav),
+                      color = LocalTheme.current.textPrimary
+                    )
+                  },
+                  onClick = {
+                    showAddRemoteMenu = false
+                    webDavVM.showAddWebDavDialog()
+                  }
+                )
+                if (smbVM.supportSmb) {
+                  SmbDropDownMenu(smbVM) {
+                    showAddRemoteMenu = false
+                    smbVM.showAddSmbDialog()
+                  }
+                }
+              }
+            }
+
+            FAButton(
+              selectLibrary.tag == Library.TAG_PLAYLIST || selectLibrary.tag == Library.TAG_REMOTE
             ) {
-              DropdownMenuItem(
-                text = {
-                  Text(
-                    stringResource(R.string.webdav),
-                    color = LocalTheme.current.textPrimary
-                  )
-                },
-                onClick = {
-                  showAddRemoteMenu = false
-                  webDavVM.showAddWebDavDialog()
-                }
-              )
-              if (smbVM.supportSmb) {
-                SmbDropDownMenu(smbVM) {
-                  showAddRemoteMenu = false
-                  smbVM.showAddSmbDialog()
-                }
+              if (mainVM.multiSelectState.value.isShowing()) {
+                return@FAButton
+              }
+
+              if (selectLibrary.tag == Library.TAG_PLAYLIST) {
+                libraryVM.showCreatePlaylistDialog()
+              } else if (selectLibrary.tag == Library.TAG_REMOTE) {
+                showAddRemoteMenu = true
               }
             }
           }
 
-          FAButton(
-            selectLibrary.tag == Library.TAG_PLAYLIST || selectLibrary.tag == Library.TAG_REMOTE
-          ) {
-            if (mainVM.multiSelectState.value.isShowing()) {
-              return@FAButton
-            }
+        })
+      { contentPadding ->
+        HomeContent(contentPadding, pagerState, libraries)
+      }
 
-            if (selectLibrary.tag == Library.TAG_PLAYLIST) {
-              libraryVM.showCreatePlaylistDialog()
-            } else if (selectLibrary.tag == Library.TAG_REMOTE) {
-              showAddRemoteMenu = true
+      // 侧边栏打开时，点击主页区域关闭侧边栏
+      if (isDrawerOpen) {
+        Box(
+          modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+              detectTapGestures { closeDrawer() }
             }
-          }
-        }
-
-      })
-    { contentPadding ->
-      HomeContent(contentPadding, pagerState, libraries)
+        )
+      }
     }
   }
 }
@@ -263,4 +306,3 @@ fun hackTabMinWidth() {
     e.printStackTrace()
   }
 }
-

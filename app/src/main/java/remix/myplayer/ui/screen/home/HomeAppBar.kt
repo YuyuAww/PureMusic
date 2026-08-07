@@ -2,7 +2,6 @@ package remix.myplayer.ui.screen.home
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -11,11 +10,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.launch
 import remix.myplayer.data.model.misc.Library
 import remix.myplayer.ui.theme.LocalTheme
 import remix.myplayer.ui.widget.common.defaultAppBarActions
@@ -27,10 +24,9 @@ import remix.myplayer.viewmodel.settingViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 internal fun HomeAppBar(
   scrollBehavior: TopAppBarScrollBehavior,
-  drawerState: DrawerState
+  onMenuClick: () -> Unit
 ) {
   val library by settingViewModel.currentLibrary.collectAsStateWithLifecycle()
-  val scope = rememberCoroutineScope()
 
   TopAppBar(
     scrollBehavior = scrollBehavior,
@@ -42,7 +38,7 @@ internal fun HomeAppBar(
     ),
     title = {},
     navigationIcon = {
-      IconButton(onClick = { scope.launch { drawerState.open() } }) {
+      IconButton(onClick = onMenuClick) {
         Icon(Icons.Filled.Menu, contentDescription = "Menu")
       }
     },

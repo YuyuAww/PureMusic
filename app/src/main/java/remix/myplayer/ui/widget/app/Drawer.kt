@@ -4,26 +4,21 @@ import android.content.ComponentName
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
@@ -32,7 +27,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
 import remix.myplayer.R
 import remix.myplayer.data.prefs.ThemePrefs.Companion.BLACK
 import remix.myplayer.data.prefs.ThemePrefs.Companion.DARK
@@ -63,7 +57,10 @@ private val drawerIcons = mutableListOf(
 )
 
 @Composable
-fun Drawer(drawerState: DrawerState) {
+fun Drawer(
+  modifier: Modifier = Modifier,
+  onClose: () -> Unit
+) {
   val navController = LocalNavController.current
   val context = LocalContext.current
   val theme = LocalTheme.current
@@ -85,14 +82,7 @@ fun Drawer(drawerState: DrawerState) {
     }
   )
 
-  ModalDrawerSheet(
-    modifier = Modifier
-      .width(256.dp)
-      .fillMaxHeight(),
-    drawerShape = RectangleShape,
-    drawerContainerColor = drawerDefault,
-    windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Start)
-  ) {
+  Column(modifier = modifier.background(drawerDefault)) {
     // 顶部 Header 与主页 TopAppBar 对齐：windowInsetsPadding 自动处理状态栏，64dp 对应 TopAppBar 高度
     Box(
       modifier = Modifier
@@ -102,8 +92,7 @@ fun Drawer(drawerState: DrawerState) {
         .height(64.dp)
     )
 
-    val scope = rememberCoroutineScope()
-    LazyColumn(modifier = Modifier.background(drawerDefault)) {
+    LazyColumn(modifier = Modifier.weight(1f)) {
       itemsIndexed(drawerTitles) { index, item ->
 
         NavigationDrawerItem(
@@ -118,19 +107,29 @@ fun Drawer(drawerState: DrawerState) {
           onClick = {
             when (item) {
               // 歌曲库
-              R.string.drawer_song -> scope.launch { drawerState.close() }
+              R.string.drawer_song -> onClose()
               // 历史
-              R.string.drawer_history -> navController.navigate(RouteHistory)
+              R.string.drawer_history -> {
+                navController.navigate(RouteHistory)
+                onClose()
+              }
               // 最近添加
-              R.string.drawer_recently_add -> navController.navigate(RouteLastAdded)
+              R.string.drawer_recently_add -> {
+                navController.navigate(RouteLastAdded)
+                onClose()
+              }
               // 设置
-              R.string.drawer_setting -> navController.navigate(RouteSetting)
+              R.string.drawer_setting -> {
+                navController.navigate(RouteSetting)
+                onClose()
+              }
               // 退出
               R.string.exit -> {
                 context.sendBroadcast(
                   Intent(Constants.ACTION_EXIT)
                     .setComponent(ComponentName(context, ExitReceiver::class.java))
                 )
+                onClose()
               }
             }
           },
@@ -149,11 +148,6 @@ fun Drawer(drawerState: DrawerState) {
           )
         )
       }
-
-      item {
-        Spacer(modifier = Modifier.weight(1f))
-      }
     }
-
   }
 }
