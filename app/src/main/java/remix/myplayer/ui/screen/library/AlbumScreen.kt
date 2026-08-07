@@ -24,7 +24,6 @@ import remix.myplayer.data.prefs.SettingPrefs
 import remix.myplayer.ui.nav.DetailScreenRoute
 import remix.myplayer.ui.nav.LocalNavController
 import remix.myplayer.ui.theme.LocalTheme
-import remix.myplayer.ui.widget.library.ModeHeader
 import remix.myplayer.ui.widget.library.list.GridItem
 import remix.myplayer.ui.widget.library.list.ListItem
 import remix.myplayer.util.ext.spanCount
@@ -52,13 +51,6 @@ fun AlbumScreen() {
   Column(
     modifier = Modifier.background(LocalTheme.current.libraryBackground)
   ) {
-    ModeHeader(mode == SettingPrefs.GRID_MODE) {
-      if (mode == it) {
-        return@ModeHeader
-      }
-      settingVM.setAlbumMode(if (mode == SettingPrefs.GRID_MODE) SettingPrefs.LIST_MODE else SettingPrefs.GRID_MODE)
-    }
-
     val selectedIds by remember {
       derivedStateOf {
         multiSelectState.selectedModels(MultiSelectState.Where.Album)

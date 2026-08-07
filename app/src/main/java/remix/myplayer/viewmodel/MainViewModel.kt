@@ -130,6 +130,13 @@ class MainViewModel @Inject constructor(
     )
   }
 
+  fun startMultiSelect(where: MultiSelectState.Where) {
+    _multiSelectState.updateIf(
+      condition = { !it.isShowing() },
+      transform = { it.copy(where = where, selectedModels = emptyList()) }
+    )
+  }
+
   fun closeMultiSelect() {
     _multiSelectState.update {
       it.copy(
