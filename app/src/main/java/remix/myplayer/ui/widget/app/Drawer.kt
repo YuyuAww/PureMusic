@@ -3,6 +3,7 @@ package remix.myplayer.ui.widget.app
 import android.content.ComponentName
 import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,7 +26,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -85,25 +84,21 @@ fun Drawer(drawerState: DrawerState) {
     }
   )
 
-  // 在 ModalDrawerSheet 之外获取状态栏高度，避免被其 windowInsets 参数消费
-  val statusBarHeight = WindowInsets.statusBars
-    .getTop(LocalDensity.current)
-    .let { with(LocalDensity.current) { it.toDp() } }
-
   ModalDrawerSheet(
     modifier = Modifier
-      .width(264.dp)
+      .width(256.dp)
       .fillMaxHeight(),
     drawerShape = RectangleShape,
     drawerContainerColor = drawerDefault,
     windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Start)
   ) {
-    // 顶部 Header 与主页 TopAppBar 对齐：状态栏高度 + TopAppBar 默认高度(64dp)
-    Spacer(
+    // 顶部 Header 与主页 TopAppBar 对齐：windowInsetsPadding 自动处理状态栏，64dp 对应 TopAppBar 高度
+    Box(
       modifier = Modifier
         .fillMaxWidth()
-        .height(statusBarHeight + 64.dp)
         .background(theme.primary)
+        .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
+        .height(64.dp)
     )
 
     val scope = rememberCoroutineScope()
