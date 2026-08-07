@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -84,6 +85,11 @@ fun Drawer(drawerState: DrawerState) {
     }
   )
 
+  // 在 ModalDrawerSheet 之外获取状态栏高度，避免被其 windowInsets 参数消费
+  val statusBarHeight = WindowInsets.statusBars
+    .getTop(LocalDensity.current)
+    .let { with(LocalDensity.current) { it.toDp() } }
+
   ModalDrawerSheet(
     modifier = Modifier
       .width(264.dp)
@@ -96,11 +102,7 @@ fun Drawer(drawerState: DrawerState) {
     Spacer(
       modifier = Modifier
         .fillMaxWidth()
-        .height(
-          with(LocalDensity.current) {
-            WindowInsets.systemBars.getTop(this).toDp()
-          } + 64.dp
-        )
+        .height(statusBarHeight + 64.dp)
         .background(theme.primary)
     )
 
