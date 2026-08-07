@@ -5,21 +5,23 @@ import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -27,7 +29,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import remix.myplayer.R
+import remix.myplayer.data.model.misc.Library
 import remix.myplayer.data.prefs.ThemePrefs.Companion.BLACK
 import remix.myplayer.data.prefs.ThemePrefs.Companion.DARK
 import remix.myplayer.data.prefs.ThemePrefs.Companion.LIGHT
@@ -38,7 +42,9 @@ import remix.myplayer.ui.nav.RouteLastAdded
 import remix.myplayer.ui.nav.RouteSetting
 import remix.myplayer.ui.theme.LocalTheme
 import remix.myplayer.ui.widget.common.TextPrimary
+import remix.myplayer.ui.widget.popup.ScreenPopupButton
 import remix.myplayer.util.Constants
+import remix.myplayer.viewmodel.settingViewModel
 
 private val drawerTitles = mutableListOf(
   R.string.drawer_song,
@@ -56,6 +62,7 @@ private val drawerIcons = mutableListOf(
   R.drawable.ic_exit_to_app_24dp
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Drawer(
   modifier: Modifier = Modifier,
@@ -64,6 +71,7 @@ fun Drawer(
   val navController = LocalNavController.current
   val context = LocalContext.current
   val theme = LocalTheme.current
+  val library by settingViewModel.currentLibrary.collectAsStateWithLifecycle()
 
   val drawerDefault = colorResource(
     when (theme.theme) {
@@ -83,13 +91,20 @@ fun Drawer(
   )
 
   Column(modifier = modifier.background(drawerDefault)) {
-    // 顶部 Header 与主页 TopAppBar 对齐：windowInsetsPadding 自动处理状态栏，64dp 对应 TopAppBar 高度
-    Box(
-      modifier = Modifier
-        .fillMaxWidth()
-        .background(theme.primary)
-        .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
-        .height(64.dp)
+    // 顶部 Header 使用与主页完全相同的 TopAppBar，保证顶部（状态栏高度+内容高度）完全对齐
+    TopAppBar(
+      title = {},
+      colors = TopAppBarDefaults.topAppBarColors(
+        containerColor = theme.primary,
+        scrolledContainerColor = theme.primary,
+        navigationIconContentColor = Color.White,
+        actionIconContentColor = Color.White,
+      ),
+      actions = {
+        if (library.tag != Library.TAG_REMOTE) {
+          ScreenPopupButton(library)
+        }
+      }
     )
 
     LazyColumn(modifier = Modifier.weight(1f)) {

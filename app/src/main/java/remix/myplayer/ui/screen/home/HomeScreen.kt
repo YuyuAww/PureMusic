@@ -69,7 +69,7 @@ import remix.myplayer.viewmodel.settingViewModel
 import remix.myplayer.viewmodel.smbViewModel
 import remix.myplayer.viewmodel.webDavViewModel
 
-private val DrawerWidth = 256.dp
+private val DrawerWidth = 224.dp
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
