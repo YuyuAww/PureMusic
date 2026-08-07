@@ -111,14 +111,6 @@ jobs:
           path: app/build/outputs/apk/normal/debug/*.apk
           retention-days: 14
 
-      - name: Upload Debug Build Outputs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-outputs-${{ github.run_number }}
-          path: app/build/outputs/
-          retention-days: 3
-
   # Release 构建：仅当版本号变更时执行，上传至 GitHub Releases
   build-release:
     needs: detect-version-change
@@ -244,11 +236,3 @@ jobs:
           name: release-apk-${{ needs.detect-version-change.outputs.version_name }}
           path: app/build/outputs/apk/normal/release/*.apk
           retention-days: 90
-
-      - name: Upload Build Outputs (logs, mapping etc.)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-outputs-${{ github.run_number }}
-          path: app/build/outputs/
-          retention-days: 14
