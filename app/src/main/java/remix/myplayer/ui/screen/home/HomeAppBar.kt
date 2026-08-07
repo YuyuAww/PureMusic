@@ -9,15 +9,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import remix.myplayer.data.model.misc.Library
 import remix.myplayer.ui.theme.LocalTheme
 import remix.myplayer.ui.widget.common.defaultAppBarActions
-import remix.myplayer.ui.widget.popup.ScreenPopupButton
-import remix.myplayer.viewmodel.settingViewModel
 
 
 @Composable
@@ -26,8 +21,6 @@ internal fun HomeAppBar(
   scrollBehavior: TopAppBarScrollBehavior,
   onMenuClick: () -> Unit
 ) {
-  val library by settingViewModel.currentLibrary.collectAsStateWithLifecycle()
-
   TopAppBar(
     scrollBehavior = scrollBehavior,
     colors = TopAppBarDefaults.topAppBarColors(
@@ -43,10 +36,6 @@ internal fun HomeAppBar(
       }
     },
     actions = {
-      if (library.tag != Library.TAG_REMOTE) {
-        ScreenPopupButton(library)
-      }
-
       defaultAppBarActions.map {
         IconButton(onClick = {
           it.action()

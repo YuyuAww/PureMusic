@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import remix.myplayer.service.Command
 import remix.myplayer.service.MusicService
 import remix.myplayer.service.MusicServiceRemote.setPlayQueue
-import remix.myplayer.ui.widget.library.SongListHeader
 import remix.myplayer.ui.widget.library.list.ListSong
 import remix.myplayer.util.MusicUtil
 import remix.myplayer.util.ext.verticalScrollbar
@@ -49,10 +48,6 @@ fun SongScreen(scrollToCurrentEvent: SharedFlow<Unit>? = null) {
   }
 
   Column {
-    if (songs.isNotEmpty()) {
-      SongListHeader(songs)
-    }
-
     val selectedIds by remember {
       derivedStateOf {
         multiSelectState.selectedModels(MultiSelectState.Where.Song)
