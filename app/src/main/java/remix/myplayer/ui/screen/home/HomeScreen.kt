@@ -51,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
@@ -84,8 +85,6 @@ import remix.myplayer.viewmodel.settingViewModel
 import remix.myplayer.viewmodel.smbViewModel
 import remix.myplayer.viewmodel.webDavViewModel
 
-private val DrawerWidth = 224.dp
-
 private enum class DrawerAnchor { Closed, Open }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
@@ -97,7 +96,8 @@ fun HomeScreen() {
   val multiSelectState by mainVM.multiSelectState.collectAsStateWithLifecycle()
 
   val density = LocalDensity.current
-  val drawerWidthPx = with(density) { DrawerWidth.toPx() }
+  val drawerWidth = (LocalConfiguration.current.screenWidthDp * 0.45f).dp
+  val drawerWidthPx = with(density) { drawerWidth.toPx() }
 
   val drawerState = remember {
     AnchoredDraggableState(
@@ -147,7 +147,7 @@ fun HomeScreen() {
     // 侧边栏：从左侧滑入 (translationX: -drawerWidth → 0)
     Drawer(
       modifier = Modifier
-        .width(DrawerWidth)
+        .width(drawerWidth)
         .fillMaxHeight()
         .offset {
           IntOffset(
