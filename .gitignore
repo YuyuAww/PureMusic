@@ -1,0 +1,15 @@
+.gradle
+/local.properties
+/.idea
+*.iml
+/build
+.DS_Store
+*.hprof
+/.vscode
+/app/build
+/app/.cxx
+/app/schemas
+/app/buglybin
+/.vercel
+/.kotlin
+*.txt
