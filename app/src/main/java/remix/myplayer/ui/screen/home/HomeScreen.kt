@@ -51,7 +51,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -80,7 +79,6 @@ import remix.myplayer.ui.widget.app.FAButton
 import remix.myplayer.ui.widget.app.MultiSelectBar
 import remix.myplayer.ui.widget.app.ViewPager
 import remix.myplayer.ui.widget.popup.ScreenPopupButton
-import remix.myplayer.util.ColorUtil
 import remix.myplayer.util.MusicUtil
 import remix.myplayer.util.ext.clickableWithoutRipple
 import remix.myplayer.viewmodel.MultiSelectState
@@ -324,7 +322,7 @@ private fun ShuffleSortHeader(library: Library) {
   val settingState by settingVM.settingsState.collectAsStateWithLifecycle()
   val mainVM = mainViewModel
   val activeColor = LocalTheme.current.secondary
-  val inactiveColor = Color(ColorUtil.getColor(R.color.default_model_button_color))
+  val inactiveColor = colorResource(R.color.default_model_button_color)
 
   Row(
     modifier = Modifier
