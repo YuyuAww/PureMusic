@@ -8,19 +8,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import remix.myplayer.R
-import remix.myplayer.helper.SleepTimer
 import remix.myplayer.ui.nav.LocalNavController
 import remix.myplayer.ui.nav.RouteSearch
 import remix.myplayer.ui.theme.LocalTheme
-import remix.myplayer.viewmodel.timerViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,15 +97,8 @@ fun CommonAppBar(
 val defaultAppBarActions: List<AppBarAction>
   @Composable
   get() {
-    val timerVM = timerViewModel
     val nav = LocalNavController.current
-    val timerRunning by SleepTimer.runningState.collectAsStateWithLifecycle()
-    val timerIcon = if (timerRunning) R.drawable.ic_timer_on_24dp else R.drawable.ic_timer_white_24dp
-
     return listOf(
-      AppBarAction(timerIcon, "Timer") {
-        timerVM.showTimerDialog()
-      },
       AppBarAction(R.drawable.ic_search_white_24dp, "Search") {
         nav.navigate(RouteSearch)
       })

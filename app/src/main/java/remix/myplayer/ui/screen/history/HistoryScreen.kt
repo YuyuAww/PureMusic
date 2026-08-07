@@ -16,7 +16,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import remix.myplayer.R
-import remix.myplayer.helper.SleepTimer
 import remix.myplayer.service.Command
 import remix.myplayer.service.MusicService
 import remix.myplayer.service.MusicServiceRemote.setPlayQueue
@@ -28,7 +27,6 @@ import remix.myplayer.ui.widget.library.list.ListSong
 import remix.myplayer.util.MusicUtil
 import remix.myplayer.viewmodel.libraryViewModel
 import remix.myplayer.viewmodel.playbackViewModel
-import remix.myplayer.viewmodel.timerViewModel
 
 @Composable
 fun HistoryScreen() {
@@ -88,15 +86,9 @@ fun HistoryScreen() {
 private fun HistoryActions() {
   HistoryPopup()
 
-  val timerVM = timerViewModel
   val libraryVM = libraryViewModel
-  val timerRunning by SleepTimer.runningState.collectAsStateWithLifecycle()
-  val timerIcon = if (timerRunning) R.drawable.ic_timer_on_24dp else R.drawable.ic_timer_white_24dp
 
   listOf(
-    AppBarAction(timerIcon, "Timer") {
-      timerVM.showTimerDialog()
-    },
     AppBarAction(R.drawable.ic_delete_black_24dp, "ClearHistory") {
       libraryVM.clearHistory()
     }).forEach {
