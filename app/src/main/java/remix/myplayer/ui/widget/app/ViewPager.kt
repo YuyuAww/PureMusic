@@ -38,7 +38,8 @@ fun ViewPager(
   HorizontalPager(
     modifier = modifier,
     state = pagerState,
-    beyondViewportPageCount = 1
+    beyondViewportPageCount = 1,
+    userScrollEnabled = false
   ) { page ->
     val library = libraries.getOrNull(page) ?: return@HorizontalPager
     when (library.tag) {

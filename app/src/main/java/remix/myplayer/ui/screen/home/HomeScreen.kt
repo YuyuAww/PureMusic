@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -234,13 +235,57 @@ fun HomeScreen() {
         HomeContent(contentPadding, pagerState, libraries)
       }
 
-      // 侧边栏打开时，点击主页区域关闭侧边栏
+      // 左边缘拖拽打开侧边栏（关闭状态下）
+      // 侧边栏打开时，点击/左滑关闭
       if (isDrawerOpen) {
         Box(
           modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
               detectTapGestures { closeDrawer() }
+            }
+            .pointerInput(Unit) {
+              detectHorizontalDragGestures(
+                onDragEnd = {
+                  scope.launch {
+                    if (drawerOffset.value < 0.5f) {
+                      isDrawerOpen = false
+                      drawerOffset.animateTo(0f)
+                    } else {
+                      drawerOffset.animateTo(1f)
+                    }
+                  }
+                }
+              ) { _, dragAmount ->
+                val newOffset = (drawerOffset.value + dragAmount / drawerWidthPx)
+                  .coerceIn(0f, 1f)
+                scope.launch { drawerOffset.snapTo(newOffset) }
+              }
+            }
+        )
+      } else {
+        // 左边缘 32dp 区域检测右滑打开
+        Box(
+          modifier = Modifier
+            .width(32.dp)
+            .fillMaxHeight()
+            .pointerInput(Unit) {
+              detectHorizontalDragGestures(
+                onDragEnd = {
+                  scope.launch {
+                    if (drawerOffset.value > 0.5f) {
+                      isDrawerOpen = true
+                      drawerOffset.animateTo(1f)
+                    } else {
+                      drawerOffset.animateTo(0f)
+                    }
+                  }
+                }
+              ) { _, dragAmount ->
+                val newOffset = (drawerOffset.value + dragAmount / drawerWidthPx)
+                  .coerceIn(0f, 1f)
+                scope.launch { drawerOffset.snapTo(newOffset) }
+              }
             }
         )
       }
