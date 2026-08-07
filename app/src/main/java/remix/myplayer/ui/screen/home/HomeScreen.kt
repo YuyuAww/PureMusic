@@ -15,7 +15,6 @@ import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,7 +53,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -275,16 +273,6 @@ fun HomeScreen() {
         HomeContent(contentPadding, pagerState, libraries)
       }
 
-      // 侧边栏打开时，点击主页区域关闭
-      if (isDrawerOpen) {
-        Box(
-          modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-              detectTapGestures { closeDrawer() }
-            }
-        )
-      }
     }
   }
 }
