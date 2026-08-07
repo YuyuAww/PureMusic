@@ -85,11 +85,11 @@ fun HomeScreen() {
 
   var isDrawerOpen by remember { mutableStateOf(false) }
 
-  val openDrawer = {
+  val openDrawer: () -> Unit = {
     isDrawerOpen = true
     scope.launch { drawerOffset.animateTo(1f) }
   }
-  val closeDrawer = {
+  val closeDrawer: () -> Unit = {
     isDrawerOpen = false
     scope.launch { drawerOffset.animateTo(0f) }
   }
