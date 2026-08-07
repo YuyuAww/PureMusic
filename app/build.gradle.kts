@@ -27,7 +27,14 @@ fun readProperties(file: File): Properties {
     return properties
 }
 
-val properties = readProperties(rootProject.file("local.properties"))
+val localProperties = readProperties(rootProject.file("local.properties"))
+val signingProperties = readProperties(rootProject.file("signing.properties"))
+
+// 合并属性：signing.properties 优先级高于 local.properties
+val properties = Properties().apply {
+    putAll(localProperties)
+    putAll(signingProperties)
+}
 
 kotlin {
     jvmToolchain(17)
@@ -104,10 +111,24 @@ android {
         }
 
         create("releaseConfig") {
-            storeFile = File(properties.getProperty("keystore.storeFile") ?: "")
-            storePassword = properties.getProperty("keystore.storePassword")
-            keyAlias = properties.getProperty("keystore.keyAlias")
-            keyPassword = properties.getProperty("keystore.keyPassword")
+            // 兼容 signing.properties(新) 和 local.properties(旧) 两种格式
+            val storeFileProp = properties.getProperty("STORE_FILE")
+                ?: properties.getProperty("keystore.storeFile")
+            val storePassProp = properties.getProperty("STORE_PASSWORD")
+                ?: properties.getProperty("keystore.storePassword")
+            val keyAliasProp = properties.getProperty("KEY_ALIAS")
+                ?: properties.getProperty("keystore.keyAlias")
+            val keyPassProp = properties.getProperty("KEY_PASSWORD")
+                ?: properties.getProperty("keystore.keyPassword")
+
+            if (storeFileProp != null && storeFileProp.isNotBlank()) {
+                // storeFile 可能是相对路径，需要解析为相对于根目录的绝对路径
+                val file = File(storeFileProp)
+                storeFile = if (file.isAbsolute) file else rootProject.file(storeFileProp)
+                storePassword = storePassProp
+                keyAlias = keyAliasProp
+                keyPassword = keyPassProp
+            }
 
             enableV1Signing = true
             enableV2Signing = true

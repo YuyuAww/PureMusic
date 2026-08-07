@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   nightly:
-    if: github.ref_name == 'compose'
+    if: github.ref_name == 'main'
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 45
@@ -33,21 +33,14 @@ jobs:
 
       - name: Prepare keystore & local.properties
         env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
-          KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
-          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
           LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
           GOOGLE_PLAY_LICENSE_KEY: ${{ secrets.GOOGLE_PLAY_LICENSE_KEY }}
           BUGLY_APP_ID: ${{ secrets.BUGLY_APP_ID }}
           BUGLY_APP_KEY: ${{ secrets.BUGLY_APP_KEY }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/release.keystore
+          # 签名密钥默认已放在仓库根目录（signing.jks + signing.properties），Gradle 会自动读取
+          # 这里仅写入 API keys 等敏感配置到 local.properties（签名配置在 signing.properties 中）
           cat > local.properties <<EOF
-          keystore.storeFile=${GITHUB_WORKSPACE}/app/release.keystore
-          keystore.storePassword=$KEYSTORE_STORE_PASSWORD
-          keystore.keyAlias=$KEYSTORE_KEY_ALIAS
-          keystore.keyPassword=$KEYSTORE_KEY_PASSWORD
           LASTFM_API_KEY=${LASTFM_API_KEY:-""}
           GOOGLE_PLAY_LICENSE_KEY=${GOOGLE_PLAY_LICENSE_KEY:-""}
           BUGLY_APP_ID=${BUGLY_APP_ID:-""}
