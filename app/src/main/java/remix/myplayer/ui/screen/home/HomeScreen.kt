@@ -2,12 +2,19 @@ package remix.myplayer.ui.screen.home
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.DecayAnimationSpec
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -19,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
@@ -43,7 +51,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -52,6 +59,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -80,6 +88,8 @@ import remix.myplayer.viewmodel.webDavViewModel
 
 private val DrawerWidth = 224.dp
 
+private enum class DrawerAnchor { Closed, Open }
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
 fun HomeScreen() {
@@ -88,19 +98,36 @@ fun HomeScreen() {
 
   val multiSelectState by mainVM.multiSelectState.collectAsStateWithLifecycle()
 
-  val drawerWidthPx = with(LocalDensity.current) { DrawerWidth.toPx() }
-  val drawerOffset = remember { Animatable(0f) }
+  val density = LocalDensity.current
+  val drawerWidthPx = with(density) { DrawerWidth.toPx() }
+
+  val drawerState = remember {
+    AnchoredDraggableState(
+      initialValue = DrawerAnchor.Closed,
+      positionalThreshold = { distance -> distance * 0.5f },
+      velocityThreshold = { with(density) { 125.dp.toPx() } },
+      snapAnimationSpec = tween(),
+      decayAnimationSpec = androidx.compose.animation.core.exponentialDecay()
+    ).also { state ->
+      state.updateAnchors(
+        DraggableAnchors {
+          DrawerAnchor.Closed at 0f
+          DrawerAnchor.Open at drawerWidthPx
+        }
+      )
+    }
+  }
   val scope = rememberCoroutineScope()
 
-  var isDrawerOpen by remember { mutableStateOf(false) }
+  val isDrawerOpen by remember {
+    derivedStateOf { drawerState.currentValue == DrawerAnchor.Open }
+  }
 
   val openDrawer: () -> Unit = {
-    isDrawerOpen = true
-    scope.launch { drawerOffset.animateTo(1f) }
+    scope.launch { drawerState.animateTo(DrawerAnchor.Open) }
   }
   val closeDrawer: () -> Unit = {
-    isDrawerOpen = false
-    scope.launch { drawerOffset.animateTo(0f) }
+    scope.launch { drawerState.animateTo(DrawerAnchor.Closed) }
   }
 
   BackHandler(enabled = isDrawerOpen || multiSelectState.isShowing()) {
@@ -111,15 +138,25 @@ fun HomeScreen() {
     }
   }
 
-  Box(modifier = Modifier.fillMaxSize()) {
+  Box(
+    modifier = Modifier
+      .fillMaxSize()
+      .anchoredDraggable(drawerState, Orientation.Horizontal)
+  ) {
     val libraries by settingViewModel.enabledLibraries.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState { libraries.size }
 
-    // 侧边栏
+    // 侧边栏：从左侧滑入 (translationX: -drawerWidth → 0)
     Drawer(
       modifier = Modifier
         .width(DrawerWidth)
-        .fillMaxHeight(),
+        .fillMaxHeight()
+        .offset {
+          IntOffset(
+            x = (drawerState.requireOffset() - drawerWidthPx).toInt(),
+            y = 0
+          )
+        },
       libraries = libraries,
       selectedIndex = pagerState.currentPage,
       onLibrarySelected = { index ->
@@ -128,12 +165,15 @@ fun HomeScreen() {
       onClose = closeDrawer
     )
 
-    // 主页内容，通过 graphicsLayer 平移实现"推开"效果
+    // 主页内容：向右平移 (translationX: 0 → drawerWidth)
     Box(
       modifier = Modifier
         .fillMaxSize()
-        .graphicsLayer {
-          translationX = drawerOffset.value * drawerWidthPx
+        .offset {
+          IntOffset(
+            x = drawerState.requireOffset().toInt(),
+            y = 0
+          )
         }
         .background(LocalTheme.current.libraryBackground)
     ) {
@@ -235,57 +275,13 @@ fun HomeScreen() {
         HomeContent(contentPadding, pagerState, libraries)
       }
 
-      // 左边缘拖拽打开侧边栏（关闭状态下）
-      // 侧边栏打开时，点击/左滑关闭
+      // 侧边栏打开时，点击主页区域关闭
       if (isDrawerOpen) {
         Box(
           modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
               detectTapGestures { closeDrawer() }
-            }
-            .pointerInput(Unit) {
-              detectHorizontalDragGestures(
-                onDragEnd = {
-                  scope.launch {
-                    if (drawerOffset.value < 0.5f) {
-                      isDrawerOpen = false
-                      drawerOffset.animateTo(0f)
-                    } else {
-                      drawerOffset.animateTo(1f)
-                    }
-                  }
-                }
-              ) { _, dragAmount ->
-                val newOffset = (drawerOffset.value + dragAmount / drawerWidthPx)
-                  .coerceIn(0f, 1f)
-                scope.launch { drawerOffset.snapTo(newOffset) }
-              }
-            }
-        )
-      } else {
-        // 左边缘 32dp 区域检测右滑打开
-        Box(
-          modifier = Modifier
-            .width(32.dp)
-            .fillMaxHeight()
-            .pointerInput(Unit) {
-              detectHorizontalDragGestures(
-                onDragEnd = {
-                  scope.launch {
-                    if (drawerOffset.value > 0.5f) {
-                      isDrawerOpen = true
-                      drawerOffset.animateTo(1f)
-                    } else {
-                      drawerOffset.animateTo(0f)
-                    }
-                  }
-                }
-              ) { _, dragAmount ->
-                val newOffset = (drawerOffset.value + dragAmount / drawerWidthPx)
-                  .coerceIn(0f, 1f)
-                scope.launch { drawerOffset.snapTo(newOffset) }
-              }
             }
         )
       }
