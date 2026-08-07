@@ -91,6 +91,16 @@ jobs:
           fi
           ls "$TAGLIB_DIR/CMakeLists.txt"
 
+      - name: Cache CXX build (CMake)
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/.cxx
+            third-party/taglib/.cxx
+          key: cxx-debug-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'third-party/taglib/src/main/cpp/**/*.cpp', 'third-party/taglib/src/main/cpp/**/*.h', 'app/src/main/cpp/**/*.cpp', 'app/src/main/cpp/**/*.h') }}
+          restore-keys: |
+            cxx-debug-${{ runner.os }}-
+
       - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
@@ -143,6 +153,16 @@ jobs:
             fi
           fi
           ls "$TAGLIB_DIR/CMakeLists.txt"
+
+      - name: Cache CXX build (CMake)
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/.cxx
+            third-party/taglib/.cxx
+          key: cxx-release-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'third-party/taglib/src/main/cpp/**/*.cpp', 'third-party/taglib/src/main/cpp/**/*.h', 'app/src/main/cpp/**/*.cpp', 'app/src/main/cpp/**/*.h') }}
+          restore-keys: |
+            cxx-release-${{ runner.os }}-
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
