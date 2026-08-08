@@ -254,7 +254,6 @@ dependencies {
     implementation(libs.media)
     implementation(libs.androidx.media3.exoplayer)
     implementation(files("libs/lib-decoder-ffmpeg-release.aar"))
-    implementation(libs.multidex)
     implementation(libs.palette.ktx)
 
     implementation(libs.material)

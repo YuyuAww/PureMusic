@@ -22,7 +22,6 @@ lifecycleViewmodelCompose = "2.9.2"
 kotlinxCoroutines = "1.9.0"
 appcompat = "1.7.6"
 media = "1.7.0"
-multidex = "2.0.1"
 paletteKtx = "1.0.0"
 billingclient = "7.1.0"
 material = "1.12.0"
@@ -73,7 +72,6 @@ androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 media = { group = "androidx.media", name = "media", version.ref = "media" }
-multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
 palette-ktx = { group = "androidx.palette", name = "palette-ktx", version.ref = "paletteKtx" }
 
 # google
