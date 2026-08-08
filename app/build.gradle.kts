@@ -83,8 +83,6 @@ android {
                 "x86_64"
             )
         }
-
-        setProperty("archivesBaseName", "APlayer-v${versionName}")
     }
 
     androidResources {
