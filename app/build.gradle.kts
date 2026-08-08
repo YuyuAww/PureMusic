@@ -46,7 +46,7 @@ android {
 
     compileSdk = 36
     buildToolsVersion = "36.0.0"
-    ndkVersion = "28.2.13647026"
+    ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId = "remix.myplayer"
