@@ -15,7 +15,6 @@ import remix.myplayer.helper.LanguageHelper.setLocal
 import remix.myplayer.helper.ThirdPartyInitializer
 import remix.myplayer.misc.manager.APlayerActivityManager
 import remix.myplayer.ui.appshortcuts.DynamicShortcutManager
-import remix.myplayer.ui.screen.home.hackTabMinWidth
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -50,8 +49,6 @@ class App : MultiDexApplication() {
     ThirdPartyInitializer.init(this@App)
 
     registerActivityLifecycleCallbacks(APlayerActivityManager())
-
-    hackTabMinWidth()
   }
 
   private fun setUp() {

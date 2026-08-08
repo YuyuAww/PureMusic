@@ -423,16 +423,4 @@ private fun ShuffleSortHeader(library: Library) {
   }
 }
 
-// 修改tab最小宽度
-fun hackTabMinWidth() {
-  try {
-    Class
-      .forName("androidx.compose.material3.TabRowKt")
-      .getDeclaredField("ScrollableTabRowMinimumTabWidth")
-      .apply {
-        isAccessible = true
-      }.set(null, 72f)
-  } catch (e: Exception) {
-    e.printStackTrace()
-  }
-}
+

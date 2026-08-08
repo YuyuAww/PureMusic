@@ -1,4 +1,3 @@
-import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -43,14 +42,14 @@ kotlin {
 android {
     namespace = "remix.myplayer"
 
-    compileSdk = 35
-    buildToolsVersion = "35.0.0"
-    ndkVersion = "25.2.9519653"
+    compileSdk = 36
+    buildToolsVersion = "36.0.0"
+    ndkVersion = "28.2.13647026"
 
     defaultConfig {
         applicationId = "remix.myplayer"
         minSdk = 21
-        targetSdk = 35
+        targetSdk = 36
 
         versionCode = 22000
         versionName = "2.2.0.0"
@@ -234,7 +233,7 @@ android {
                     else -> ""
                 }
                 if (sortPrefix.isNotEmpty()) {
-                    (output as BaseVariantOutputImpl).outputFileName = "${sortPrefix}-APlayer-v${variant.versionName}-${flavor}-release.apk"
+                    output.outputFileName = "${sortPrefix}-APlayer-v${variant.versionName}-${flavor}-release.apk"
                 }
             }
         }
