@@ -3,7 +3,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.application)
-    alias(libs.plugins.kotlin)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
