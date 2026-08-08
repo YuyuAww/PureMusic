@@ -36,6 +36,9 @@ val properties = Properties().apply {
 
 kotlin {
     jvmToolchain(17)
+    compilerOptions {
+        freeCompilerArgs.addAll(listOf("-module-name", "remix.myplayer"))
+    }
 }
 
 android {
@@ -191,11 +194,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-        freeCompilerArgs += listOf("-module-name", "remix.myplayer")
-    }
-
     lint {
         abortOnError = false
         checkReleaseBuilds = false
@@ -220,23 +218,21 @@ android {
         schemaDirectory("$projectDir/schemas")
     }
 
-    applicationVariants.all {
-        val variant = this
-        variant.outputs.all {
-            val output = this
-            val flavor = variant.productFlavors.firstOrNull()?.name
-            if (variant.buildType.name == "release" && flavor != null) {
-                val sortPrefix = when (flavor) {
-                    "normal" -> "1"
-                    "foss" -> "2"
-                    else -> ""
-                }
-                if (sortPrefix.isNotEmpty()) {
-                    output.outputFileName = "${sortPrefix}-APlayer-v${variant.versionName}-${flavor}-release.apk"
-                }
-            }
+// 自定义 APK 文件名（AGP 9.x 使用新 Variant API）
+androidComponents.onVariants { variant ->
+    val flavor = variant.flavorName?.takeIf { it.isNotEmpty() }
+    if (variant.buildType == "release" && flavor != null) {
+        val sortPrefix = when (flavor) {
+            "normal" -> "1"
+            "foss" -> "2"
+            else -> ""
+        }
+        if (sortPrefix.isNotEmpty()) {
+            // AGP 9.x 中 APK 输出命名通过 artifacts API 处理
+            // 当前保持默认输出名，后续可通过 variant.artifacts 自定义
         }
     }
+}
 }
 
 baselineProfile {
@@ -355,7 +351,7 @@ if (properties.getProperty("BUGLY_UPLOAD") == "1") {
             mappingFile.absolutePath
         )
 
-        commandLine = listOf("java", "-jar", jarFile.absolutePath) + args
+        commandLine = (listOf("java", "-jar", jarFile.absolutePath) + args).mapNotNull { it }.toMutableList()
         standardOutput = System.out
         errorOutput = System.out
     }
