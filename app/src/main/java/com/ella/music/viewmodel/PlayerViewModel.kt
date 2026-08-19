@@ -25,16 +25,10 @@ import com.ella.music.data.repository.CoverUsage
 import com.ella.music.data.repository.MusicRepository
 import com.ella.music.player.DesktopLyricBridge
 import com.ella.music.player.ExoPlayerManager
-import com.ella.music.player.LyricGetterBridge
 import com.ella.music.player.LiveLyricNotificationBridge
 import com.ella.music.player.buildLiveLyricSecondaryText
 import com.ella.music.player.buildLiveLyricNotificationText
-import com.ella.music.player.LyriconBridge
 import com.ella.music.player.MediaNotificationLyricPatchPolicy
-import com.ella.music.player.PlaybackService
-import com.ella.music.player.PlaybackWidgetUpdater
-import com.ella.music.player.SuperLyricBridge
-import com.ella.music.player.TickerBridge
 import com.ella.music.player.XiaomiSuperIslandLyricBridge
 import androidx.media3.common.Player
 import kotlinx.coroutines.CoroutineScope
@@ -60,7 +54,6 @@ private const val LYRIC_POSITION_BACKWARD_DRIFT_TOLERANCE_MS = 600L
 // Compose lyrics interpolate between position samples on the display clock. 10 Hz is therefore
 // visually smooth while avoiding a 20 Hz controller query / bridge dispatch loop all day.
 private const val PLAYBACK_POSITION_UPDATE_INTERVAL_MS = 100L
-private const val SEEK_EXTERNAL_LYRIC_SYNC_DEBOUNCE_MS = 80L
 private const val LIVE_UPDATE_ARTWORK_SIZE = 256
 
 private const val DECODER_MODE_SYSTEM = 0
@@ -88,13 +81,10 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val repository = MusicRepository.getInstance(application)
     val playerManager = ExoPlayerManager(application)
     val settingsManager = SettingsManager.getInstance(application)
-    val lyriconBridge = LyriconBridge(application)
     val tickerBridge = TickerBridge(application)
     private val liveLyricNotificationBridge = LiveLyricNotificationBridge(application)
     private val xiaomiSuperIslandLyricBridge = XiaomiSuperIslandLyricBridge(application, viewModelScope)
     val desktopLyricBridge = DesktopLyricBridge(application)
-    val superLyricBridge = SuperLyricBridge()
-    val lyricGetterBridge = LyricGetterBridge(application)
     private val playlistStore = PlaylistStore.getInstance(application)
     private val openSubsonicCollectionsStore = OpenSubsonicCollectionsStore.getInstance(application)
     private val playbackStatsStore = PlaybackStatsStore.getInstance(application)
@@ -248,7 +238,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val stopAfterCurrentEnabled: StateFlow<Boolean> = sleepTimerController.stopAfterCurrentEnabled
 
     private var positionUpdateJob: Job? = null
-    private var seekExternalLyricSyncJob: Job? = null
     private var lastSentPlayingState: Boolean? = null
     private var lastTickerPayload: Pair<String, String?>? = null
     private var lastLiveUpdateLyricPayload: LiveLyricNotificationState? = null
@@ -256,8 +245,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private var bluetoothLyricEnabled = false
     private var bluetoothLyricTranslationEnabled = true
     private var bluetoothLyricPronunciationEnabled = false
-    private var lyriconTranslationEnabled = true
-    private var lyriconPronunciationEnabled = false
     private var samsungFloatingLyricTranslationEnabled = false
     private var statusBarAllowPhoneticEnabled = false
     private var tickerHideNotificationEnabled = false
@@ -269,8 +256,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private var desktopLyricHideWhenPausedEnabled = false
     private var desktopLyricStatusBarModeEnabled = false
     private var desktopLyricStatusBarHideWhenPausedEnabled = false
-    private var superLyricTranslationEnabled = true
-    private var superLyricPronunciationEnabled = false
     private var lyricSourceMode = SettingsManager.LYRIC_SOURCE_AUTO
     private var lyricOffsetOverrides = emptyMap<String, Long>()
     private var lyricBlacklistRules = emptyList<LyricBlacklistRule>()
@@ -292,13 +277,10 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         startPositionUpdates()
         observeCurrentSong()
         observePlayState()
-        initLyricon()
         initTicker()
         initLiveUpdateLyric()
         initXiaomiSuperIslandLyric()
         initDesktopLyric()
-        initSuperLyric()
-        initLyricGetter()
         initLyricPageTranslation()
         initBluetoothLyric()
         playbackSettingsBridge.initShuffleMode()
@@ -317,43 +299,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         playbackSettingsBridge.initBluetoothAutoPlay()
         playbackSettingsBridge.initExternalPlaybackSync()
         lazyOnlineQueueController.observePlaybackEnd()
-    }
-
-    private fun initLyricon() {
-        viewModelScope.launch {
-            val enabled = settingsManager.lyriconEnabled.first()
-            lyriconTranslationEnabled = settingsManager.lyriconTranslation.first()
-            lyriconPronunciationEnabled = settingsManager.lyriconPronunciation.first()
-            if (lyriconTranslationEnabled && lyriconPronunciationEnabled) {
-                lyriconTranslationEnabled = false
-                settingsManager.setLyriconTranslation(false)
-            }
-            lyriconBridge.setSecondaryMode(currentLyriconSecondaryMode())
-            lyriconBridge.setEnabled(enabled)
-            if (enabled) resendExternalLyrics()
-        }
-        viewModelScope.launch {
-            settingsManager.lyriconTranslation.distinctUntilChanged().collect { enabled ->
-                lyriconTranslationEnabled = enabled
-                if (enabled && lyriconPronunciationEnabled) {
-                    lyriconPronunciationEnabled = false
-                    settingsManager.setLyriconPronunciation(false)
-                }
-                lyriconBridge.setSecondaryMode(currentLyriconSecondaryMode())
-                if (lyriconBridge.isEnabled()) resendExternalLyrics(force = true)
-            }
-        }
-        viewModelScope.launch {
-            settingsManager.lyriconPronunciation.distinctUntilChanged().collect { enabled ->
-                lyriconPronunciationEnabled = enabled
-                if (enabled && lyriconTranslationEnabled) {
-                    lyriconTranslationEnabled = false
-                    settingsManager.setLyriconTranslation(false)
-                }
-                lyriconBridge.setSecondaryMode(currentLyriconSecondaryMode())
-                if (lyriconBridge.isEnabled()) resendExternalLyrics(force = true)
-            }
-        }
     }
 
     private fun initTicker() {
@@ -518,64 +463,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private fun activeDesktopLyricHideWhenPaused(): Boolean =
         if (desktopLyricStatusBarModeEnabled) desktopLyricStatusBarHideWhenPausedEnabled
         else desktopLyricHideWhenPausedEnabled
-
-    private fun initSuperLyric() {
-        viewModelScope.launch {
-            val enabled = settingsManager.superLyricEnabled.first()
-            superLyricTranslationEnabled = settingsManager.superLyricTranslation.first()
-            superLyricPronunciationEnabled = settingsManager.superLyricPronunciation.first()
-            if (superLyricTranslationEnabled && superLyricPronunciationEnabled) {
-                superLyricTranslationEnabled = false
-                settingsManager.setSuperLyricTranslation(false)
-            }
-            superLyricBridge.setSecondaryMode(currentSuperLyricSecondaryMode())
-            superLyricBridge.setEnabled(enabled)
-            if (enabled) resendSuperLyric()
-        }
-        viewModelScope.launch {
-            settingsManager.superLyricTranslation.distinctUntilChanged().collect { enabled ->
-                superLyricTranslationEnabled = enabled
-                if (enabled && superLyricPronunciationEnabled) {
-                    superLyricPronunciationEnabled = false
-                    settingsManager.setSuperLyricPronunciation(false)
-                }
-                superLyricBridge.setSecondaryMode(currentSuperLyricSecondaryMode())
-                if (superLyricBridge.isEnabled()) resendSuperLyric(force = true)
-            }
-        }
-        viewModelScope.launch {
-            settingsManager.superLyricPronunciation.distinctUntilChanged().collect { enabled ->
-                superLyricPronunciationEnabled = enabled
-                if (enabled && superLyricTranslationEnabled) {
-                    superLyricTranslationEnabled = false
-                    settingsManager.setSuperLyricTranslation(false)
-                }
-                superLyricBridge.setSecondaryMode(currentSuperLyricSecondaryMode())
-                if (superLyricBridge.isEnabled()) resendSuperLyric(force = true)
-            }
-        }
-    }
-
-    private fun initLyricGetter() {
-        viewModelScope.launch {
-            settingsManager.lyricGetterEnabled.distinctUntilChanged().collect { enabled ->
-                lyricGetterBridge.setEnabled(enabled)
-                if (enabled) resendLyricGetter(force = true)
-            }
-        }
-    }
-
-    private fun currentLyriconSecondaryMode(): LyriconBridge.SecondaryMode =
-        lyriconSecondaryMode(
-            translationEnabled = lyriconTranslationEnabled,
-            pronunciationEnabled = lyriconPronunciationEnabled
-        )
-
-    private fun currentSuperLyricSecondaryMode(): SuperLyricBridge.SecondaryMode =
-        superLyricSecondaryMode(
-            translationEnabled = superLyricTranslationEnabled,
-            pronunciationEnabled = superLyricPronunciationEnabled
-        )
 
     private fun initBluetoothLyric() {
         viewModelScope.launch {
@@ -788,9 +675,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                     updatePlaybackStats()
                     updateSleepTimer()
 
-                    if (lyriconBridge.isEnabled()) {
-                        lyriconBridge.sendPosition(playerManager.currentPosition.value)
-                    }
                     updateDesktopLyricFrame()
                 }.onFailure { error ->
                     AppLogStore.warn(
@@ -833,19 +717,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                     liveUpdateArtwork = null
                     lastBluetoothLyricPayload = null
                     bluetoothLyricRetryJob?.cancel()
-                    lyricGetterBridge.clearLyric()
                     tickerBridge.clearLyric()
                     xiaomiSuperIslandLyricBridge.clear()
                     if (activeDesktopLyricHideWhenPaused()) {
                         desktopLyricBridge.clearLyric()
                     }
-                    superLyricBridge.sendStop()
-                    // Send song metadata to bridges BEFORE setting lyrics,
-                    // so the 50ms update loop can't send new lyrics with old metadata
-                    if (lyriconBridge.isEnabled()) {
-                        lyriconBridge.sendSong(song, emptyList())
-                    }
-                    superLyricBridge.sendSong(song)
                     val songLyrics = repository.getLyrics(song, lyricSourceMode)
                     val notificationArtwork = withContext(Dispatchers.IO) {
                         repository.getCoverArtBitmap(
@@ -864,11 +740,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                     _lyricsLoading.value = false
                     val displayedLyrics = _lyrics.value
 
-                    if (lyriconBridge.isEnabled()) {
-                        lyriconBridge.sendSong(song, displayedLyrics)
-                    }
                     if (displayedLyrics.isEmpty()) {
-                        clearExternalLyrics(clearLyricon = false, clearSuperLyricSong = false)
+                        clearExternalLyrics()
                     } else {
                         scheduleExternalLyricResend()
                     }
@@ -882,7 +755,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                     _currentLyricOffsetMs.value = 0L
                     _currentLyricIndex.value = -1
                     PlaybackWidgetUpdater.clearLyrics(getApplication<Application>())
-                    clearExternalLyrics(clearLyricon = true, clearSuperLyricSong = true)
+                    clearExternalLyrics()
                 }
             }
         }
@@ -893,10 +766,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             playerManager.isPlaying.collect { playing ->
                 if (lastSentPlayingState != playing) {
                     lastSentPlayingState = playing
-                    lyriconBridge.sendPlaybackState(playing)
                     if (!playing) {
-                        seekExternalLyricSyncJob?.cancel()
-                        seekExternalLyricSyncJob = null
                         tickerBridge.clearLyric()
                         liveLyricNotificationBridge.clear()
                         lastLiveUpdateLyricPayload = null
@@ -906,8 +776,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                         } else {
                             resendDesktopLyric()
                         }
-                        superLyricBridge.sendStop()
-                        lyricGetterBridge.clearLyric()
                         playerManager.clearBluetoothLyric()
                         lastBluetoothLyricPayload = null
                         bluetoothLyricRetryJob?.cancel()
@@ -918,17 +786,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
             }
         }
-    }
-
-    private fun sendSuperLyricAt(index: Int, lyrics: List<LyricLine>) {
-        if (!superLyricBridge.isEnabled() || !isPlaying.value) return
-
-        val line = lyrics.getOrNull(index) ?: return
-        superLyricBridge.sendLyric(
-            line = line,
-            positionMs = currentPosition.value,
-            showTranslation = _showLyricTranslation.value && superLyricTranslationEnabled
-        )
     }
 
     private fun updateCurrentLyricIndex() {
@@ -976,8 +833,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             if (index >= 0 && index < currentLyrics.size) {
                 sendTickerLyric(index, currentLyrics)
                 sendBluetoothLyric(index, currentLyrics)
-                sendSuperLyricAt(index, currentLyrics)
-                sendLyricGetterAt(index, currentLyrics)
             }
         }
         if (index >= 0 && index < currentLyrics.size) {
@@ -1011,19 +866,14 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         val songLyrics = _lyrics.value
         // Re-verify after potential async fetch
         if (playerManager.currentSong.value?.lyricIdentityKey() != songKey) return
-        lyriconBridge.sendSong(song, songLyrics)
-        lyriconBridge.sendPlaybackState(isPlaying.value)
-        lyriconBridge.sendPosition(currentPosition.value)
         if (songLyrics.isEmpty()) {
-            clearExternalLyrics(clearLyricon = false, clearSuperLyricSong = false)
+            clearExternalLyrics()
             return
         }
         resendTickerLyric(force)
         resendLiveUpdateLyric(force)
         resendXiaomiSuperIslandLyric()
         resendDesktopLyric()
-        resendSuperLyric(force)
-        resendLyricGetter(force)
     }
 
     private fun resendTickerLyric(force: Boolean = false) {
@@ -1165,23 +1015,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun resendSuperLyric(force: Boolean = false) {
-        if (!superLyricBridge.isEnabled() || !isPlaying.value) return
-        val index = _currentLyricIndex.value
-        val line = _lyrics.value.getOrNull(index) ?: return
-        superLyricBridge.sendLyric(line, currentPosition.value, _showLyricTranslation.value && superLyricTranslationEnabled, force)
-    }
-
-    private fun sendLyricGetterAt(index: Int, lyrics: List<LyricLine>) {
-        if (!lyricGetterBridge.isEnabled() || !isPlaying.value) return
-        lyricGetterBridge.sendLyric(lyrics.getOrNull(index))
-    }
-
-    private fun resendLyricGetter(force: Boolean = false) {
-        if (!lyricGetterBridge.isEnabled() || !isPlaying.value) return
-        lyricGetterBridge.sendLyric(_lyrics.value.getOrNull(_currentLyricIndex.value), force)
-    }
-
     private fun setLoadedLyrics(
         song: Song,
         rawLyrics: List<LyricLine>,
@@ -1221,16 +1054,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             lastBluetoothLyricPayload = null
         }
         if (!notifyExternal) return
-        if (lyriconBridge.isEnabled()) lyriconBridge.sendSong(song, _lyrics.value)
-        superLyricBridge.sendSong(song)
         if (_lyrics.value.isEmpty()) {
-            clearExternalLyrics(clearLyricon = false, clearSuperLyricSong = false)
+            clearExternalLyrics()
         } else {
             resendTickerLyric(force = true)
             resendLiveUpdateLyric(force = true)
             resendDesktopLyric()
-            resendSuperLyric(force = true)
-            resendLyricGetter(force = true)
             resendBluetoothLyric(force = true)
             scheduleExternalLyricResend()
         }
@@ -1246,7 +1075,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 if (currentSong.value?.lyricIdentityKey() != scheduledSongKey) return@launch
                 resendExternalLyrics(force = true)
                 resendBluetoothLyric(force = true)
-                resendLyricGetter(force = true)
             }
         }
     }
@@ -1257,7 +1085,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private fun List<LyricLine>.preparedForDisplay(): List<LyricLine> =
         preparedForDisplay(lyricBlacklistRules, hideLyricExtraInfo)
 
-    private fun clearExternalLyrics(clearLyricon: Boolean, clearSuperLyricSong: Boolean) {
+    private fun clearExternalLyrics() {
         externalLyricResendJob?.cancel()
         bluetoothLyricRetryJob?.cancel()
         lastTickerPayload = null
@@ -1267,14 +1095,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         liveLyricNotificationBridge.clear()
         xiaomiSuperIslandLyricBridge.clear()
         desktopLyricBridge.clearLyric()
-        lyricGetterBridge.clearLyric()
         playerManager.clearBluetoothLyric()
-        if (clearLyricon) lyriconBridge.clearSong()
-        if (clearSuperLyricSong) {
-            superLyricBridge.destroy()
-        } else {
-            superLyricBridge.sendStop()
-        }
     }
 
     private fun initLyricPageTranslation() {
@@ -1375,28 +1196,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             suppressLeadingZero = positionMs in 0L until LEADING_ZERO_LYRIC_SUPPRESSION_MS
         ).index
         _currentLyricIndex.value = index
-        scheduleSeekExternalLyricSync(positionMs)
-    }
-
-    /**
-     * A seek is a UI-critical controller command.  The Lyricon/SuperLyric publishers can make
-     * synchronous IPC calls, so issuing them for every tap on the lyric page used to leave those
-     * calls queued ahead of the next pause.  Coalesce a burst and publish only its final target.
-     */
-    private fun scheduleSeekExternalLyricSync(positionMs: Long) {
-        if (!lyriconBridge.isEnabled() && !superLyricBridge.isEnabled()) return
-        seekExternalLyricSyncJob?.cancel()
-        seekExternalLyricSyncJob = viewModelScope.launch(Dispatchers.IO) {
-            delay(SEEK_EXTERNAL_LYRIC_SYNC_DEBOUNCE_MS)
-            lyriconBridge.seekTo(positionMs)
-            if (!isPlaying.value || !superLyricBridge.isEnabled()) return@launch
-            val line = _lyrics.value.getOrNull(_currentLyricIndex.value) ?: return@launch
-            superLyricBridge.sendLyric(
-                line = line,
-                positionMs = positionMs,
-                showTranslation = _showLyricTranslation.value && superLyricTranslationEnabled
-            )
-        }
     }
 
     fun toggleShuffle() = playerManager.toggleShuffle()
@@ -1617,16 +1416,12 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         loadedLyricSongKey = song.lyricIdentityKey()
         setLoadedLyrics(song, songLyrics, notifyExternal = false)
         val displayedLyrics = _lyrics.value
-        if (lyriconBridge.isEnabled()) lyriconBridge.sendSong(song, displayedLyrics)
-        superLyricBridge.sendSong(song)
         if (displayedLyrics.isEmpty()) {
-            clearExternalLyrics(clearLyricon = false, clearSuperLyricSong = false)
+            clearExternalLyrics()
         } else {
             if (tickerBridge.isEnabled()) resendTickerLyric(force = true)
             if (liveUpdateLyricEnabled) resendLiveUpdateLyric(force = true)
             if (desktopLyricBridge.isEnabled()) resendDesktopLyric()
-            if (superLyricBridge.isEnabled()) resendSuperLyric(force = true)
-            if (lyricGetterBridge.isEnabled()) resendLyricGetter(force = true)
             if (bluetoothLyricEnabled) resendBluetoothLyric(force = true)
             scheduleExternalLyricResend()
         }
@@ -1661,32 +1456,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun setLyricPagePronunciation(enabled: Boolean) {
         _showLyricPronunciation.value = enabled
         resendDesktopLyric()
-    }
-
-    fun setLyriconEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsManager.setLyriconEnabled(enabled)
-            lyriconBridge.setEnabled(enabled)
-            if (enabled) {
-                currentSong.value?.let { song ->
-                    lyriconBridge.sendSong(song, _lyrics.value)
-                    lyriconBridge.sendPlaybackState(isPlaying.value)
-                }
-            }
-        }
-    }
-
-    fun setLyriconTranslation(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsManager.setLyriconTranslation(enabled)
-            lyriconTranslationEnabled = enabled
-            if (enabled && lyriconPronunciationEnabled) {
-                lyriconPronunciationEnabled = false
-                settingsManager.setLyriconPronunciation(false)
-            }
-            lyriconBridge.setSecondaryMode(currentLyriconSecondaryMode())
-            if (lyriconBridge.isEnabled()) resendExternalLyrics(force = true)
-        }
     }
 
     fun setTickerEnabled(enabled: Boolean) {
@@ -1805,19 +1574,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun setLyriconPronunciation(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsManager.setLyriconPronunciation(enabled)
-            lyriconPronunciationEnabled = enabled
-            if (enabled && lyriconTranslationEnabled) {
-                lyriconTranslationEnabled = false
-                settingsManager.setLyriconTranslation(false)
-            }
-            lyriconBridge.setSecondaryMode(currentLyriconSecondaryMode())
-            if (lyriconBridge.isEnabled()) resendExternalLyrics(force = true)
-        }
-    }
-
     fun setDesktopLyricEnabled(enabled: Boolean) {
         viewModelScope.launch {
             settingsManager.setDesktopLyricEnabled(enabled)
@@ -1842,51 +1598,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun applyDesktopLyricSettings() {
         desktopLyricBridge.applySettings()
         resendDesktopLyric()
-    }
-
-    fun setSuperLyricEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsManager.setSuperLyricEnabled(enabled)
-            superLyricBridge.setEnabled(enabled)
-            if (enabled) {
-                currentSong.value?.let { superLyricBridge.sendSong(it) }
-                resendSuperLyric()
-            }
-        }
-    }
-
-    fun setLyricGetterEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsManager.setLyricGetterEnabled(enabled)
-            lyricGetterBridge.setEnabled(enabled)
-            if (enabled) resendLyricGetter(force = true)
-        }
-    }
-
-    fun setSuperLyricTranslation(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsManager.setSuperLyricTranslation(enabled)
-            superLyricTranslationEnabled = enabled
-            if (enabled && superLyricPronunciationEnabled) {
-                superLyricPronunciationEnabled = false
-                settingsManager.setSuperLyricPronunciation(false)
-            }
-            superLyricBridge.setSecondaryMode(currentSuperLyricSecondaryMode())
-            if (superLyricBridge.isEnabled()) resendSuperLyric(force = true)
-        }
-    }
-
-    fun setSuperLyricPronunciation(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsManager.setSuperLyricPronunciation(enabled)
-            superLyricPronunciationEnabled = enabled
-            if (enabled && superLyricTranslationEnabled) {
-                superLyricTranslationEnabled = false
-                settingsManager.setSuperLyricTranslation(false)
-            }
-            superLyricBridge.setSecondaryMode(currentSuperLyricSecondaryMode())
-            if (superLyricBridge.isEnabled()) resendSuperLyric(force = true)
-        }
     }
 
     fun setBluetoothLyricEnabled(enabled: Boolean) {
@@ -1959,14 +1670,10 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         super.onCleared()
         externalLyricResendJob?.cancel()
         positionUpdateJob?.cancel()
-        seekExternalLyricSyncJob?.cancel()
         sleepTimerController.dispose()
         tickerBridge.clearLyric()
         liveLyricNotificationBridge.clear()
         xiaomiSuperIslandLyricBridge.destroy()
-        lyricGetterBridge.clearLyric()
-        superLyricBridge.destroy()
-        lyriconBridge.destroy()
         playerManager.disconnect()
     }
 }

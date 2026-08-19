@@ -90,8 +90,6 @@ object AppLogcatCollector {
         "quickjs",
         "lyric",
         "ticker",
-        "superlyric",
-        "lyricon",
         "flyme",
         "scanner",
         "musicrepo",

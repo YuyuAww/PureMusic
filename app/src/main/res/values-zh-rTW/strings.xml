@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">首頁</string>
@@ -967,12 +967,6 @@
     <string name="settings_secondary_delivery_content">副行傳遞內容</string>
     <string name="settings_mini_player_cover_rotation">迷你播放列封面旋轉</string>
     <string name="settings_mini_player_cover_rotation_summary">播放時旋轉迷你播放列封面；關閉後保持靜態封面</string>
-    <string name="settings_enable_lyricon">啟用 Lyricon</string>
-    <string name="settings_enable_lyricon_summary">將歌詞傳送到 Lyricon</string>
-    <string name="settings_lyricon_translation">傳送翻譯</string>
-    <string name="settings_lyricon_translation_summary">在 Lyricon 中顯示歌詞翻譯</string>
-    <string name="settings_lyricon_pronunciation">傳送發音到 Lyricon</string>
-    <string name="settings_lyricon_pronunciation_summary">開啟後將發音/羅馬拼音作為副行傳送到 Lyricon</string>
     <string name="settings_enable_desktop_lyric">啟用桌面歌詞</string>
     <string name="settings_enable_desktop_lyric_summary">透過懸浮視窗在其他應用上方顯示目前歌詞</string>
     <string name="settings_status_bar_lyric_position">狀態列歌詞位置</string>
@@ -993,14 +987,7 @@
     <string name="settings_status_lyric_opacity">狀態列歌詞透明度 %1$d%%</string>
     <string name="settings_status_lyric_opacity_summary">僅調整懸浮狀態列歌詞的整體透明度</string>
     <string name="settings_status_lyric_color">狀態列歌詞顏色</string>
-    <string name="settings_enable_super_lyric">啟用 SuperLyric</string>
-    <string name="settings_enable_super_lyric_summary">透過 SuperLyricApi 向 SuperLyric 生態發布逐字歌詞</string>
-    <string name="settings_super_lyric_translation">傳送翻譯到 SuperLyric</string>
-    <string name="settings_super_lyric_translation_summary">關閉後只傳原文，不再透過 SuperLyricApi 傳送翻譯行</string>
-    <string name="settings_super_lyric_pronunciation">傳送發音到 SuperLyric</string>
-    <string name="settings_super_lyric_pronunciation_summary">開啟後透過 SuperLyricApi 傳送發音/羅馬拼音副行</string>
-    <string name="settings_enable_lyric_getter">啟用 Lyric Getter</string>
-    <string name="settings_enable_lyric_getter_summary">透過 Lyric Getter API 傳送目前原文歌詞</string>
+    
     <string name="settings_enable_flyme_ticker">啟用 FLYme 狀態列歌詞</string>
     <string name="settings_enable_flyme_ticker_summary">在魅族裝置上透過 Ticker 通知顯示歌詞</string>
     <string name="settings_hide_flyme_ticker_notification">隱藏 FLYme 歌詞通知</string>
@@ -1298,10 +1285,6 @@
     <string name="library_add_to_playlist_count">加入 %1$d 首到播放清單</string>
     <string name="library_create_playlist_add_count">建立後會加入 %1$d 首歌曲</string>
 
-    <string-array name="lyricon_module_tags">
-        <item>$syllable</item>
-        <item>$translation</item>
-    </string-array>
 
     <!-- i18n: Artist screen -->
     <string name="artist_tab_songs">歌曲</string>
@@ -1499,9 +1482,7 @@
     <string name="audio_tools_cue_splitting">正在 CUE 分軌…</string>
     <string name="audio_tools_exporting_streams">正在匯出音訊串流…</string>
     <string name="player_randomize_queue">隨機排序</string>
-    <string name="about_summary_lyricon">字幕 Provider API 與狀態列歌詞（Apache-2.0）</string>
-    <string name="about_summary_superlyricapi">SuperLyric 歌詞發佈 API（LGPL-2.1）</string>
-    <string name="about_summary_lyricgetter">Lyric Getter 原文歌詞傳遞 API（LGPL-2.1）</string>
+    
     <string name="about_summary_lyrico">歌曲標籤讀取與應用日誌頁面參考（Apache-2.0）</string>
     <string name="about_summary_163keydecrypter">網易雲音樂 163 key 解密流程參考（MIT）</string>
     <string name="about_summary_coil">Kotlin 圖片載入函式庫（Apache-2.0）</string>

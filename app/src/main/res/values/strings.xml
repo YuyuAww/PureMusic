@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">首页</string>
@@ -1390,12 +1390,6 @@
     <string name="settings_media_notification_buttons_desktop_favorite">桌面歌词、爱心</string>
     <string name="settings_mini_player_cover_rotation">迷你播放条封面旋转</string>
     <string name="settings_mini_player_cover_rotation_summary">播放时旋转迷你播放条封面；关闭后保持静态封面</string>
-    <string name="settings_enable_lyricon">启用词幕</string>
-    <string name="settings_enable_lyricon_summary">将歌词推送到词幕（Lyricon）</string>
-    <string name="settings_lyricon_translation">传递翻译</string>
-    <string name="settings_lyricon_translation_summary">在词幕中显示歌词翻译</string>
-    <string name="settings_lyricon_pronunciation">词幕传递注音</string>
-    <string name="settings_lyricon_pronunciation_summary">开启后向词幕传递注音/罗马音副行</string>
     <string name="settings_enable_desktop_lyric">启用桌面歌词</string>
     <string name="settings_enable_desktop_lyric_summary">通过悬浮窗在其他应用上方显示当前歌词</string>
     <string name="settings_status_bar_lyric_position">状态栏歌词位置</string>
@@ -1416,14 +1410,7 @@
     <string name="settings_status_lyric_opacity">状态栏歌词透明度 %1$d%%</string>
     <string name="settings_status_lyric_opacity_summary">仅调整悬浮状态栏歌词的整体透明度</string>
     <string name="settings_status_lyric_color">状态栏歌词颜色</string>
-    <string name="settings_enable_super_lyric">启用 SuperLyric</string>
-    <string name="settings_enable_super_lyric_summary">通过 SuperLyricApi 向 SuperLyric 生态发布逐字歌词</string>
-    <string name="settings_super_lyric_translation">SuperLyric 传递翻译</string>
-    <string name="settings_super_lyric_translation_summary">关闭后只传原文，不再通过 SuperLyricApi 传递翻译行</string>
-    <string name="settings_super_lyric_pronunciation">SuperLyric 传递注音</string>
-    <string name="settings_super_lyric_pronunciation_summary">开启后通过 SuperLyricApi 传递注音/罗马音副行</string>
-    <string name="settings_enable_lyric_getter">启用 Lyric Getter</string>
-    <string name="settings_enable_lyric_getter_summary">通过 Lyric Getter API 传递当前原文歌词</string>
+    
     <string name="settings_enable_flyme_ticker">启用 FLYme 状态栏歌词</string>
     <string name="settings_enable_flyme_ticker_summary">在魅族设备上通过 Ticker 通知显示歌词</string>
     <string name="settings_hide_flyme_ticker_notification">隐藏 FLYme 歌词通知</string>
@@ -1799,10 +1786,6 @@
     <string name="library_add_to_playlist_count">添加 %1$d 首到歌单</string>
     <string name="library_create_playlist_add_count">创建后会添加 %1$d 首歌曲</string>
 
-    <string-array name="lyricon_module_tags">
-        <item>$syllable</item>
-        <item>$translation</item>
-    </string-array>
 
     <!-- i18n: Artist screen -->
     <string name="artist_tab_songs">歌曲</string>
@@ -2001,9 +1984,7 @@
     <string name="about_summary_media3">播放、媒体会话与 ExoPlayer 扩展（Apache-2.0）</string>
     <string name="about_summary_ffmpeg">ALAC 等音频格式软件解码（LGPL-2.1）</string>
     <string name="about_summary_ffmpegkit">本地格式转换与多音轨导出（LGPL-3.0）</string>
-    <string name="about_summary_lyricon">词幕 Provider API 与状态栏歌词（Apache-2.0）</string>
-    <string name="about_summary_superlyricapi">SuperLyric 歌词发布 API（LGPL-2.1）</string>
-    <string name="about_summary_lyricgetter">Lyric Getter 原文歌词传递 API（LGPL-2.1）</string>
+    
     <string name="about_summary_lyrico">歌曲标签读取与应用日志页面参考（Apache-2.0）</string>
     <string name="about_summary_163keydecrypter">网易云音乐 163 key 解密流程参考（MIT）</string>
     <string name="about_summary_coil">Kotlin 图片加载库（Apache-2.0）</string>

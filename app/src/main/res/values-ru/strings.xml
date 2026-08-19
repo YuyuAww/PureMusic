@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">Главная</string>
@@ -945,12 +945,6 @@
     <string name="settings_secondary_delivery_content">Содержимое вторичной строки</string>
     <string name="settings_mini_player_cover_rotation">Повернуть крышку мини-плеера</string>
     <string name="settings_mini_player_cover_rotation_summary">Поворачивайте крышку мини-плеера во время воспроизведения; отключите его, чтобы сохранить статическое укрытие</string>
-    <string name="settings_enable_lyricon">Включить Lyricon</string>
-    <string name="settings_enable_lyricon_summary">Отправьте тексты песен на Lyricon.</string>
-    <string name="settings_lyricon_translation">Отправить перевод</string>
-    <string name="settings_lyricon_translation_summary">Показать перевод текста в Lyricon</string>
-    <string name="settings_lyricon_pronunciation">Отправить произношение на Lyricon</string>
-    <string name="settings_lyricon_pronunciation_summary">Отправьте произношение или латинизацию в качестве дополнительной строки в Lyricon.</string>
     <string name="settings_enable_desktop_lyric">Включить тексты песен на рабочем столе</string>
     <string name="settings_enable_desktop_lyric_summary">Показывать текущий текст поверх других приложений с помощью плавающего окна.</string>
     <string name="settings_status_bar_lyric_position">Положение текста в строке состояния</string>
@@ -971,14 +965,7 @@
     <string name="settings_status_lyric_opacity">Непрозрачность текста в строке состояния %1$d%%</string>
     <string name="settings_status_lyric_opacity_summary">Настроить только общую непрозрачность плавающего текста в строке состояния</string>
     <string name="settings_status_lyric_color">Цвет текста в строке состояния</string>
-    <string name="settings_enable_super_lyric">Включить SuperLyric</string>
-    <string name="settings_enable_super_lyric_summary">Публикуйте тексты пословно в экосистеме SuperLyric через SuperLyricApi.</string>
-    <string name="settings_super_lyric_translation">Отправить перевод на SuperLyric</string>
-    <string name="settings_super_lyric_translation_summary">Отключите это, чтобы отправлять через SuperLyricApi только исходный текст без строки перевода.</string>
-    <string name="settings_super_lyric_pronunciation">Отправить произношение на SuperLyric</string>
-    <string name="settings_super_lyric_pronunciation_summary">Отправьте произношение или латинизацию в качестве дополнительной строки через SuperLyricApi.</string>
-    <string name="settings_enable_lyric_getter">Включить метод получения текстов</string>
-    <string name="settings_enable_lyric_getter_summary">Отправьте текущий оригинальный текст через Lyric Getter API.</string>
+    
     <string name="settings_enable_flyme_ticker">Включить тексты песен в строке состояния FLYme</string>
     <string name="settings_enable_flyme_ticker_summary">Показывать тексты песен с помощью тикеров на устройствах Meizu</string>
     <string name="settings_hide_flyme_ticker_notification">Скрыть уведомление о тексте песни FLYme</string>
@@ -1276,10 +1263,6 @@
     <string name="library_add_to_playlist_count">Добавить песни %1$d в плейлист</string>
     <string name="library_create_playlist_add_count">При его создании будут добавлены песни %1$d.</string>
 
-    <string-array name="lyricon_module_tags">
-        <item>$syllable</item>
-        <item>$translation</item>
-    </string-array>
     <!-- i18n: Artist screen -->
     <string name="artist_tab_songs">Песни</string>
     <string name="artist_tab_participated_albums">Участвующие альбомы</string>
@@ -1468,9 +1451,7 @@
     <string name="audio_tools_cue_splitting">Разделение CUE-альбома…</string>
     <string name="audio_tools_exporting_streams">Экспорт аудиопотоков…</string>
     <string name="player_randomize_queue">Перемешать порядок</string>
-    <string name="about_summary_lyricon">Поставщик субтитров API и тексты песен в строке состояния (Apache-2.0)</string>
-    <string name="about_summary_superlyricapi">Публикация текстов SuperLyric API (LGPL-2.1)</string>
-    <string name="about_summary_lyricgetter">Lyric Getter оригинальная лирическая версия API (LGPL-2.1)</string>
+    
     <string name="about_summary_lyrico">Справочник по чтению тегов песен и странице журнала приложений (Apache-2.0)</string>
     <string name="about_summary_163keydecrypter">Справочник по расшифровке ключей NetEase Cloud Music 163 (MIT)</string>
     <string name="about_summary_coil">Библиотека загрузки изображений Kotlin (Apache-2.0)</string>

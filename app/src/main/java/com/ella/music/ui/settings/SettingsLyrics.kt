@@ -120,12 +120,6 @@ internal fun SettingsLyricsSection(
         }
     }
 
-    SettingsCardGroup(highlight = highlightKey == "lyricon") {
-        Column {
-            SettingsLyriconControls(playerViewModel = playerViewModel, highlightKey = highlightKey)
-        }
-    }
-
     SettingsCardGroup(highlight = highlightKey == "live_update_lyric") {
         Column {
             SettingsLiveUpdateLyricControls(

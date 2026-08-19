@@ -317,21 +317,6 @@ private fun AboutContent(
                         onClick = { uriHandler.openUri("https://github.com/arthenica/ffmpeg-kit") },
                     )
                     BasicComponent(
-                        title = "Lyricon",
-                        summary = stringResource(R.string.about_summary_lyricon),
-                        onClick = { uriHandler.openUri("https://github.com/proify/lyricon") },
-                    )
-                    BasicComponent(
-                        title = "SuperLyricApi",
-                        summary = stringResource(R.string.about_summary_superlyricapi),
-                        onClick = { uriHandler.openUri("https://github.com/HChenX/SuperLyricApi") },
-                    )
-                    BasicComponent(
-                        title = "LyricGetter-API",
-                        summary = stringResource(R.string.about_summary_lyricgetter),
-                        onClick = { uriHandler.openUri("https://github.com/xiaowine/Lyric-Getter-Api") },
-                    )
-                    BasicComponent(
                         title = "Lyrico",
                         summary = stringResource(R.string.about_summary_lyrico),
                         onClick = { uriHandler.openUri("https://github.com/Replica0110/Lyrico") },

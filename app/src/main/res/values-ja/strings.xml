@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">ホーム</string>
@@ -947,12 +947,6 @@
     <string name="settings_secondary_delivery_content">サブ行の送信内容</string>
     <string name="settings_mini_player_cover_rotation">ミニプレーヤーカバーの回転</string>
     <string name="settings_mini_player_cover_rotation_summary">再生時にミニプレーヤーカバーを回転。オフでは静止カバーを維持</string>
-    <string name="settings_enable_lyricon">Lyricon を有効化</string>
-    <string name="settings_enable_lyricon_summary">歌詞を Lyricon に送信</string>
-    <string name="settings_lyricon_translation">翻訳を送信</string>
-    <string name="settings_lyricon_translation_summary">Lyricon に歌詞の翻訳を表示</string>
-    <string name="settings_lyricon_pronunciation">Lyricon に読み仮名を送信</string>
-    <string name="settings_lyricon_pronunciation_summary">有効にすると字幕に読み仮名/ローマ字サブ行を送信</string>
     <string name="settings_enable_desktop_lyric">デスクトップ歌詞を有効化</string>
     <string name="settings_enable_desktop_lyric_summary">フローティングウィンドウで他のアプリの上に現在の歌詞を表示</string>
     <string name="settings_status_bar_lyric_position">ステータスバー歌詞の位置</string>
@@ -973,14 +967,7 @@
     <string name="settings_status_lyric_opacity">ステータスバー歌詞の不透明度 %1$d%%</string>
     <string name="settings_status_lyric_opacity_summary">フローティングステータスバー歌詞全体の不透明度のみを調整します</string>
     <string name="settings_status_lyric_color">ステータスバー歌詞の色</string>
-    <string name="settings_enable_super_lyric">SuperLyric を有効化</string>
-    <string name="settings_enable_super_lyric_summary">SuperLyricApi 経由で SuperLyric エコシステムに単語単位の歌詞を公開</string>
-    <string name="settings_super_lyric_translation">SuperLyric に翻訳を送信</string>
-    <string name="settings_super_lyric_translation_summary">オフにすると原文のみを送信し、SuperLyricApi 経由の翻訳行送信を停止します</string>
-    <string name="settings_super_lyric_pronunciation">SuperLyric に読み仮名を送信</string>
-    <string name="settings_super_lyric_pronunciation_summary">有効にすると、SuperLyricApi 経由で読み仮名/ローマ字をサブ行として送信します</string>
-    <string name="settings_enable_lyric_getter">Lyric Getter を有効化</string>
-    <string name="settings_enable_lyric_getter_summary">Lyric Getter API 経由で現在の原文歌詞を送信</string>
+    
     <string name="settings_enable_flyme_ticker">FLYme ステータスバー歌詞を有効化</string>
     <string name="settings_enable_flyme_ticker_summary">Meizu デバイスでティッカー通知を使って歌詞を表示</string>
     <string name="settings_hide_flyme_ticker_notification">FLYme 歌詞通知を非表示</string>
@@ -1278,10 +1265,6 @@
     <string name="library_add_to_playlist_count">%1$d 曲をプレイリストに追加</string>
     <string name="library_create_playlist_add_count">作成後に %1$d 曲を追加します</string>
 
-    <string-array name="lyricon_module_tags">
-        <item>$syllable</item>
-        <item>$translation</item>
-    </string-array>
 
     <!-- i18n: Artist screen -->
     <string name="artist_tab_songs">曲</string>
@@ -1479,9 +1462,7 @@
     <string name="audio_tools_cue_splitting">CUE アルバムを分割中…</string>
     <string name="audio_tools_exporting_streams">音声ストリームを書き出し中…</string>
     <string name="player_randomize_queue">順番をランダム化</string>
-    <string name="about_summary_lyricon">字幕 Provider API とステータスバー歌詞（Apache-2.0）</string>
-    <string name="about_summary_superlyricapi">SuperLyric 歌詞公開 API（LGPL-2.1）</string>
-    <string name="about_summary_lyricgetter">Lyric Getter 原文歌詞送信 API（LGPL-2.1）</string>
+    
     <string name="about_summary_lyrico">曲タグの読み取りとアプリログページの参考（Apache-2.0）</string>
     <string name="about_summary_163keydecrypter">ネットイース音楽 163 key 復号フローの参考（MIT）</string>
     <string name="about_summary_coil">Kotlin 画像読み込みライブラリ（Apache-2.0）</string>

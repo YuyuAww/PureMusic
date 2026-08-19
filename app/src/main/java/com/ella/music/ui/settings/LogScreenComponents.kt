@@ -220,7 +220,7 @@ internal enum class EllaLogLevelFilter(val labelRes: Int, private val aliases: S
 internal enum class EllaLogTypeFilter(val storageNames: Set<String>, val keywords: Set<String>) {
     APP(setOf("APP"), emptySet()),
     PLAYBACK(setOf("PLAYBACK"), setOf("player", "playback", "play", "exo", "media", "audio", "decoder", "queue", "播放", "播放器", "解码", "队列")),
-    LYRICS(setOf("LYRICS"), setOf("lyric", "lyrics", "ticker", "superlyric", "lyricon", "flyme", "samsung", "bluetooth", "词幕", "歌词")),
+    LYRICS(setOf("LYRICS"), setOf("lyric", "lyrics", "ticker", "flyme", "samsung", "bluetooth", "歌词")),
     LIBRARY(setOf("LIBRARY"), setOf("scan", "scanner", "library", "folder", "album", "artist", "cover", "音乐库", "扫描", "文件夹", "专辑", "艺术家", "封面")),
     METADATA(setOf("METADATA"), setOf("tag", "metadata", "taglib", "wav", "alac", "元数据", "标签")),
     ONLINE(setOf("ONLINE"), setOf("lx", "download", "api", "在线", "下载")),

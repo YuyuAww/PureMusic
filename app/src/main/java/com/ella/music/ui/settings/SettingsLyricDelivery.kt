@@ -129,71 +129,6 @@ internal fun SettingsLiveUpdateLyricControls(
 }
 
 @Composable
-internal fun SettingsLyriconControls(
-    playerViewModel: PlayerViewModel?,
-    highlightKey: String? = null
-) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val settingsManager = remember { SettingsManager.getInstance(context) }
-    val lyriconEnabled by settingsManager.lyriconEnabled.collectAsState(initial = false)
-    val lyriconTranslation by settingsManager.lyriconTranslation.collectAsState(initial = true)
-    val lyriconPronunciation by settingsManager.lyriconPronunciation.collectAsState(initial = false)
-    val labels = rememberLyricSecondaryLabels()
-    val entries = remember(labels) { labels.map { DropdownItem(title = it) } }
-
-    SettingsFocusAnchor(active = highlightKey == "lyricon") {
-        SwitchPreference(
-            title = stringResource(R.string.settings_enable_lyricon),
-            summary = stringResource(R.string.settings_enable_lyricon_summary),
-            checked = lyriconEnabled,
-            onCheckedChange = { enabled ->
-                playerViewModel?.setLyriconEnabled(enabled)
-                    ?: scope.launch { settingsManager.setLyriconEnabled(enabled) }
-            }
-        )
-    }
-
-    WindowSpinnerPreference(
-        title = stringResource(R.string.settings_secondary_delivery_content),
-        summary = stringResource(
-            R.string.settings_current_value,
-            labels[lyricSecondaryIndex(lyriconTranslation, lyriconPronunciation)]
-        ),
-        enabled = lyriconEnabled,
-        items = entries,
-        selectedIndex = lyricSecondaryIndex(lyriconTranslation, lyriconPronunciation),
-        onSelectedIndexChange = { index ->
-            when (index) {
-                SettingsManager.LYRIC_SECONDARY_TRANSLATION -> {
-                    playerViewModel?.setLyriconTranslation(true)
-                        ?: scope.launch {
-                            settingsManager.setLyriconTranslation(true)
-                            settingsManager.setLyriconPronunciation(false)
-                        }
-                }
-                SettingsManager.LYRIC_SECONDARY_PRONUNCIATION -> {
-                    playerViewModel?.setLyriconPronunciation(true)
-                        ?: scope.launch {
-                            settingsManager.setLyriconPronunciation(true)
-                            settingsManager.setLyriconTranslation(false)
-                        }
-                }
-                else -> {
-                    playerViewModel?.let {
-                        it.setLyriconTranslation(false)
-                        it.setLyriconPronunciation(false)
-                    } ?: scope.launch {
-                        settingsManager.setLyriconTranslation(false)
-                        settingsManager.setLyriconPronunciation(false)
-                    }
-                }
-            }
-        }
-    )
-}
-
-@Composable
 internal fun SettingsLyricOutputControls(
     playerViewModel: PlayerViewModel?,
     highlightKey: String? = null
@@ -201,10 +136,6 @@ internal fun SettingsLyricOutputControls(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val settingsManager = remember { SettingsManager.getInstance(context) }
-    val superLyricEnabled by settingsManager.superLyricEnabled.collectAsState(initial = false)
-    val superLyricTranslation by settingsManager.superLyricTranslation.collectAsState(initial = true)
-    val superLyricPronunciation by settingsManager.superLyricPronunciation.collectAsState(initial = false)
-    val lyricGetterEnabled by settingsManager.lyricGetterEnabled.collectAsState(initial = false)
     val tickerEnabled by settingsManager.tickerEnabled.collectAsState(initial = false)
     val tickerHeadsUpLyrics by settingsManager.tickerHeadsUpLyrics.collectAsState(initial = false)
     val samsungFloatingLyricTranslation by settingsManager.samsungFloatingLyricTranslation.collectAsState(initial = false)
@@ -231,65 +162,6 @@ internal fun SettingsLyricOutputControls(
 
     SettingsFocusAnchor(active = highlightKey == "lyric_output") {
         SwitchPreference(
-            title = stringResource(R.string.settings_enable_super_lyric),
-            summary = stringResource(R.string.settings_enable_super_lyric_summary),
-            checked = superLyricEnabled,
-            onCheckedChange = { enabled ->
-                playerViewModel?.setSuperLyricEnabled(enabled)
-                    ?: scope.launch { settingsManager.setSuperLyricEnabled(enabled) }
-            }
-        )
-    }
-
-    WindowSpinnerPreference(
-        title = stringResource(R.string.settings_secondary_delivery_content),
-        summary = stringResource(
-            R.string.settings_current_value,
-            labels[lyricSecondaryIndex(superLyricTranslation, superLyricPronunciation)]
-        ),
-        enabled = superLyricEnabled,
-        items = entries,
-        selectedIndex = lyricSecondaryIndex(superLyricTranslation, superLyricPronunciation),
-        onSelectedIndexChange = { index ->
-            when (index) {
-                SettingsManager.LYRIC_SECONDARY_TRANSLATION -> {
-                    playerViewModel?.setSuperLyricTranslation(true)
-                        ?: scope.launch {
-                            settingsManager.setSuperLyricTranslation(true)
-                            settingsManager.setSuperLyricPronunciation(false)
-                        }
-                }
-                SettingsManager.LYRIC_SECONDARY_PRONUNCIATION -> {
-                    playerViewModel?.setSuperLyricPronunciation(true)
-                        ?: scope.launch {
-                            settingsManager.setSuperLyricPronunciation(true)
-                            settingsManager.setSuperLyricTranslation(false)
-                        }
-                }
-                else -> {
-                    playerViewModel?.let {
-                        it.setSuperLyricTranslation(false)
-                        it.setSuperLyricPronunciation(false)
-                    } ?: scope.launch {
-                        settingsManager.setSuperLyricTranslation(false)
-                        settingsManager.setSuperLyricPronunciation(false)
-                    }
-                }
-            }
-        }
-    )
-
-    SwitchPreference(
-        title = stringResource(R.string.settings_enable_lyric_getter),
-        summary = stringResource(R.string.settings_enable_lyric_getter_summary),
-        checked = lyricGetterEnabled,
-        onCheckedChange = { enabled ->
-            playerViewModel?.setLyricGetterEnabled(enabled)
-                ?: scope.launch { settingsManager.setLyricGetterEnabled(enabled) }
-        }
-    )
-
-    SwitchPreference(
         title = stringResource(R.string.settings_enable_flyme_ticker),
         summary = stringResource(R.string.settings_enable_flyme_ticker_summary),
         checked = tickerEnabled,

@@ -1,20 +1,9 @@
 # ProGuard rules for Halcyon
 
 # JNI entry points are resolved by class and method names.
--keepclasseswithmembernames,includedescriptorclasses class * {
+-keepclasseswithmembernames,includedescriptorclass class * {
     native <methods>;
 }
-
-# Lyricon is a provider-facing API; keep its published model names stable.
--keep class io.github.proify.lyricon.** { *; }
--dontwarn io.github.proify.lyricon.**
-
-# SuperLyricApi references this hidden framework class on supported systems.
--keep class com.hchen.superlyricapi.** { *; }
--dontwarn android.os.ServiceManager
-
-# Lyric Getter's Xposed module finds and hooks the public API by class and member names.
--keep class cn.lyric.getter.api.** { *; }
 
 # Settings search enumerates setting resources to keep new preferences discoverable. R8 must retain
 # these reflected fields in minified builds.

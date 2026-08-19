@@ -271,9 +271,6 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.lyricon.provider)
-    implementation(libs.lyric.getter.api)
-    implementation("com.github.HChenX:SuperLyricApi:3.4")
     // Full LGPL build supplies muxers and encoders for the local conversion tool.
     implementation("com.arthenica:ffmpeg-kit-full:6.0-2.LTS")
     implementation(libs.reorderable)

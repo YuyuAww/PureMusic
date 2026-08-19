@@ -559,7 +559,7 @@ class PlaybackService : MediaLibraryService() {
         val player = mediaSession?.player
         // During a network rebuffer ExoPlayer can briefly report !isPlaying although the user has
         // not stopped playback. Do not turn that transient state into a service teardown when the
-        // task is removed; keeping the media session alive also keeps Lyricon/desktop bridges alive.
+        // task is removed; keeping the media session alive also keeps desktop lyric bridges alive.
         // Never tear down a prepared MediaLibraryService because its task was swiped. Some ROMs
         // deliver this while Bluetooth playback is transitioning or while the app is backgrounded.
         // Media3 owns the foreground notification and shuts down only after the real queue ends.

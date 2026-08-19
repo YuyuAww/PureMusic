@@ -73,7 +73,7 @@
 - 歌词页更多菜单将字号、缩放和透视角度等滑动条收纳到二级「歌词样式」页，减少一级菜单长度。
 - 支持外置歌词和内嵌歌词读取，并可从同名 `.lrc`、`.ttml`、`.elrc` 文件自动匹配。
 - 支持本地歌曲在线匹配歌词：基于 Lyrico 兼容插件，可从 zip 合集导入 / 删除歌词源插件，支持插件配置，匹配结果可写入内嵌标签、`TTMLLYRIC` 标签或 `.lrc`。
-- 提供桌面歌词悬浮窗、状态栏歌词、媒体通知歌词、词幕、SuperLyricApi 和 Lyric Getter API 集成。
+- 提供桌面歌词悬浮窗、状态栏歌词、媒体通知歌词。
 - 状态栏歌词的长文本会带间隔连续循环，避免滚动结束时闪跳。
 - 可按需隐藏歌词中的作词、作曲及简写“词 / 曲”等额外信息；MV 字幕可独立控制是否显示歌词翻译。
 - 支持歌词卡片分享、字体导入与系统字体选择器、歌词偏移、歌词点击跳转和副行内容配置。
@@ -327,7 +327,7 @@ Halcyon 主项目以 **Apache-2.0** 协议开源。第三方组件保留其各�
 - **LX Music Mobile** — 提供 LX Music API 兼容实现与测试参考。
 - **RawS Music** — 为 10 段均衡器、BiQuad 参数均衡、360° 环绕 / 全景音、等响度、动态均衡/齿音抑制、Moog 梯形滤波器与峰值保护提供 Apache-2.0 的算法参考与 Kotlin 移植基础。
 - **光锥音乐** — 界面设计与功能实现参考。
-- 感谢 Halcyon 所使用的 Miuix、Media3、FFmpeg、Lyricon、SuperLyricApi、LyricGetter-API、lyrico-audiotag / Lyrico、TagLib、163KeyDecrypter、Coil、OkHttp、Reorderable、accompanist-lyrics-core、LySy、Beautiful Lyrics、RawS Music 以及其它开源项目。
+- 感谢 Halcyon 所使用的 Miuix、Media3、FFmpeg、lyrico-audiotag / Lyrico、TagLib、163KeyDecrypter、Coil、OkHttp、Reorderable、accompanist-lyrics-core、LySy、Beautiful Lyrics、RawS Music 以及其它开源项目。
 
 * 以及感谢各位群友积极的测试反馈。Halcyon 的开发与测试过程，也离不开各位群友的支持与鼓励。
 
@@ -356,9 +356,6 @@ Halcyon 主项目以 **Apache-2.0** 协议开源。第三方组件保留其各�
 
 - [RawS Music](https://github.com/QFDY-GZC/RawS-Music)
   一个支持 USB DAC 独占，且支持EQ、环绕音效等的开源本地播放器，同样使用 Miuix 构建，推荐试试。
-
-- [词幕](https://github.com/tomakino/Lyricon)
-  为 Android 提供逐字和对唱显示的状态栏歌词插件。需要启用 Xposed 或 LSPosed 框架。
 
 - [棱镜音乐](https://github.com/Ryderwe/PrismMusic-Release)
 由 leguan 开发的本地播放器。播放页面等也非常美观，推荐一试。

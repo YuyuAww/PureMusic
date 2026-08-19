@@ -65,11 +65,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Ella">
 
-        <meta-data android:name="lyricon_module" android:value="true" />
-        <meta-data android:name="lyricon_module_author" android:value="Kifranei" />
-        <meta-data android:name="lyricon_module_description" android:value="愿所有的心声都在旋律里靠岸。" />
-        <meta-data android:name="lyricon_module_tags" android:resource="@array/lyricon_module_tags" />
-
         <!-- Opt into the optional OPlus historical-player stack integration. -->
         <meta-data
             android:name="io.github.andrealtb.lockscreenlyrics.OPLUS_MEDIA_HISTORY"

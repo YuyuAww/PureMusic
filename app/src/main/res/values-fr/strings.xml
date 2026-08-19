@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">Accueil</string>
@@ -947,12 +947,6 @@
     <string name="settings_secondary_delivery_content">Contenu de la ligne secondaire</string>
     <string name="settings_mini_player_cover_rotation">Faire tourner la pochette du mini-lecteur</string>
     <string name="settings_mini_player_cover_rotation_summary">Faire tourner la pochette du mini-lecteur pendant la lecture ; désactivez pour garder une pochette fixe</string>
-    <string name="settings_enable_lyricon">Activer Lyricon</string>
-    <string name="settings_enable_lyricon_summary">Envoyer les paroles à Lyricon</string>
-    <string name="settings_lyricon_translation">Envoyer la traduction</string>
-    <string name="settings_lyricon_translation_summary">Afficher la traduction des paroles dans Lyricon</string>
-    <string name="settings_lyricon_pronunciation">Envoyer la prononciation à Lyricon</string>
-    <string name="settings_lyricon_pronunciation_summary">Envoyer la prononciation ou la romanisation comme ligne secondaire à Lyricon</string>
     <string name="settings_enable_desktop_lyric">Activer les paroles flottantes</string>
     <string name="settings_enable_desktop_lyric_summary">Afficher la parole actuelle au-dessus des autres applications avec une fenêtre flottante</string>
     <string name="settings_status_bar_lyric_position">Position des paroles dans la barre d’état</string>
@@ -973,14 +967,7 @@
     <string name="settings_status_lyric_opacity">Opacité des paroles de la barre d’état %1$d%%</string>
     <string name="settings_status_lyric_opacity_summary">Régler uniquement l’opacité globale des paroles flottantes de la barre d’état</string>
     <string name="settings_status_lyric_color">Couleur des paroles de la barre d’état</string>
-    <string name="settings_enable_super_lyric">Activer SuperLyric</string>
-    <string name="settings_enable_super_lyric_summary">Publier les paroles mot à mot dans l’écosystème SuperLyric via SuperLyricApi</string>
-    <string name="settings_super_lyric_translation">Envoyer la traduction à SuperLyric</string>
-    <string name="settings_super_lyric_translation_summary">Désactivez cette option pour envoyer uniquement le texte original sans ligne de traduction via SuperLyricApi</string>
-    <string name="settings_super_lyric_pronunciation">Envoyer la prononciation à SuperLyric</string>
-    <string name="settings_super_lyric_pronunciation_summary">Envoyer la prononciation ou la romanisation comme ligne secondaire via SuperLyricApi</string>
-    <string name="settings_enable_lyric_getter">Activer Lyric Getter</string>
-    <string name="settings_enable_lyric_getter_summary">Envoyer la parole originale actuelle via l’API Lyric Getter</string>
+    
     <string name="settings_enable_flyme_ticker">Activer les paroles FLYme dans la barre d’état</string>
     <string name="settings_enable_flyme_ticker_summary">Afficher les paroles via les notifications ticker sur les appareils Meizu</string>
     <string name="settings_hide_flyme_ticker_notification">Masquer la notification de paroles FLYme</string>
@@ -1278,10 +1265,6 @@
     <string name="library_add_to_playlist_count">Ajouter %1$d titres à une playlist</string>
     <string name="library_create_playlist_add_count">Sa création ajoutera %1$d titres</string>
 
-    <string-array name="lyricon_module_tags">
-        <item>$syllable</item>
-        <item>$translation</item>
-    </string-array>
 
     <!-- i18n : écran Artiste -->
     <string name="artist_tab_songs">Titres</string>
@@ -1479,9 +1462,7 @@
     <string name="audio_tools_cue_splitting">Découpage de l’album CUE…</string>
     <string name="audio_tools_exporting_streams">Export des flux audio…</string>
     <string name="player_randomize_queue">Mélanger l’ordre</string>
-    <string name="about_summary_lyricon">API Subtitle Provider et paroles de barre d’état (Apache-2.0)</string>
-    <string name="about_summary_superlyricapi">API de publication de paroles SuperLyric (LGPL-2.1)</string>
-    <string name="about_summary_lyricgetter">API originale de livraison de paroles Lyric Getter (LGPL-2.1)</string>
+    
     <string name="about_summary_lyrico">Référence pour la lecture des tags de titres et la page de journaux de l’application (Apache-2.0)</string>
     <string name="about_summary_163keydecrypter">Référence pour le déchiffrement de clé 163 de NetEase Cloud Music (MIT)</string>
     <string name="about_summary_coil">Bibliothèque Kotlin de chargement d’images (Apache-2.0)</string>

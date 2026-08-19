@@ -55,9 +55,6 @@ class SettingsManager(private val context: Context) :
                 instance ?: SettingsManager(context.applicationContext).also { instance = it }
             }
 
-        val KEY_LYRICON_ENABLED = booleanPreferencesKey("lyricon_enabled")
-        val KEY_LYRICON_TRANSLATION = booleanPreferencesKey("lyricon_translation")
-        val KEY_LYRICON_PRONUNCIATION = booleanPreferencesKey("lyricon_pronunciation")
         val KEY_AUTO_SCAN = booleanPreferencesKey("auto_scan")
         val KEY_AUTO_SCAN_LOCAL_PLAYLISTS = booleanPreferencesKey("auto_scan_local_playlists")
         val KEY_GAPLESS = booleanPreferencesKey("gapless_playback")
@@ -115,10 +112,6 @@ class SettingsManager(private val context: Context) :
         val KEY_DESKTOP_LYRIC_TEXT_COLOR = intPreferencesKey("desktop_lyric_text_color")
         val KEY_DESKTOP_LYRIC_X = intPreferencesKey("desktop_lyric_x")
         val KEY_DESKTOP_LYRIC_Y = intPreferencesKey("desktop_lyric_y")
-        val KEY_SUPER_LYRIC_ENABLED = booleanPreferencesKey("super_lyric_enabled")
-        val KEY_SUPER_LYRIC_TRANSLATION = booleanPreferencesKey("super_lyric_translation")
-        val KEY_SUPER_LYRIC_PRONUNCIATION = booleanPreferencesKey("super_lyric_pronunciation")
-        val KEY_LYRIC_GETTER_ENABLED = booleanPreferencesKey("lyric_getter_enabled")
         val KEY_MIN_DURATION = intPreferencesKey("min_duration_sec")
         val KEY_REPLAYGAIN_ENABLED = booleanPreferencesKey("replaygain_enabled")
         val KEY_REPLAYGAIN_MODE = intPreferencesKey("replaygain_mode")
@@ -908,9 +901,6 @@ class SettingsManager(private val context: Context) :
                 if (payload.has(key.name) && !payload.isNull(key.name)) prefs[key] = payload.optString(key.name)
             }
 
-            setBoolean(KEY_LYRICON_ENABLED)
-            setBoolean(KEY_LYRICON_TRANSLATION)
-            setBoolean(KEY_LYRICON_PRONUNCIATION)
             setBoolean(KEY_AUTO_SCAN)
             setBoolean(KEY_AUTO_SCAN_LOCAL_PLAYLISTS)
             setBoolean(KEY_GAPLESS)
@@ -934,10 +924,6 @@ class SettingsManager(private val context: Context) :
             setBoolean(KEY_DESKTOP_LYRIC_STATUS_BAR_HIDE_IN_LANDSCAPE)
             setBoolean(KEY_DESKTOP_LYRIC_STATUS_BAR_MERGE_SECONDARY)
             setBoolean(KEY_DESKTOP_LYRIC_LOCKED)
-            setBoolean(KEY_SUPER_LYRIC_ENABLED)
-            setBoolean(KEY_SUPER_LYRIC_TRANSLATION)
-            setBoolean(KEY_SUPER_LYRIC_PRONUNCIATION)
-            setBoolean(KEY_LYRIC_GETTER_ENABLED)
             setBoolean(KEY_IGNORE_LYRIC_HEADER_TAGS)
             setBoolean(KEY_HIDE_LYRIC_EXTRA_INFO)
             setBoolean(KEY_REPLAYGAIN_ENABLED)

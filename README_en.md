@@ -73,7 +73,7 @@ It focuses on local music and lyrics, with a MIUI / HyperOS-inspired interface, 
 - The lyric-page more menu now keeps font size, scaling, and perspective sliders inside a secondary "Lyric style" page to reduce the length of the top-level menu.
 - Reads embedded lyrics and external lyric files, including matching `.lrc`, `.ttml`, and `.elrc` files.
 - Supports online lyric matching for local songs via Lyrico-compatible plugins: import / delete plugin bundles from zip files, configure plugin fields, and write results to embedded tags, `TTMLLYRIC`, or a `.lrc` file.
-- Provides floating desktop lyrics, status-bar lyrics, media notification lyrics, lyric barrage, SuperLyricApi, and Lyric Getter API integration.
+- Provides floating desktop lyrics, status-bar lyrics, media notification lyrics, and lyric barrage.
 - Long status-bar lyrics loop continuously with a gap instead of visibly jumping back to the start.
 - Lyricist/composer credit lines, including short `词` / `曲` forms, can be hidden on demand; MV caption translations have a separate visibility switch.
 - Supports lyric card sharing, font import with a system-font picker, lyric offset, tap-to-seek, and secondary-line configuration.
@@ -327,7 +327,7 @@ The Halcyon main project is licensed under **Apache-2.0**. Third-party component
 - **LX Music Mobile** — Provides LX Music API compatibility implementation and testing reference.
 - **RawS Music** — Apache-2.0 reference and Kotlin-port foundation for the 10-band EQ, BiQuad parametric EQ, 360-degree surround / panoramic audio, loudness processing, dynamic EQ/de-essing, Moog ladder filtering, and peak protection.
 - **Light Cone Music** — Interface design and feature implementation reference.
-- Thanks to Miuix, Media3, FFmpeg, Lyricon, SuperLyricApi, LyricGetter-API, lyrico-audiotag / Lyrico, TagLib, 163KeyDecrypter, Coil, OkHttp, Reorderable, accompanist-lyrics-core, LySy, Beautiful Lyrics, RawS Music, and other open source projects used by Halcyon.
+- Thanks to Miuix, Media3, FFmpeg, lyrico-audiotag / Lyrico, TagLib, 163KeyDecrypter, Coil, OkHttp, Reorderable, accompanist-lyrics-core, LySy, Beautiful Lyrics, RawS Music, and other open source projects used by Halcyon.
 
 ---
 
@@ -346,9 +346,6 @@ The Halcyon main project is licensed under **Apache-2.0**. Third-party component
 
 - [RawS Music](https://github.com/QFDY-GZC/RawS-Music)
   An open-source Miuix-based local player with USB DAC exclusive mode, EQ, surround effects, and more.
-
-- [Lyricon](https://github.com/tomakino/Lyricon)
-  An Android status-bar lyric plugin with word-by-word and duet display. Xposed or LSPosed is required.
 
 - [Prism Music](https://github.com/Ryderwe/PrismMusic-Release)
   A local music player by leguan with a beautifully designed playback experience.
