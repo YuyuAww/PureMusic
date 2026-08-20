@@ -140,6 +140,8 @@ sealed class Screen(val route: String) {
     }
     data object BottomNavigationSettings : Screen("settings_bottom_navigation")
     data object LibrarySettings : Screen("library_settings?highlight={highlight}") {
+        fun createRoute(highlight: String = "") = "library_settings?highlight=${java.net.URLEncoder.encode(highlight, "UTF-8")}"
+    }
     data object LyricSettings : Screen("lyric_settings?highlight={highlight}") {
         fun createRoute(highlight: String = "") = "lyric_settings?highlight=${java.net.URLEncoder.encode(highlight, "UTF-8")}"
     }

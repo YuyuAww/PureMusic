@@ -27,6 +27,8 @@ import com.ella.music.data.SettingsManager.Companion.KEY_FULL_TAG_SEARCH_PROMPT_
 import com.ella.music.data.SettingsManager.Companion.KEY_GENRE_PROTECTED_NAMES
 import com.ella.music.data.SettingsManager.Companion.KEY_GENRE_SEPARATORS
 import com.ella.music.data.SettingsManager.Companion.KEY_INITIAL_SCAN_PROMPT_HANDLED
+import com.ella.music.data.SettingsManager.Companion.KEY_LOCAL_PLAYLIST_SCAN_PROMPT_HANDLED
+import com.ella.music.data.SettingsManager.Companion.KEY_LYRIC_TIMING_EDITOR_ID
 import com.ella.music.data.SettingsManager.Companion.KEY_METADATA_EDITOR_ID
 import com.ella.music.data.SettingsManager.Companion.KEY_SPECTRUM_VIEWER_ID
 import com.ella.music.data.SettingsManager.Companion.KEY_MIN_DURATION
