@@ -224,6 +224,7 @@ internal fun SettingsLyricOutputControls(
             }
         }
     )
+    }
 
     SettingsFocusAnchor(active = highlightKey == "coloros_lock_screen_lyric") {
         SwitchPreference(

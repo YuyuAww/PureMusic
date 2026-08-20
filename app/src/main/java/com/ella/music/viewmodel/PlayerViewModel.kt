@@ -26,6 +26,9 @@ import com.ella.music.data.repository.MusicRepository
 import com.ella.music.player.DesktopLyricBridge
 import com.ella.music.player.ExoPlayerManager
 import com.ella.music.player.LiveLyricNotificationBridge
+import com.ella.music.player.PlaybackService
+import com.ella.music.player.PlaybackWidgetUpdater
+import com.ella.music.player.TickerBridge
 import com.ella.music.player.buildLiveLyricSecondaryText
 import com.ella.music.player.buildLiveLyricNotificationText
 import com.ella.music.player.MediaNotificationLyricPatchPolicy
