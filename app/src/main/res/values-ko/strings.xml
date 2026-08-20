@@ -928,7 +928,7 @@
     <string name="settings_status_lyric_opacity">상태 표시줄 가사 불투명도 %1$d%%</string>
     <string name="settings_status_lyric_opacity_summary">플로팅 상태 표시줄 가사의 전체 불투명도만 조절합니다</string>
     <string name="settings_status_lyric_color">상태 표시줄 가사 색상</string>
-    
+
     <string name="settings_enable_flyme_ticker">FLYme 상태 표시줄 가사 활성화</string>
     <string name="settings_enable_flyme_ticker_summary">Meizu 장치의 티커 알림을 통해 가사 표시</string>
     <string name="settings_hide_flyme_ticker_notification">FLYme 가사 알림 숨기기</string>
@@ -1408,7 +1408,7 @@
     <string name="audio_tools_cue_splitting">CUE 앨범 분할 중…</string>
     <string name="audio_tools_exporting_streams">오디오 스트림 내보내는 중…</string>
     <string name="player_randomize_queue">순서 무작위화</string>
-    
+
     <string name="about_summary_lyrico">곡 태그 읽기 및 앱 로그 페이지 참고 (Apache-2.0)</string>
     <string name="about_summary_163keydecrypter">NetEase Cloud Music 163 키 복호화에 대한 참조(MIT)</string>
     <string name="about_summary_coil">Kotlin 이미지 로딩 라이브러리(Apache-2.0)</string>

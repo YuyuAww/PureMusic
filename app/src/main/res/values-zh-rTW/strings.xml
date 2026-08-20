@@ -948,7 +948,7 @@
     <string name="settings_status_lyric_opacity">狀態列歌詞透明度 %1$d%%</string>
     <string name="settings_status_lyric_opacity_summary">僅調整懸浮狀態列歌詞的整體透明度</string>
     <string name="settings_status_lyric_color">狀態列歌詞顏色</string>
-    
+
     <string name="settings_enable_flyme_ticker">啟用 FLYme 狀態列歌詞</string>
     <string name="settings_enable_flyme_ticker_summary">在魅族裝置上透過 Ticker 通知顯示歌詞</string>
     <string name="settings_hide_flyme_ticker_notification">隱藏 FLYme 歌詞通知</string>
@@ -1428,7 +1428,7 @@
     <string name="audio_tools_cue_splitting">正在 CUE 分軌…</string>
     <string name="audio_tools_exporting_streams">正在匯出音訊串流…</string>
     <string name="player_randomize_queue">隨機排序</string>
-    
+
     <string name="about_summary_lyrico">歌曲標籤讀取與應用日誌頁面參考（Apache-2.0）</string>
     <string name="about_summary_163keydecrypter">網易雲音樂 163 key 解密流程參考（MIT）</string>
     <string name="about_summary_coil">Kotlin 圖片載入函式庫（Apache-2.0）</string>

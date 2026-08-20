@@ -926,7 +926,7 @@
     <string name="settings_status_lyric_opacity">Непрозрачность текста в строке состояния %1$d%%</string>
     <string name="settings_status_lyric_opacity_summary">Настроить только общую непрозрачность плавающего текста в строке состояния</string>
     <string name="settings_status_lyric_color">Цвет текста в строке состояния</string>
-    
+
     <string name="settings_enable_flyme_ticker">Включить тексты песен в строке состояния FLYme</string>
     <string name="settings_enable_flyme_ticker_summary">Показывать тексты песен с помощью тикеров на устройствах Meizu</string>
     <string name="settings_hide_flyme_ticker_notification">Скрыть уведомление о тексте песни FLYme</string>
@@ -1397,7 +1397,7 @@
     <string name="audio_tools_cue_splitting">Разделение CUE-альбома…</string>
     <string name="audio_tools_exporting_streams">Экспорт аудиопотоков…</string>
     <string name="player_randomize_queue">Перемешать порядок</string>
-    
+
     <string name="about_summary_lyrico">Справочник по чтению тегов песен и странице журнала приложений (Apache-2.0)</string>
     <string name="about_summary_163keydecrypter">Справочник по расшифровке ключей NetEase Cloud Music 163 (MIT)</string>
     <string name="about_summary_coil">Библиотека загрузки изображений Kotlin (Apache-2.0)</string>

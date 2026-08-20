@@ -928,7 +928,7 @@
     <string name="settings_status_lyric_opacity">ステータスバー歌詞の不透明度 %1$d%%</string>
     <string name="settings_status_lyric_opacity_summary">フローティングステータスバー歌詞全体の不透明度のみを調整します</string>
     <string name="settings_status_lyric_color">ステータスバー歌詞の色</string>
-    
+
     <string name="settings_enable_flyme_ticker">FLYme ステータスバー歌詞を有効化</string>
     <string name="settings_enable_flyme_ticker_summary">Meizu デバイスでティッカー通知を使って歌詞を表示</string>
     <string name="settings_hide_flyme_ticker_notification">FLYme 歌詞通知を非表示</string>
@@ -1408,7 +1408,7 @@
     <string name="audio_tools_cue_splitting">CUE アルバムを分割中…</string>
     <string name="audio_tools_exporting_streams">音声ストリームを書き出し中…</string>
     <string name="player_randomize_queue">順番をランダム化</string>
-    
+
     <string name="about_summary_lyrico">曲タグの読み取りとアプリログページの参考（Apache-2.0）</string>
     <string name="about_summary_163keydecrypter">ネットイース音楽 163 key 復号フローの参考（MIT）</string>
     <string name="about_summary_coil">Kotlin 画像読み込みライブラリ（Apache-2.0）</string>
