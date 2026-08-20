@@ -231,6 +231,9 @@ fun SongMoreActionHost(
                     closeAction()
                 },
                 onRating = {
+                    ratingSong = song
+                    closeAction()
+                },
                 onArtist = {
                     val artists = splitArtistNames(song.artist)
                         .distinctBy { it.tagIdentityKey() }
