@@ -423,34 +423,6 @@
     <string name="home_now_playing_song">Now playing: %1$s</string>
     <string name="home_random_song_count">Shuffle %1$d songs</string>
     <string name="home_play_daily_mix">Play daily mix</string>
-    <string name="home_ai_section">AI</string>
-    <string name="home_ai_playlist">AI playback assistant</string>
-    <string name="home_ai_playlist_summary">Can only call local songs for playback; it will not delete or modify songs. Library: %1$d songs</string>
-    <string name="home_ai_playlist_loading">Reading AI settings and generating a playlist…</string>
-    <string name="home_ai_playlist_play">Generate and play AI playlist</string>
-    <string name="home_ai_chat_open">Open AI chat</string>
-    <string name="home_ai_playlist_started">Playing "%1$s": %2$d songs</string>
-    <string name="home_ai_playlist_failed">AI recommendation failed: %1$s</string>
-    <string name="ai_chat_title">Ella listening assistant</string>
-    <string name="ai_chat_disclaimer">AI can be wrong; it can only read the library and play local songs</string>
-    <string name="ai_chat_empty_title">What do you want to hear next?</string>
-    <string name="ai_chat_empty_summary">Ask AI to recommend from your library, recent playback, and listening stats, or to explain your music taste.</string>
-    <string name="ai_chat_prompt_today">Recommend a set of songs for tonight based on what I recently played</string>
-    <string name="ai_chat_prompt_recent">Summarize my recent favorite artists and genres</string>
-    <string name="ai_chat_prompt_genre">Pick songs I rarely play but may like from my library</string>
-    <string name="ai_chat_input_hint">Ask Ella</string>
-    <string name="ai_chat_send">Send</string>
-    <string name="ai_chat_thinking">Searching the library and thinking…</string>
-    <string name="ai_chat_failed">Generation failed: %1$s</string>
-    <string name="ai_chat_play_songs">Play %1$d recommended songs</string>
-    <string name="ai_chat_add_to_queue">Add to queue</string>
-    <string name="ai_chat_create_playlist">Create playlist</string>
-    <string name="ai_chat_added_to_queue">Added to queue: %1$d songs</string>
-    <string name="ai_chat_playlist_name">Ella recommended playlist</string>
-    <string name="ai_chat_playlist_created">Created "%1$s": %2$d songs</string>
-    <string name="ai_chat_new_session">New chat</string>
-    <string name="ai_chat_delete_session">Delete session</string>
-    <string name="ai_chat_delete_session_confirm">Delete this session?</string>
     <string name="category_artist">Artists</string>
     <string name="category_album">Albums</string>
     <string name="category_folder">Folders</string>
@@ -1404,7 +1376,6 @@
     <string name="song_more_delete_permanently">Delete permanently</string>
     <string name="song_more_edit_tags_title">Edit song tag info</string>
     <string name="song_more_lyric_timing">Lyric timing</string>
-    <string name="song_more_ai_title">AI song interpretation</string>
     <string name="song_more_add_to_playlist">Add to playlist</string>
     <string name="song_more_add_position_start">Add to start</string>
     <string name="song_more_add_position_end">Add to end</string>
@@ -1435,8 +1406,6 @@
     <string name="song_more_detail_added_time">Added time</string>
     <string name="song_more_detail_file_name">File name</string>
     <string name="song_more_detail_path">Path</string>
-    <string name="song_more_loading_ai">Loading song info and lyrics...</string>
-    <string name="song_more_ai_failed">AI interpretation failed</string>
     <string name="library_deleted_songs">Deleted %1$d songs</string>
     <string name="library_delete_cancelled">Deletion cancelled</string>
     <string name="library_deleting_songs">Deleting %1$d songs</string>
@@ -1448,11 +1417,8 @@
     <string name="library_range_select">Range select</string>
     <string name="library_song_count_sorted">%1$d songs · %2$s</string>
     <string name="library_delete_selected_message">Delete the selected %1$d songs permanently? This may remove the local audio files.</string>
-    <string name="library_ai_missing_api_key">Go to Settings > Preferences > AI interpretation and fill in the OpenAI API key first.</string>
     <string name="library_status_label">Status</string>
-    <string name="library_ai_loading">Loading song info and lyrics, then requesting OpenAI interpretation...</string>
     <string name="library_retry">Retry</string>
-    <string name="library_reinterpret">Interpret again</string>
     <string name="library_netease_info_unavailable">No navigable NetEase information could be parsed</string>
     <string name="library_decoded_json">Decoded JSON</string>
     <string name="library_back_to_song_info">Back to song info</string>
@@ -1602,16 +1568,7 @@
     <string name="lx_online_add_to_queue_failed">Failed to add to queue</string>
     <string name="lx_online_download_failed">Download failed</string>
 
-    <!-- i18n: AI data-layer errors -->
     <string name="error_library_empty">Library is empty. Please scan local songs first.</string>
-    <string name="error_ai_no_playable_songs">AI did not return any playable songs</string>
-    <string name="ai_default_playlist_title">AI recommended playlist</string>
-    <string name="error_openai_missing_api_key">Please enter the OpenAI API key in settings first.</string>
-    <string name="error_ai_chat_empty_message">Please enter a question.</string>
-    <string name="error_openai_request_failed">OpenAI request failed (HTTP %1$d) %2$s</string>
-    <string name="error_openai_api_error_separator">: </string>
-    <string name="error_openai_empty_response">OpenAI returned an empty response</string>
-    <string name="error_ai_disallowed_action">AI returned a disallowed action: %1$s</string>
 
     <!-- i18n: Settings defaults (non-const, resolved via Context) -->
     <string name="settings_default_lx_source_name">LX source</string>
@@ -1696,10 +1653,6 @@
     <string name="playlist_favorites_default_name">My Favorites</string>
     <string name="playlist_import_default_name">Imported playlist</string>
 
-    <!-- MCP Server -->
-    <string name="settings_mcp_server">MCP server</string>
-    <string name="settings_mcp_server_summary">Allow AI assistants (like Claude) to control music playback via MCP protocol</string>
-    <string name="settings_mcp_server_running">Listening on port %1$d</string>
     <string name="web_music_beta_title">LAN Web music service (Beta)</string>
     <string name="web_music_beta_summary">Browse, play, and upload music on a trusted LAN. Beta has no access password; do not enable it on public networks</string>
     <string name="web_music_beta_address">Access address</string>
@@ -1893,8 +1846,6 @@
     <string name="settings_backup_type_personalization_summary">Theme, lyric display, player behavior, and other preferences</string>
     <string name="settings_backup_type_library_scan">Library and scan settings</string>
     <string name="settings_backup_type_library_scan_summary">Scan folders, tag parsing, sorting, and library display settings</string>
-    <string name="settings_backup_type_ai_config_chat">AI config and chats</string>
-    <string name="settings_backup_type_ai_config_chat_summary">AI provider configuration and chat history</string>
     <string name="settings_backup_type_playback_stats">Listening stats</string>
     <string name="settings_backup_type_playback_stats_summary">Play history, rankings, and play counts</string>
     <string name="settings_backup_type_folder_playlists">Folder playlists</string>

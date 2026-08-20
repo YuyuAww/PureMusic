@@ -14,7 +14,6 @@ import com.ella.music.data.model.Song
 import com.ella.music.data.model.UserPlaylist
 import com.ella.music.ui.components.ArtistPickerSheet
 import com.ella.music.ui.components.LyricSharePicker
-import com.ella.music.ui.components.SongAiInterpretationSheet
 import com.ella.music.ui.components.SongInfoSheet
 import com.ella.music.ui.components.SongMoreTagActionSheets
 import com.ella.music.ui.components.TagEditorOptionKind
@@ -41,8 +40,6 @@ internal fun PlayerScreenSheetHost(
     onDynamicCoverSheetSongChange: (Song?) -> Unit,
     ratingSheetSong: Song?,
     onRatingSheetSongChange: (Song?) -> Unit,
-    aiSheetSong: Song?,
-    onAiSheetSongChange: (Song?) -> Unit,
     deleteConfirmSong: Song?,
     onDeleteConfirmSongChange: (Song?) -> Unit,
     lyricMatchSong: Song?,
@@ -139,21 +136,6 @@ internal fun PlayerScreenSheetHost(
         onLyricTimingEditorSongChange = onLyricTimingEditorSongChange,
         onWritePermissionRequired = onWritePermissionRequired
     )
-
-    aiSheetSong?.let { currentSong ->
-        WindowBottomSheet(
-            show = true,
-            enableNestedScroll = false,
-            title = stringResource(R.string.song_more_ai_title),
-            onDismissRequest = { onAiSheetSongChange(null) }
-        ) {
-            SongAiInterpretationSheet(
-                song = currentSong,
-                mainViewModel = mainViewModel,
-                onDismiss = { onAiSheetSongChange(null) }
-            )
-        }
-    }
 
     lyricMatchSong?.let { currentSong ->
         WindowBottomSheet(

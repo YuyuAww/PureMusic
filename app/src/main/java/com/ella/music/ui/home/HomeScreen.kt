@@ -147,7 +147,6 @@ fun LibraryScreen(
     var createPlaylistSongs by remember { mutableStateOf<List<Song>?>(null) }
     var tagEditorSong by remember { mutableStateOf<Song?>(null) }
     var songInfoSheetSong by remember { mutableStateOf<Song?>(null) }
-    var aiInterpretationSong by remember { mutableStateOf<Song?>(null) }
     var listCoversEnabled by remember { mutableStateOf(false) }
     var pendingConfirmDeleteSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
     var ratingFilterExpanded by remember { mutableStateOf(false) }
@@ -821,21 +820,9 @@ fun LibraryScreen(
                     song = song,
                     audioInfoLoader = mainViewModel::getAudioInfo,
                     tagInfoLoader = mainViewModel::getSongTagInfo,
-                    onAiInterpret = {
-                        songInfoSheetSong = null
-                        aiInterpretationSong = song
-                    },
                     onDismiss = { songInfoSheetSong = null }
                 )
             }
-        }
-
-        aiInterpretationSong?.let { song ->
-            SongAiInterpretationMenu(
-                song = song,
-                mainViewModel = mainViewModel,
-                onDismiss = { aiInterpretationSong = null }
-            )
         }
     }
 }

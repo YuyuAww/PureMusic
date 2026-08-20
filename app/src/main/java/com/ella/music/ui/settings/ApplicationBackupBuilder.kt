@@ -19,5 +19,4 @@ internal suspend fun buildCompleteApplicationBackupJson(
         .put("settings", SettingsManager.getInstance(context).exportSettingsJson())
         .put("playlists", PlaylistStore.getInstance(context).exportJson())
         .put("playback", PlaybackStatsStore.getInstance(context).exportJson(librarySongs))
-        .put("aiChat", exportAiChatBackupJson(context))
 }

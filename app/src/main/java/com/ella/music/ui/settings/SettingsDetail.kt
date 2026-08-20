@@ -251,8 +251,6 @@ fun SettingsDetailScreen(
                     SettingsDesktopShortcutSection(highlightKey = highlightKey)
                 }
                 SettingsDetailMode.Integrations -> {
-                    SettingsAiInterpretationSection(highlightKey = highlightKey)
-                    SettingsMcpSection(highlightKey = highlightKey)
                     SettingsLastFmSection(
                         highlightKey = highlightKey,
                         onOpenLastFmSettings = onNavigateToLastFmSettings

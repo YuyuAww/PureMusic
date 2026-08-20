@@ -103,17 +103,8 @@
 - 基于 Miuix 0.9.3 构建 MIUI / HyperOS 风格界面，包含悬浮底部导航、迷你播放器、模糊 / 液态玻璃效果和统一的弹窗样式；深色系统下启动界面保持深色，避免启动遮罩闪白。
 - 支持 8 种界面语言、应用内语言切换、应用字体大小与整体界面缩放、GitHub 更新页、应用日志、完整应用数据备份 / 恢复和 Prism Music 听歌历史导出。
 - 支持切换应用图标、配置长按桌面图标的快捷方式、在首页分类卡片创建快捷方式，以及紧凑 / 扩展两种桌面播放小组件；小组件显示持久化封面、封面取色模糊背景、实时播放时间和控制按钮，并提供防止非 4×6 桌面网格裁切的兼容布局开关。
-- 支持歌曲信息查看、标签编辑、歌词打轴软件跳转、外部标签编辑器适配和 AI 歌曲解读。
+- 支持歌曲信息查看、标签编辑、歌词打轴软件跳转、外部标签编辑器适配。
 - 支持 MediaSession 自定义命令，通知 / 控制中心可显示收藏和播放模式按钮。
-
-### 🤖 AI 与 MCP
-
-- 支持 OpenAI 曲库听歌助手：可根据本地曲库、最近播放和听歌统计生成推荐歌单、回答音乐偏好；只会读取曲库并播放本地歌曲，不会删除或修改文件。
-- 内置 MCP 服务器，基于官方 Kotlin SDK、Ktor CIO 和 Streamable HTTP，可让 Claude Desktop 等 MCP Host 控制 Halcyon 播放。
-- 开启路径：设置 → MCP 服务器 → 开启；连接地址：`http://<设备IP>:8384/mcp`。
-- 当前提供 10 个 tools：`play_song`、`search_music`、`get_now_playing`、`skip_next`、`skip_previous`、`toggle_play_pause`、`toggle_shuffle`、`seek_to`、`get_queue`、`get_library_stats`。
-- 当前提供 2 个只读 resources：`halcyon://playback/current`、`halcyon://library/stats`。
-- MCP 服务器以 Android Foreground Service 运行；关闭设置开关后会停止监听。
 
 ---
 

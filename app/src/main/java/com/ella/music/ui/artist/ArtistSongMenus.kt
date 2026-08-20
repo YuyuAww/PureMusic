@@ -55,7 +55,6 @@ internal fun ArtistSongActionMenu(
     onShare: () -> Unit,
     onSpectrum: () -> Unit,
     onInfo: () -> Unit,
-    onAiInterpret: () -> Unit,
     onArtist: () -> Unit,
     onAlbum: () -> Unit,
     onEditTag: () -> Unit,
@@ -76,7 +75,6 @@ internal fun ArtistSongActionMenu(
         ArtistMenuItem(stringResource(R.string.song_more_play_next), onPlayNext)
         ArtistMenuItem(stringResource(R.string.common_share), onShare)
         ArtistMenuItem(stringResource(R.string.song_more_view_spectrum), onSpectrum)
-        ArtistMenuItem(stringResource(R.string.song_more_ai_title), onAiInterpret)
         ArtistMenuItem(stringResource(R.string.song_more_view_song_info), onInfo)
         ArtistMenuItem(stringResource(R.string.song_more_artist_entry, song.artist.ifBlank { stringResource(R.string.player_unknown_artist) }), onArtist)
         ArtistMenuItem(stringResource(R.string.song_more_album_entry, song.album.ifBlank { stringResource(R.string.player_unknown_album) }), onAlbum)
@@ -211,7 +209,6 @@ internal fun ArtistTagEditorMenu(
 internal fun ArtistSongInfoMenu(
     song: Song,
     mainViewModel: MainViewModel,
-    onAiInterpret: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val audioInfo by produceState<AudioInfo?>(initialValue = null, song.id, song.dateModified, song.fileSize) {
@@ -229,7 +226,6 @@ internal fun ArtistSongInfoMenu(
             color = MiuixTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
         )
-        ArtistMenuItem(stringResource(R.string.song_more_ai_title), onAiInterpret)
         ArtistInfoRow(stringResource(R.string.song_more_metadata_title), tagInfo?.title?.ifBlank { song.title } ?: song.title)
         ArtistInfoRow(stringResource(R.string.song_more_metadata_artist), tagInfo?.artist?.ifBlank { song.artist } ?: song.artist)
         ArtistInfoRow(stringResource(R.string.song_more_metadata_album), tagInfo?.album?.ifBlank { song.album } ?: song.album)
@@ -237,43 +233,6 @@ internal fun ArtistSongInfoMenu(
         ArtistInfoRow(stringResource(R.string.song_more_metadata_comment), tagInfo?.displayComment.orEmpty())
         ArtistInfoRow(stringResource(R.string.artist_info_audio), audioInfo?.let { detailedAudioInfo(it) }.orEmpty())
         ArtistInfoRow(stringResource(R.string.song_more_detail_path), song.path)
-    }
-}
-
-@Composable
-internal fun ArtistAiInterpretationMenu(
-    song: Song,
-    mainViewModel: MainViewModel,
-    onDismiss: () -> Unit
-) {
-    val result by produceState<Result<String>?>(initialValue = null, song.id) {
-        value = runCatching { mainViewModel.interpretSongWithOpenAi(song) }
-    }
-    ArtistSheetColumn {
-        ArtistSheetHandle()
-        Text(
-            text = stringResource(R.string.song_more_ai_title),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = MiuixTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
-        )
-        Text(
-            text = when {
-                result == null -> stringResource(R.string.song_more_loading_ai)
-                result?.isSuccess == true -> result?.getOrNull().orEmpty()
-                else -> result?.exceptionOrNull()?.message ?: stringResource(R.string.song_more_ai_failed)
-            },
-            fontSize = 14.sp,
-            lineHeight = 22.sp,
-            color = MiuixTheme.colorScheme.onSurface,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(MiuixTheme.colorScheme.surfaceContainer.copy(alpha = 0.72f))
-                .padding(horizontal = 16.dp, vertical = 14.dp)
-        )
-        ArtistMenuItem(stringResource(R.string.common_close), onDismiss)
     }
 }
 

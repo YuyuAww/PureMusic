@@ -20,9 +20,6 @@ internal fun SongMoreInfoActionSheets(
     onRatingSongChange: (Song?) -> Unit,
     infoSong: Song?,
     onInfoSongChange: (Song?) -> Unit,
-    aiSong: Song?,
-    onAiSongChange: (Song?) -> Unit,
-    aiInterpretTitle: String,
     onWritePermissionRequired: (WritePermissionRequiredException, suspend () -> Unit) -> Unit
 ) {
     ratingSong?.let { song ->
@@ -84,21 +81,6 @@ internal fun SongMoreInfoActionSheets(
                 tagInfoLoader = mainViewModel::getSongTagInfo,
                 onOpenMediaInfo = { openSongWithMediaInfo(context, song) },
                 onDismiss = { onInfoSongChange(null) }
-            )
-        }
-    }
-
-    aiSong?.let { song ->
-        EllaMiuixBottomSheet(
-            show = true,
-            enableNestedScroll = false,
-            title = aiInterpretTitle,
-            onDismissRequest = { onAiSongChange(null) }
-        ) {
-            SongAiInterpretationSheet(
-                song = song,
-                mainViewModel = mainViewModel,
-                onDismiss = { onAiSongChange(null) }
             )
         }
     }

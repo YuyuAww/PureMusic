@@ -285,11 +285,6 @@
         </service>
 
         <service
-            android:name=".mcp.McpServerService"
-            android:foregroundServiceType="specialUse"
-            android:exported="false" />
-
-        <service
             android:name=".web.WebMusicService"
             android:foregroundServiceType="specialUse"
             android:exported="false" />

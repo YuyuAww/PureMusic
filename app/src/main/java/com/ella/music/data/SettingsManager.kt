@@ -247,7 +247,6 @@ class SettingsManager(private val context: Context) :
         val KEY_HOME_TILE_GRADIENT_START_COLOR = stringPreferencesKey("home_tile_gradient_start_color")
         val KEY_HI_RES_LOGO_ENABLED = booleanPreferencesKey("hi_res_logo_enabled")
         val KEY_HI_RES_LOGO_URI = stringPreferencesKey("hi_res_logo_uri")
-        val KEY_MCP_SERVER_ENABLED = booleanPreferencesKey("mcp_server_enabled")
         val KEY_WEB_MUSIC_SERVER_ENABLED = booleanPreferencesKey("web_music_server_enabled")
         val KEY_PLAYLIST_SPECIAL_ENTRIES_VISIBLE = booleanPreferencesKey("playlist_special_entries_visible")
         val KEY_PLAYLIST_CUSTOM_ORDER = stringPreferencesKey("playlist_custom_order")
@@ -303,9 +302,6 @@ class SettingsManager(private val context: Context) :
         val KEY_EMBY_ACTIVE_ID = stringPreferencesKey("emby_active_id")
         const val LEGACY_NAVIDROME_SERVER_ID = "navidrome-legacy"
         const val LEGACY_EMBY_SERVER_ID = "emby-legacy"
-        val KEY_OPENAI_API_KEY = stringPreferencesKey("openai_api_key")
-        val KEY_OPENAI_BASE_URL = stringPreferencesKey("openai_base_url")
-        val KEY_OPENAI_MODEL = stringPreferencesKey("openai_model")
         val KEY_OPEN_PLAYER_ON_PLAY = booleanPreferencesKey("online_auto_open_player")
         val KEY_STARTUP_AUTO_PLAY = booleanPreferencesKey("startup_auto_play")
         val KEY_STARTUP_PLAY_MODE = intPreferencesKey("startup_play_mode")
@@ -378,7 +374,6 @@ class SettingsManager(private val context: Context) :
         // 0 = only the on-device log, 1 = only Last.fm, 2 = merge both timelines.
         val KEY_LISTENING_HISTORY_SOURCE = intPreferencesKey("listening_history_source")
         val KEY_HOME_DAILY_MIX_VISIBLE = booleanPreferencesKey("home_daily_mix_visible")
-        val KEY_HOME_AI_MIX_VISIBLE = booleanPreferencesKey("home_ai_mix_visible")
         val KEY_CONTINUE_PLAYBACK_ROW_VISIBLE = booleanPreferencesKey("continue_playback_row_visible")
         val KEY_HOME_RECENT_SECTION_MODE = intPreferencesKey("home_recent_section_mode")
         val KEY_HOME_SECTION_ORDER = stringPreferencesKey("home_section_order")
@@ -663,8 +658,6 @@ class SettingsManager(private val context: Context) :
             "lyricist", "composer", "arranger", "album_artist", "genre", "year", "lyrics"
         )
 
-        const val DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1"
-        const val DEFAULT_OPENAI_MODEL = "gpt-4.1-mini"
         const val DEFAULT_SHORTCUT_LIBRARY_LABEL = "音乐库"
         const val DEFAULT_SHORTCUT_PLAYLISTS_LABEL = "歌单"
         const val DEFAULT_SHORTCUT_FOLDER_LABEL = "文件夹"
@@ -994,9 +987,7 @@ class SettingsManager(private val context: Context) :
             setBoolean(KEY_OPEN_PLAYER_ON_PLAY)
             setBoolean(KEY_STARTUP_AUTO_PLAY)
             setBoolean(KEY_HOME_DAILY_MIX_VISIBLE)
-            setBoolean(KEY_HOME_AI_MIX_VISIBLE)
             setBoolean(KEY_CONTINUE_PLAYBACK_ROW_VISIBLE)
-            setBoolean(KEY_MCP_SERVER_ENABLED)
             setBoolean(KEY_WEB_MUSIC_SERVER_ENABLED)
             setBoolean(KEY_SLEEP_TIMER_STOP_AFTER_CURRENT)
             setBoolean(KEY_EQ_ENABLED)
@@ -1184,9 +1175,6 @@ class SettingsManager(private val context: Context) :
             setString(KEY_EMBY_SERVER_NAME)
             setString(KEY_EMBY_SERVERS)
             setString(KEY_EMBY_ACTIVE_ID)
-            setString(KEY_OPENAI_API_KEY)
-            setString(KEY_OPENAI_BASE_URL)
-            setString(KEY_OPENAI_MODEL)
             setString(KEY_LYRIC_SOURCE_PRIORITY)
             setString(KEY_LYRIC_LINE_BLACKLIST)
             setString(KEY_LYRIC_FONT_NAME)

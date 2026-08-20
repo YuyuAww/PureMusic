@@ -451,34 +451,6 @@
     <string name="home_now_playing_song">正在播放：%1$s</string>
     <string name="home_random_song_count">%1$d 首歌曲随机播放</string>
     <string name="home_play_daily_mix">播放每日精选</string>
-    <string name="home_ai_section">AI</string>
-    <string name="home_ai_playlist">AI 播放助手</string>
-    <string name="home_ai_playlist_summary">只允许调用本地歌曲播放，不会删除或修改歌曲；当前曲库 %1$d 首</string>
-    <string name="home_ai_playlist_loading">正在读取 AI 配置并生成歌单…</string>
-    <string name="home_ai_playlist_play">生成并播放 AI 推荐歌单</string>
-    <string name="home_ai_chat_open">打开 AI 对话</string>
-    <string name="home_ai_playlist_started">正在播放「%1$s」：%2$d 首</string>
-    <string name="home_ai_playlist_failed">AI 推荐失败：%1$s</string>
-    <string name="ai_chat_title">Ella 听歌助手</string>
-    <string name="ai_chat_disclaimer">AI 可能出错；只允许读取曲库并播放本地歌曲</string>
-    <string name="ai_chat_empty_title">接下来想听点什么？</string>
-    <string name="ai_chat_empty_summary">可以让 AI 根据你的曲库、最近播放和听歌统计推荐歌曲，也可以解释你的音乐偏好。</string>
-    <string name="ai_chat_prompt_today">按我最近听的歌推荐一组今晚适合听的歌</string>
-    <string name="ai_chat_prompt_recent">总结一下我最近偏爱的歌手和曲风</string>
-    <string name="ai_chat_prompt_genre">从曲库里挑一些不太常听但可能会喜欢的歌</string>
-    <string name="ai_chat_input_hint">问问 Ella</string>
-    <string name="ai_chat_send">发送</string>
-    <string name="ai_chat_thinking">正在检索曲库并思考…</string>
-    <string name="ai_chat_failed">生成失败：%1$s</string>
-    <string name="ai_chat_play_songs">播放推荐的 %1$d 首</string>
-    <string name="ai_chat_add_to_queue">加入播放列表</string>
-    <string name="ai_chat_create_playlist">创建歌单</string>
-    <string name="ai_chat_added_to_queue">已加入播放列表：%1$d 首</string>
-    <string name="ai_chat_playlist_name">Ella 推荐歌单</string>
-    <string name="ai_chat_playlist_created">已创建「%1$s」：%2$d 首</string>
-    <string name="ai_chat_new_session">新对话</string>
-    <string name="ai_chat_delete_session">删除会话</string>
-    <string name="ai_chat_delete_session_confirm">确定删除这个会话？</string>
     <string name="category_artist">艺术家</string>
     <string name="category_album">专辑</string>
     <string name="category_folder">文件夹</string>
@@ -952,8 +924,6 @@
     <string name="settings_backup_type_personalization_summary">主题、歌词显示、播放器行为和其它偏好设置</string>
     <string name="settings_backup_type_library_scan">音乐库与扫描设置</string>
     <string name="settings_backup_type_library_scan_summary">扫描目录、标签解析、排序和音乐库展示相关设置</string>
-    <string name="settings_backup_type_ai_config_chat">AI配置及对话</string>
-    <string name="settings_backup_type_ai_config_chat_summary">AI 接口配置和对话记录</string>
     <string name="settings_backup_type_playback_stats">听歌统计</string>
     <string name="settings_backup_type_playback_stats_summary">播放记录、排行榜和播放次数</string>
     <string name="settings_backup_type_playlists">歌单</string>
@@ -1730,7 +1700,6 @@
     <string name="song_more_delete_permanently">永久删除</string>
     <string name="song_more_edit_tags_title">编辑歌曲标签信息</string>
     <string name="song_more_lyric_timing">歌词打轴</string>
-    <string name="song_more_ai_title">AI 解读歌曲</string>
     <string name="song_more_add_to_playlist">添加到歌单</string>
     <string name="song_more_add_position_start">加到开头</string>
     <string name="song_more_add_position_end">加到末尾</string>
@@ -1761,8 +1730,6 @@
     <string name="song_more_detail_added_time">添加时间</string>
     <string name="song_more_detail_file_name">文件名</string>
     <string name="song_more_detail_path">路径</string>
-    <string name="song_more_loading_ai">正在读取歌曲信息和歌词...</string>
-    <string name="song_more_ai_failed">AI 解读失败</string>
     <string name="library_deleted_songs">已删除 %1$d 首歌曲</string>
     <string name="library_delete_cancelled">已取消删除</string>
     <string name="library_deleting_songs">正在删除 %1$d 首歌曲</string>
@@ -1774,11 +1741,8 @@
     <string name="library_range_select">区间选择</string>
     <string name="library_song_count_sorted">%1$d 首歌曲 · %2$s</string>
     <string name="library_delete_selected_message">确定要永久删除选中的 %1$d 首歌曲吗？此操作可能会删除本地音频文件。</string>
-    <string name="library_ai_missing_api_key">请先到 设置 > 应用偏好 > AI 解读 填写 OpenAI API Key。</string>
     <string name="library_status_label">状态</string>
-    <string name="library_ai_loading">正在读取歌曲信息和歌词，并请求 OpenAI 解读...</string>
     <string name="library_retry">重试</string>
-    <string name="library_reinterpret">重新解读</string>
     <string name="library_netease_info_unavailable">没有解析出可跳转的网易云信息</string>
     <string name="library_decoded_json">解密 JSON</string>
     <string name="library_back_to_song_info">返回歌曲信息</string>
@@ -1959,16 +1923,7 @@
     <string name="remote_source_request_failed">远程源请求失败</string>
     <string name="remote_source_url_invalid">服务器地址无效</string>
 
-    <!-- i18n: AI data-layer errors -->
     <string name="error_library_empty">曲库为空，请先扫描本地歌曲</string>
-    <string name="error_ai_no_playable_songs">AI 没有返回可播放歌曲</string>
-    <string name="ai_default_playlist_title">AI 推荐歌单</string>
-    <string name="error_openai_missing_api_key">请先在设置中填写 OpenAI API Key</string>
-    <string name="error_ai_chat_empty_message">请输入问题</string>
-    <string name="error_openai_request_failed">OpenAI 请求失败（HTTP %1$d）%2$s</string>
-    <string name="error_openai_api_error_separator">：</string>
-    <string name="error_openai_empty_response">OpenAI 返回为空</string>
-    <string name="error_ai_disallowed_action">AI 返回了不允许的操作：%1$s</string>
 
     <!-- i18n: Settings defaults (non-const, resolved via Context) -->
     <string name="settings_default_lx_source_name">LX源</string>
@@ -2052,11 +2007,6 @@
     <string name="playlist_export_open_file_failed">无法打开导出文件</string>
     <string name="playlist_favorites_default_name">我喜欢的音乐</string>
     <string name="playlist_import_default_name">导入歌单</string>
-
-    <!-- MCP Server -->
-    <string name="settings_mcp_server">MCP 服务器</string>
-    <string name="settings_mcp_server_summary">允许 AI 助手（如 Claude）通过 MCP 协议控制音乐播放</string>
-    <string name="settings_mcp_server_running">正在监听端口 %1$d</string>
     <string name="web_music_beta_title">局域网 Web 音乐服务（Beta）</string>
     <string name="web_music_beta_summary">在可信局域网内浏览、播放和上传音乐。Beta 版暂无访问密码，请勿在公共网络开启</string>
     <string name="web_music_beta_address">访问地址</string>

@@ -21,7 +21,6 @@ internal class PlayerScreenUiState(
     createPlaylistSong: Song? = null,
     createPlaylistSongs: List<Song>? = null,
     ratingSheetSong: Song? = null,
-    aiSheetSong: Song? = null,
     deleteConfirmSong: Song? = null,
     tagEditorSong: Song? = null,
     tagEditorKind: TagEditorOptionKind = TagEditorOptionKind.Metadata,
@@ -41,7 +40,6 @@ internal class PlayerScreenUiState(
     var createPlaylistSong by mutableStateOf(createPlaylistSong)
     var createPlaylistSongs by mutableStateOf(createPlaylistSongs)
     var ratingSheetSong by mutableStateOf(ratingSheetSong)
-    var aiSheetSong by mutableStateOf(aiSheetSong)
     var deleteConfirmSong by mutableStateOf(deleteConfirmSong)
     var tagEditorSong by mutableStateOf(tagEditorSong)
     var tagEditorKind by mutableStateOf(tagEditorKind)

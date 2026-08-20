@@ -138,7 +138,6 @@ fun ArtistScreen(
     var createPlaylistSongs by remember { mutableStateOf<List<Song>?>(null) }
     var tagEditorSong by remember { mutableStateOf<Song?>(null) }
     var songInfoSheetSong by remember { mutableStateOf<Song?>(null) }
-    var aiInterpretationSong by remember { mutableStateOf<Song?>(null) }
     var musicVideoSortMode by rememberSaveable(artistName) { mutableStateOf(ArtistMusicVideoSortMode.ReleaseDesc) }
     var musicVideoRevision by remember { mutableStateOf(0) }
     var pendingDeleteMusicVideos by remember { mutableStateOf<List<ArtistMusicVideo>>(emptyList()) }
@@ -1101,9 +1100,7 @@ fun ArtistScreen(
             tagEditorSong = tagEditorSong,
             onTagEditorSongChange = { tagEditorSong = it },
             songInfoSheetSong = songInfoSheetSong,
-            onSongInfoSheetSongChange = { songInfoSheetSong = it },
-            aiInterpretationSong = aiInterpretationSong,
-            onAiInterpretationSongChange = { aiInterpretationSong = it }
+            onSongInfoSheetSongChange = { songInfoSheetSong = it }
         )
 
         musicVideoMenuTarget?.let { item ->

@@ -18,7 +18,6 @@ internal fun JSONObject.filterBackupSettings(selectedTypes: Set<BackupType>): JS
 private fun String.backupType(): BackupType = when {
     isEqualizerSettingKey() -> BackupType.Equalizer
     isOnlineSourceSettingKey() -> BackupType.OnlineSources
-    isAiSettingKey() -> BackupType.AiConfigAndChat
     isFolderPlaylistSettingKey() -> BackupType.FolderPlaylists
     isPlaylistSettingKey() -> BackupType.Playlists
     isLibraryAndScanSettingKey() -> BackupType.LibraryAndScan
@@ -27,7 +26,7 @@ private fun String.backupType(): BackupType = when {
 
 internal fun JSONObject.availableBackupTypes(): Set<BackupType> {
     val available = linkedSetOf<BackupType>()
-    val hasSectionedPayload = has("settings") || has("playlists") || has("playback") || has("aiChat")
+    val hasSectionedPayload = has("settings") || has("playlists") || has("playback")
     val settings = if (hasSectionedPayload) optJSONObject("settings") ?: JSONObject() else this
     val keys = settings.keys()
     while (keys.hasNext()) {
@@ -35,14 +34,8 @@ internal fun JSONObject.availableBackupTypes(): Set<BackupType> {
     }
     if (has("playlists")) available += BackupType.Playlists
     if (has("playback")) available += BackupType.PlaybackStats
-    if (has("aiChat")) available += BackupType.AiConfigAndChat
     return available
 }
-
-private fun String.isAiSettingKey(): Boolean =
-    this == "openai_api_key" ||
-        this == "openai_base_url" ||
-        this == "openai_model"
 
 private fun String.isEqualizerSettingKey(): Boolean =
     startsWith("audio_eq_") ||

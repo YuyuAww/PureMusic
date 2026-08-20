@@ -286,8 +286,6 @@ dependencies {
     implementation(libs.miuix.preference)
     implementation("androidx.webkit:webkit:1.12.1")
 
-    // MCP Server
-    implementation(libs.mcp.server)
     implementation(libs.ktor.server.cio)
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)

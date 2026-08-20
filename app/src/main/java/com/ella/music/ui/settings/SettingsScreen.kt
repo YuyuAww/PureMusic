@@ -355,8 +355,7 @@ private fun settingsSearchEntries(
         entry(stringResource(R.string.settings_decoder), stringResource(R.string.settings_audio_decoder_auto_summary), "解码 FFmpeg 系统 音频焦点") { onNavigateToHighlightedAudioSettings("audio_system") },
         entry(stringResource(R.string.equalizer_screen_title), stringResource(R.string.settings_audio_equalizer_summary), "均衡器 EQ 低音 高音 压缩器 立体声 360 环绕音 混响") { onNavigateToHighlightedEqualizer("equalizer") },
         entry(stringResource(R.string.equalizer_surround_360_enable), stringResource(R.string.equalizer_surround_360_summary), "360 环绕音 空间音频 spatial 音场 强度 旋转") { onNavigateToHighlightedEqualizer("equalizer") },
-        entry(stringResource(R.string.settings_integrations), stringResource(R.string.settings_integrations_summary), "AI OpenAI MCP Last.fm 集成 API") { onNavigateToHighlightedIntegrationSettings("ai") },
-        entry(stringResource(R.string.settings_mcp_server), stringResource(R.string.settings_mcp_server_summary), "MCP 服务 本地 端口 集成") { onNavigateToHighlightedIntegrationSettings("mcp") },
+        entry(stringResource(R.string.settings_integrations), stringResource(R.string.settings_integrations_summary), "Last.fm 集成 API") { onNavigateToHighlightedIntegrationSettings("lastfm") },
         entry(stringResource(R.string.web_music_beta_title), stringResource(R.string.web_music_beta_summary), "Web 网页 局域网 上传 播放 Beta") { onNavigateToHighlightedIntegrationSettings("web_music") },
         entry(stringResource(R.string.settings_backup), stringResource(R.string.settings_backup_summary), "备份 恢复 WebDAV 自动备份 播放记录 设置") { onNavigateToHighlightedBackupSettings("backup_settings") },
         entry(stringResource(R.string.settings_logs), stringResource(R.string.settings_logs_summary), "日志 logcat 崩溃 警告") { onNavigateToLogs() },
@@ -417,8 +416,7 @@ private fun settingsSearchFallbackEntries(
                 name == "settings_live_update_lyric_display" -> { { onLyrics("live_update_lyric_display") } }
                 name == "settings_live_update_lyric_secondary" -> { { onLyrics("live_update_lyric_secondary") } }
                 name.contains("backup") -> { { onBackup("backup_settings") } }
-                name.contains("openai") || name.contains("mcp") || name.contains("lastfm") ||
-                    name.contains("ai_") -> { { onIntegration("ai") } }
+                name.contains("lastfm") -> { { onIntegration("lastfm") } }
                 name.contains("lyric") || name.contains("desktop") || name.contains("status_") ||
                     name.contains("coloros") || name.contains("flyme") -> { { onLyrics("lyric_basic") } }
                 name.contains("audio") || name.contains("decoder") || name.contains("usb") ||
@@ -487,8 +485,6 @@ private fun settingsSearchAliases(
     entry(stringResource(R.string.equalizer_surround_360_enable), stringResource(R.string.equalizer_surround_360_summary), "360 环绕音 空间音频 全景") { onEqualizer("equalizer") },
     entry(stringResource(R.string.equalizer_crossfeed_enable), stringResource(R.string.equalizer_crossfeed_summary), "串音 耳机 crossfeed") { onEqualizer("equalizer") },
     entry(stringResource(R.string.equalizer_compressor_enable), "压缩器动态范围控制", "压缩器 compressor 阈值 比率") { onEqualizer("equalizer") },
-    entry(stringResource(R.string.settings_openai_model), stringResource(R.string.settings_openai_model_summary), "OpenAI AI 模型 GPT API") { onIntegration("ai") },
-    entry(stringResource(R.string.settings_mcp_server), stringResource(R.string.settings_mcp_server_summary), "MCP 服务 本地 端口") { onIntegration("mcp") },
     entry(stringResource(R.string.web_music_beta_title), stringResource(R.string.web_music_beta_summary), "Web 网页 局域网 上传 播放 Beta") { onIntegration("web_music") },
     entry(stringResource(R.string.settings_lastfm), stringResource(R.string.settings_lastfm_summary), "Last.fm scrobble 听歌记录") { onIntegration("lastfm") },
     entry(stringResource(R.string.settings_backup), stringResource(R.string.settings_backup_summary), "备份 恢复 WebDAV 自动备份") { onBackup("backup_settings") },

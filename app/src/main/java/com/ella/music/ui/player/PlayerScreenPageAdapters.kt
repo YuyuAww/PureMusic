@@ -135,7 +135,6 @@ internal fun CoverPageContent(
     onLandscapeExpandedChange: (Boolean) -> Unit,
     onSongInfoExpandedChange: (Boolean) -> Unit,
     onRatingSheetSongChange: (Song?) -> Unit,
-    onAiSheetSongChange: (Song?) -> Unit,
     onTagEditorSongChange: (Song?) -> Unit,
     onTagEditorKindChange: (TagEditorOptionKind) -> Unit,
     onLyricMatchSongChange: (Song?) -> Unit,
@@ -407,15 +406,6 @@ internal fun CoverPageContent(
             if (current != null) {
                 onMenuExpandedChange(false)
                 onRatingSheetSongChange(current)
-            } else {
-                Toast.makeText(context, context.getString(R.string.player_no_song_playing), Toast.LENGTH_SHORT).show()
-            }
-        },
-        onAiInterpret = {
-            val current = song
-            if (current != null) {
-                onMenuExpandedChange(false)
-                onAiSheetSongChange(current)
             } else {
                 Toast.makeText(context, context.getString(R.string.player_no_song_playing), Toast.LENGTH_SHORT).show()
             }

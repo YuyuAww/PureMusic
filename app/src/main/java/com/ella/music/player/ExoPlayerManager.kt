@@ -843,7 +843,7 @@ class ExoPlayerManager(private val context: Context) {
     /**
      * Live playback position straight from the controller. Must be called on the main
      * thread (the controller's looper). The [currentPosition] StateFlow is only sampled
-     * periodically, so remote readers (MCP) get a stale value mid-track without this.
+     * periodically, so remote readers get a stale value mid-track without this.
      */
     fun livePositionMs(): Long =
         mediaController?.currentPosition?.coerceAtLeast(0) ?: _currentPosition.value

@@ -174,35 +174,6 @@ fun SongInfoSheet(
 }
 
 @Composable
-internal fun SongAiInterpretationSheet(
-    song: Song,
-    mainViewModel: MainViewModel,
-    onDismiss: () -> Unit
-) {
-    val result by produceState<Result<String>?>(initialValue = null, song.id) {
-        value = runCatching { mainViewModel.interpretSongWithOpenAi(song) }
-    }
-    SongSheetColumn {
-        Text(
-            text = when {
-                result == null -> stringResource(R.string.song_more_loading_ai)
-                result?.isSuccess == true -> result?.getOrNull().orEmpty()
-                else -> result?.exceptionOrNull()?.message ?: stringResource(R.string.song_more_ai_failed)
-            },
-            fontSize = 14.sp,
-            lineHeight = 22.sp,
-            color = MiuixTheme.colorScheme.onSurface,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(MiuixTheme.colorScheme.surfaceContainer.copy(alpha = 0.72f))
-                .padding(horizontal = 16.dp, vertical = 14.dp)
-        )
-        SongMenuItem(stringResource(R.string.common_close), onDismiss)
-    }
-}
-
-@Composable
 private fun SongInfoRow(label: String, value: String) {
     if (value.isBlank()) return
     val context = LocalContext.current

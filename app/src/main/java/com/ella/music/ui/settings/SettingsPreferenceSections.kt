@@ -45,7 +45,6 @@ internal fun SettingsHomeCustomizeSection(
     val scope = rememberCoroutineScope()
     val settingsManager = remember { SettingsManager.getInstance(context) }
     val homeDailyMixVisible by settingsManager.homeDailyMixVisible.collectAsState(initial = true)
-    val homeAiMixVisible by settingsManager.homeAiMixVisible.collectAsState(initial = true)
     val continuePlaybackRowVisible by settingsManager.continuePlaybackRowVisible.collectAsState(initial = true)
 
     SmallTitle(text = stringResource(R.string.settings_home_customize))
@@ -58,14 +57,6 @@ internal fun SettingsHomeCustomizeSection(
                 checked = homeDailyMixVisible,
                 onCheckedChange = {
                     scope.launch { settingsManager.setHomeDailyMixVisible(it) }
-                }
-            )
-            SwitchPreference(
-                title = stringResource(R.string.settings_ai_mix),
-                summary = stringResource(R.string.settings_ai_mix_summary),
-                checked = homeAiMixVisible,
-                onCheckedChange = {
-                    scope.launch { settingsManager.setHomeAiMixVisible(it) }
                 }
             )
             SwitchPreference(
@@ -164,80 +155,16 @@ internal fun SettingsLibrarySourceSection(
 }
 
 @Composable
-internal fun SettingsAiInterpretationSection(
+internal fun SettingsWebMusicSection(
     highlightKey: String? = null
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val settingsManager = remember { SettingsManager.getInstance(context) }
-    val openAiApiKey by settingsManager.openAiApiKey.collectAsState(initial = "")
-    val openAiBaseUrl by settingsManager.openAiBaseUrl.collectAsState(initial = SettingsManager.DEFAULT_OPENAI_BASE_URL)
-    val openAiModel by settingsManager.openAiModel.collectAsState(initial = SettingsManager.DEFAULT_OPENAI_MODEL)
-
-    SmallTitle(text = stringResource(R.string.settings_ai_interpretation))
-
-    SettingsCardGroup(highlight = highlightKey == "ai") {
-        Column {
-            SettingsFocusAnchor(active = highlightKey == "ai") {
-                SplitSettingTextField(
-                    label = "OpenAI API Key",
-                    value = openAiApiKey,
-                    summary = stringResource(R.string.settings_openai_api_key_summary),
-                    onValueChange = { value -> scope.launch { settingsManager.setOpenAiApiKey(value) } }
-                )
-            }
-            SplitSettingTextField(
-                label = "OpenAI Base URL",
-                value = openAiBaseUrl,
-                summary = stringResource(R.string.settings_openai_base_url_summary),
-                onValueChange = { value -> scope.launch { settingsManager.setOpenAiBaseUrl(value) } }
-            )
-            SplitSettingTextField(
-                label = stringResource(R.string.settings_openai_model),
-                value = openAiModel,
-                summary = stringResource(R.string.settings_openai_model_summary, SettingsManager.DEFAULT_OPENAI_MODEL),
-                onValueChange = { value -> scope.launch { settingsManager.setOpenAiModel(value) } }
-            )
-        }
-    }
-}
-
-@Composable
-internal fun SettingsMcpSection(
-    highlightKey: String? = null
-) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val settingsManager = remember { SettingsManager.getInstance(context) }
-    val mcpServerEnabled by settingsManager.mcpServerEnabled.collectAsState(initial = false)
     val webMusicServerEnabled by settingsManager.webMusicServerEnabled.collectAsState(initial = false)
     val uriHandler = LocalUriHandler.current
     val webAddresses = remember(webMusicServerEnabled) {
         if (webMusicServerEnabled) com.ella.music.web.WebMusicService.accessAddresses() else emptyList()
-    }
-
-    SmallTitle(text = stringResource(R.string.settings_mcp_server))
-
-    SettingsCardGroup(highlight = highlightKey == "mcp") {
-        Column {
-            SettingsFocusAnchor(active = highlightKey == "mcp") {
-                SwitchPreference(
-                    title = stringResource(R.string.settings_mcp_server),
-                    summary = stringResource(R.string.settings_mcp_server_summary),
-                    checked = mcpServerEnabled,
-                    onCheckedChange = { enabled ->
-                        scope.launch {
-                            settingsManager.setMcpServerEnabled(enabled)
-                            if (enabled) {
-                                com.ella.music.mcp.McpServerService.start(context)
-                            } else {
-                                com.ella.music.mcp.McpServerService.stop(context)
-                            }
-                        }
-                    }
-                )
-            }
-        }
     }
 
     SmallTitle(text = stringResource(R.string.web_music_beta_title))

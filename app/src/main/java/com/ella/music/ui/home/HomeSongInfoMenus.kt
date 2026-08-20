@@ -50,7 +50,6 @@ internal fun SongInfoMenu(
     song: Song,
     audioInfoLoader: (Song) -> AudioInfo,
     tagInfoLoader: (Song) -> SongTagInfo,
-    onAiInterpret: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -91,7 +90,6 @@ internal fun SongInfoMenu(
             color = MiuixTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
         )
-        LibraryMenuItem(stringResource(R.string.song_more_ai_title), onAiInterpret)
         SongInfoRow(stringResource(R.string.player_detail_song), tagInfo?.title?.ifBlank { song.title } ?: song.title)
         SongInfoRow(stringResource(R.string.player_detail_artist), tagInfo?.artist?.ifBlank { song.artist } ?: song.artist)
         SongInfoRow(stringResource(R.string.player_detail_album), tagInfo?.album?.ifBlank { song.album } ?: song.album)

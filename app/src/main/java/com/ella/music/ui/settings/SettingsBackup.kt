@@ -85,7 +85,6 @@ fun BackupSettingsScreen(
                 if (filteredSettings.length() > 0) put("settings", filteredSettings)
                 if (BackupType.Playlists in selectedTypes) put("playlists", playlistStore.exportJson())
                 if (BackupType.PlaybackStats in selectedTypes) put("playback", playbackStatsStore.exportJson(librarySongs))
-                if (BackupType.AiConfigAndChat in selectedTypes) put("aiChat", exportAiChatBackupJson(context))
             }
     }
     suspend fun buildBackupJson(selectedTypes: Set<BackupType> = BackupType.entries.toSet()): String {
@@ -189,9 +188,6 @@ fun BackupSettingsScreen(
                 }
                 if (BackupType.PlaybackStats in selectedTypes) {
                     root.optJSONObject("playback")?.let { playbackStatsStore.restoreJson(it) }
-                }
-                if (BackupType.AiConfigAndChat in selectedTypes) {
-                    root.optJSONObject("aiChat")?.let { restoreAiChatBackupJson(context, it) }
                 }
             }.onSuccess {
                 val successMessage = when (source) {

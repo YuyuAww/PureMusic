@@ -523,7 +523,6 @@ fun EllaApp(
 
     val showMiniPlayer = currentSong != null &&
         currentRoute != Screen.Player.route &&
-        currentRoute != Screen.AiChat.route &&
         !showPlayerOverlay
     LaunchedEffect(showMiniPlayer, canCompactBottomDock) {
         if (!showMiniPlayer || !canCompactBottomDock) bottomDockMode = BottomDockMode.Expanded

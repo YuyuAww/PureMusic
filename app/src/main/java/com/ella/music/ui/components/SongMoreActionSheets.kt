@@ -24,7 +24,6 @@ internal fun SongMoreActionSheet(
     onSpectrum: () -> Unit,
     onInfo: () -> Unit,
     onRating: () -> Unit,
-    onAiInterpret: () -> Unit,
     onArtist: () -> Unit,
     onAlbum: () -> Unit,
     onEditTag: (() -> Unit)?,
@@ -46,7 +45,6 @@ internal fun SongMoreActionSheet(
         if (showSpectrum) {
             SongMenuItem(stringResource(R.string.song_more_view_spectrum), onSpectrum)
         }
-        SongMenuItem(stringResource(R.string.song_more_ai_title), onAiInterpret)
         SongMenuItem(stringResource(R.string.song_more_view_song_info), onInfo)
         SongMenuItem(stringResource(R.string.song_more_set_rating), onRating)
         if (onEditTag != null) {

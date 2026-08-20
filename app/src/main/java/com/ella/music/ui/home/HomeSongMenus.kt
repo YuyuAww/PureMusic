@@ -31,7 +31,6 @@ internal fun SongActionMenu(
     onShare: () -> Unit,
     onSpectrum: () -> Unit,
     onInfo: () -> Unit,
-    onAiInterpret: () -> Unit,
     onArtist: () -> Unit,
     onAlbum: () -> Unit,
     onEditTag: () -> Unit,
@@ -61,7 +60,6 @@ internal fun SongActionMenu(
         LibraryMenuItem(stringResource(R.string.song_more_play_next), onPlayNext)
         LibraryMenuItem(stringResource(R.string.common_share), onShare)
         LibraryMenuItem(stringResource(R.string.song_more_view_spectrum), onSpectrum)
-        LibraryMenuItem(stringResource(R.string.song_more_ai_title), onAiInterpret)
         LibraryMenuItem(stringResource(R.string.song_more_view_song_info), onInfo)
         LibraryMenuItem(
             stringResource(

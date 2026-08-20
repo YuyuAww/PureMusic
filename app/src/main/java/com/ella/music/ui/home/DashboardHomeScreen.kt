@@ -63,7 +63,6 @@ fun HomeScreen(
     onNavigateToLxOnline: () -> Unit,
     onNavigateToWebDav: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
-    onNavigateToAiChat: () -> Unit = {},
     onNavigateToMetadataCategory: (String) -> Unit,
     onNavigateToPlayer: () -> Unit,
     onNavigateToSettings: () -> Unit = {}
@@ -84,7 +83,6 @@ fun HomeScreen(
                 showAlbumArtists = settingsManager.showAlbumArtists.first(),
                 tagIgnoreCase = settingsManager.tagIgnoreCase.first(),
                 homeDailyMixVisible = settingsManager.homeDailyMixVisible.first(),
-                homeAiMixVisible = settingsManager.homeAiMixVisible.first(),
                 homeRecentSectionMode = settingsManager.homeRecentSectionMode.first(),
                 homeSectionOrder = settingsManager.homeSectionOrder.first(),
                 homeHiddenSections = settingsManager.homeHiddenSections.first(),
@@ -108,7 +106,6 @@ fun HomeScreen(
     val showAlbumArtists by settingsManager.showAlbumArtists.collectAsState(initial = initialSettings.showAlbumArtists)
     val tagIgnoreCase by settingsManager.tagIgnoreCase.collectAsState(initial = initialSettings.tagIgnoreCase)
     val homeDailyMixVisible by settingsManager.homeDailyMixVisible.collectAsState(initial = initialSettings.homeDailyMixVisible)
-    val homeAiMixVisible by settingsManager.homeAiMixVisible.collectAsState(initial = initialSettings.homeAiMixVisible)
     val homeRecentSectionMode by settingsManager.homeRecentSectionMode.collectAsState(initial = initialSettings.homeRecentSectionMode)
     val homeSectionOrder by settingsManager.homeSectionOrder.collectAsState(initial = initialSettings.homeSectionOrder)
     val homeHiddenSections by settingsManager.homeHiddenSections.collectAsState(initial = initialSettings.homeHiddenSections)
@@ -125,7 +122,6 @@ fun HomeScreen(
     val homeTileGradientEnabled by settingsManager.homeTileGradientEnabled.collectAsState(initial = initialSettings.homeTileGradientEnabled)
     val homeTileGradientStartColorRaw by settingsManager.homeTileGradientStartColor.collectAsState(initial = initialSettings.homeTileGradientStartColor)
     val isDark = MiuixTheme.colorScheme.background.luminance() < 0.5f
-    var aiPlaylistLoading by remember { mutableStateOf(false) }
     val pageBackground = ellaPageBackground()
     val cardText = if (isDark) Color.White else Color(0xFF15151A)
     val wallpaperVisible = appWallpaperEnabled && appWallpaperUri.isNotBlank()
@@ -235,54 +231,6 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp)
-                )
-            }
-
-            if (homeAiMixVisible) {
-                SectionTitle(stringResource(R.string.home_ai_section))
-                AiMixCard(
-                    songCount = songs.size,
-                    isLoading = aiPlaylistLoading,
-                    onChat = onNavigateToAiChat,
-                    onPlay = {
-                        if (aiPlaylistLoading) return@AiMixCard
-                        if (songs.isEmpty()) {
-                            Toast.makeText(context, context.getString(R.string.no_songs_found), Toast.LENGTH_SHORT).show()
-                            return@AiMixCard
-                        }
-                        scope.launch {
-                            aiPlaylistLoading = true
-                            try {
-                                runCatching { mainViewModel.recommendPlaylistWithOpenAi() }
-                                    .onSuccess { recommendation ->
-                                        playerViewModel.setPlaylist(recommendation.songs, 0)
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(
-                                                R.string.home_ai_playlist_started,
-                                                recommendation.title,
-                                                recommendation.songs.size
-                                            ),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        if (openPlayerOnPlay) onNavigateToPlayer()
-                                    }
-                                    .onFailure { error ->
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(
-                                                R.string.home_ai_playlist_failed,
-                                                error.message ?: context.getString(R.string.common_unknown)
-                                            ),
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }
-                            } finally {
-                                aiPlaylistLoading = false
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
@@ -399,7 +347,6 @@ private data class HomeInitialSettings(
     val showAlbumArtists: Boolean,
     val tagIgnoreCase: Boolean,
     val homeDailyMixVisible: Boolean,
-    val homeAiMixVisible: Boolean,
     val homeRecentSectionMode: Int,
     val homeSectionOrder: String,
     val homeHiddenSections: String,
