@@ -141,8 +141,11 @@ internal class MusicCoverArtManager(
 
     fun getAlbumArtUri(albumId: Long): Uri? {
         if (albumId <= 0L) return null
+        // Use the albumart provider (like MusicScanner does). The Albums.EXTERNAL_CONTENT_URI
+        // collection row has no real MIME type, so Coil's ContentUriFetcher getType() call logs
+        // an "Unknown URL" warning for every image load.
         return android.content.ContentUris.withAppendedId(
-            android.provider.MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI, albumId
+            Uri.parse("content://media/external/audio/albumart"), albumId
         )
     }
 
@@ -190,6 +193,11 @@ internal class MusicCoverArtManager(
     }
 
     private fun decodeExternalThumbnailBitmap(song: Song, targetSize: Int, cacheKey: String): Bitmap? {
+        // On Android 11+ the shared .thumbnails folder is only reachable by direct path when the
+        // app holds READ_MEDIA_IMAGES (or All Files access). The app only requests audio/video
+        // permissions, so skipping here avoids a FileNotFoundException/EACCES on every list
+        // render; the embedded-artwork fallback kicks in quietly instead.
+        if (!canAccessExternalThumbnailFiles()) return null
         val thumbnail = song.externalThumbnailCandidates()
             .firstOrNull { it.exists() && it.isFile && it.length() > 0L } ?: return null
         return runCatching {
@@ -200,6 +208,13 @@ internal class MusicCoverArtManager(
             Log.d("MusicRepo", "Failed to decode external thumbnail ${thumbnail.absolutePath}", error)
             null
         }
+    }
+
+    private fun canAccessExternalThumbnailFiles(): Boolean {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R) return true
+        if (android.os.Environment.isExternalStorageManager()) return true
+        return context.checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
     }
 
     private fun decodeBitmapFile(file: File, targetSize: Int, preferredConfig: Bitmap.Config): Bitmap? {
