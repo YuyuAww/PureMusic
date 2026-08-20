@@ -1,7 +1,7 @@
 # ProGuard rules for Halcyon
 
 # JNI entry points are resolved by class and method names.
--keepclasseswithmembernames,includedescriptorclass class * {
+-keepclasseswithmembernames,includedescriptorclasses class * {
     native <methods>;
 }
 
