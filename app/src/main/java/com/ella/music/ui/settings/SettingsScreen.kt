@@ -478,7 +478,6 @@ private fun settingsSearchAliases(
     entry(stringResource(R.string.settings_mini_player_cover_rotation), stringResource(R.string.settings_mini_player_cover_rotation_summary), "迷你播放器 封面 旋转") { onLyrics("mini_lyrics") },
     entry(stringResource(R.string.settings_enable_bluetooth_lyric), stringResource(R.string.settings_enable_bluetooth_lyric_summary), "蓝牙 歌词 设备") { onLyrics("lyric_output") },
     entry(stringResource(R.string.settings_enable_flyme_ticker), stringResource(R.string.settings_enable_flyme_ticker_summary), "Flyme 魅族 状态栏 歌词") { onLyrics("lyric_output") },
-    entry(stringResource(R.string.settings_heads_up_lyric_notifications), stringResource(R.string.settings_heads_up_lyric_notifications_summary), "通知 横幅 歌词") { onLyrics("lyric_output") },
     entry(stringResource(R.string.settings_usb_dac_mode), stringResource(R.string.settings_usb_dac_mode_summary), "USB DAC 独占 输出 采样率 位深") { onAudio("audio_output") },
     entry(stringResource(R.string.settings_decoder), stringResource(R.string.settings_audio_decoder_auto_summary), "解码 FFmpeg 系统 音频焦点") { onAudio("audio_system") },
     entry(stringResource(R.string.equalizer_screen_title), stringResource(R.string.settings_audio_equalizer_summary), "均衡器 EQ 音效") { onEqualizer("equalizer") },

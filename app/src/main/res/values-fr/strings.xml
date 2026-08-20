@@ -141,10 +141,6 @@
     <string name="desktop_lyric_overlay_permission_required">Veuillez d’abord accorder l’autorisation de fenêtre flottante</string>
     <string name="desktop_lyric_status_bar_mode">Paroles flottantes dans la barre d’état</string>
     <string name="desktop_lyric_status_bar_mode_summary">Afficher des paroles compactes dans l’espace libre de la barre d’état, avec passage tactile pour les gestes du volet de notifications</string>
-    <string name="settings_heads_up_lyric_notifications">Notifications flottantes des paroles</string>
-    <string name="settings_heads_up_lyric_notifications_summary">Affiche les paroles via les notifications flottantes Android sur les appareils non Flyme. Vous devrez peut-être autoriser les notifications contextuelles pour ce canal.</string>
-    <string name="notification_channel_heads_up_lyrics">Notifications flottantes des paroles</string>
-    <string name="notification_channel_heads_up_lyrics_description">Affiche les paroles via les notifications flottantes Android sur les appareils non Flyme</string>
     <string name="settings_floating_lyric_hide_when_paused">Masquer les paroles flottantes en pause</string>
     <string name="settings_floating_lyric_hide_when_paused_summary">Masquer les paroles flottantes lorsque la lecture est en pause, puis les restaurer à la reprise</string>
     <string name="settings_desktop_lyric_hide_in_landscape">Masquer les paroles du bureau en paysage</string>
@@ -942,7 +938,6 @@
     <string name="settings_samsung_floating_translation_summary_blocked">Lorsque la notification de paroles FLYme est masquée, Halcyon réutilise la notification de lecture et ne peut pas aussi écrire dans le corps de la notification flottante Samsung.</string>
     <string name="settings_status_bar_phonetic_secondary">Afficher la prononciation ou la ligne secondaire dans la barre d’état</string>
     <string name="settings_status_bar_phonetic_secondary_summary">Envoyer la prononciation ou la ligne secondaire de traduction comme seconde ligne des paroles de barre d’état.</string>
-    <string name="settings_heads_up_lyric_secondary">Ligne secondaire des paroles en notification flottante</string>
     <string name="settings_enable_coloros_lock_screen_lyric">Paroles de l’ilot d’écran verrouillé ColorOS</string>
     <string name="settings_enable_coloros_lock_screen_lyric_summary">Envoie les paroles LRC complètes à l’ilot d’écran verrouillé ColorOS via MediaMetadata[&quot;lyricInfo&quot;]. Certaines versions du système peuvent encore limiter les apps prises en charge.</string>
     <string name="settings_coloros_lock_screen_lyric_mode">Lyric delivery mode</string>

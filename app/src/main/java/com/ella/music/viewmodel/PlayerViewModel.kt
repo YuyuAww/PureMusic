@@ -315,7 +315,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             samsungFloatingLyricTranslationEnabled = settingsManager.samsungFloatingLyricTranslation.first()
             statusBarAllowPhoneticEnabled = settingsManager.statusBarAllowPhonetic.first()
             tickerBridge.setHideNotification(hideNotification)
-            tickerBridge.setHeadsUpLyricsEnabled(settingsManager.tickerHeadsUpLyrics.first())
             tickerBridge.setEnabled(enabled)
             if (enabled) resendTickerLyric()
         }
@@ -327,13 +326,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
                 tickerHideNotificationEnabled = true
                 tickerBridge.setHideNotification(true)
-                lastTickerPayload = null
-                if (tickerBridge.isEnabled()) resendTickerLyric(force = true)
-            }
-        }
-        viewModelScope.launch {
-            settingsManager.tickerHeadsUpLyrics.distinctUntilChanged().collect { enabled ->
-                tickerBridge.setHeadsUpLyricsEnabled(enabled)
                 lastTickerPayload = null
                 if (tickerBridge.isEnabled()) resendTickerLyric(force = true)
             }
@@ -1469,7 +1461,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 tickerHideNotificationEnabled = true
             }
             tickerBridge.setHideNotification(true)
-            tickerBridge.setHeadsUpLyricsEnabled(settingsManager.tickerHeadsUpLyrics.first())
             tickerBridge.setEnabled(enabled)
             lastTickerPayload = null
             if (enabled) resendTickerLyric()
@@ -1536,15 +1527,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             settingsManager.setTickerHideNotification(true)
             tickerHideNotificationEnabled = true
             tickerBridge.setHideNotification(true)
-            lastTickerPayload = null
-            if (tickerBridge.isEnabled()) resendTickerLyric(force = true)
-        }
-    }
-
-    fun setTickerHeadsUpLyrics(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsManager.setTickerHeadsUpLyrics(enabled)
-            tickerBridge.setHeadsUpLyricsEnabled(enabled)
             lastTickerPayload = null
             if (tickerBridge.isEnabled()) resendTickerLyric(force = true)
         }

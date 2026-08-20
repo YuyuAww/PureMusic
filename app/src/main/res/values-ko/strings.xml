@@ -141,10 +141,6 @@
     <string name="desktop_lyric_overlay_permission_required">먼저 플로팅 창 권한을 허용해 주세요</string>
     <string name="desktop_lyric_status_bar_mode">부동 상태 표시줄 가사</string>
     <string name="desktop_lyric_status_bar_mode_summary">알림 창 제스처를 위한 터치 패스스루를 통해 빈 상태 표시줄 영역에 간결한 플로팅 가사 표시</string>
-    <string name="settings_heads_up_lyric_notifications">헤드업 가사 알림</string>
-    <string name="settings_heads_up_lyric_notifications_summary">Flyme가 아닌 장치에서 Android 헤드업 알림을 통해 가사를 표시합니다. 이 채널에 대한 팝업 알림을 허용해야 할 수도 있습니다.</string>
-    <string name="notification_channel_heads_up_lyrics">헤드업 가사 알림</string>
-    <string name="notification_channel_heads_up_lyrics_description">Flyme가 아닌 장치에서 Android 헤드업 알림을 통해 가사를 표시합니다.</string>
     <string name="settings_floating_lyric_hide_when_paused">일시중지 시 데스크톱 가사 숨기기</string>
     <string name="settings_floating_lyric_hide_when_paused_summary">재생이 일시 중지된 동안 플로팅 가사를 숨겼다가 재생이 다시 시작되면 복원합니다.</string>
     <string name="settings_desktop_lyric_hide_in_landscape">가로 모드에서 데스크톱 가사 숨기기</string>
@@ -942,7 +938,6 @@
     <string name="settings_samsung_floating_translation_summary_blocked">FLYme 가사 알림이 숨겨지면 Halcyon은 재생 알림을 재사용하고 Samsung 플로팅 알림 본문에도 쓸 수 없습니다.</string>
     <string name="settings_status_bar_phonetic_secondary">상태 표시줄에 발음 또는 보조 줄 표시</string>
     <string name="settings_status_bar_phonetic_secondary_summary">상태 표시줄 가사의 두 번째 줄에 발음이나 번역 보조 줄을 보냅니다.</string>
-    <string name="settings_heads_up_lyric_secondary">헤드업 가사 보조 줄</string>
     <string name="settings_enable_coloros_lock_screen_lyric">ColorOS 잠금 화면 아일랜드 가사</string>
     <string name="settings_enable_coloros_lock_screen_lyric_summary">MediaMetadata[&quot;lyricInfo&quot;]를 통해 전체 LRC 가사를 ColorOS 잠금 화면 아일랜드로 보냅니다. 일부 시스템 버전에서는 지원 앱이 계속 제한될 수 있습니다.</string>
     <string name="settings_coloros_lock_screen_lyric_mode">Lyric delivery mode</string>

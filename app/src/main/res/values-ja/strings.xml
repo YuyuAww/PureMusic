@@ -141,10 +141,6 @@
     <string name="desktop_lyric_overlay_permission_required">先にオーバーレイ権限を付与してください</string>
     <string name="desktop_lyric_status_bar_mode">ステータスバー歌詞（フローティング）</string>
     <string name="desktop_lyric_status_bar_mode_summary">ステータスバーの空き領域にミニ歌詞を表示し、タッチを透過するためスワイプ操作を妨げません</string>
-    <string name="settings_heads_up_lyric_notifications">ヘッドアップ歌詞通知</string>
-    <string name="settings_heads_up_lyric_notifications_summary">Flyme 以外のデバイスでは、システム通知で歌詞を表示します。通知カテゴリの許可が必要な場合があります</string>
-    <string name="notification_channel_heads_up_lyrics">ヘッドアップ歌詞通知</string>
-    <string name="notification_channel_heads_up_lyrics_description">Flyme 以外のデバイスでは、システム通知で歌詞を表示します</string>
     <string name="settings_floating_lyric_hide_when_paused">一時停止時にデスクトップ歌詞を非表示</string>
     <string name="settings_floating_lyric_hide_when_paused_summary">再生一時停止時にフローティング歌詞を非表示にし、再生再開時に自動的に表示します</string>
     <string name="settings_desktop_lyric_hide_in_landscape">横向きでデスクトップ歌詞を非表示</string>
@@ -942,7 +938,6 @@
     <string name="settings_samsung_floating_translation_summary_blocked">FLYme 歌詞通知を非表示にして再生通知を再利用する場合、Samsung フローティング通知への同時書き込みはできません。</string>
     <string name="settings_status_bar_phonetic_secondary">ステータスバーに読み仮名/サブ行を表示</string>
     <string name="settings_status_bar_phonetic_secondary_summary">有効にすると、読み仮名または翻訳サブ行をステータスバー歌詞の 2 行目として送信します。</string>
-    <string name="settings_heads_up_lyric_secondary">ヘッドアップ歌詞通知のサブ行内容</string>
     <string name="settings_enable_coloros_lock_screen_lyric">ColorOS ロック画面アイランド歌詞</string>
     <string name="settings_enable_coloros_lock_screen_lyric_summary">MediaMetadata[&quot;lyricInfo&quot;] 経由で ColorOS ロック画面アイランドへ完全な LRC 歌詞を送信します。一部のシステムでは対応アプリが制限される場合があります。</string>
     <string name="settings_coloros_lock_screen_lyric_mode">Lyric delivery mode</string>

@@ -140,10 +140,6 @@
     <string name="desktop_lyric_overlay_permission_required">Пожалуйста, сначала предоставьте разрешение на плавающее окно</string>
     <string name="desktop_lyric_status_bar_mode">Плавающая строка состояния</string>
     <string name="desktop_lyric_status_bar_mode_summary">Показывать компактные плавающие тексты песен в пустой области строки состояния с сенсорным переходом для жестов тени уведомлений.</string>
-    <string name="settings_heads_up_lyric_notifications">Уведомления с текстами песен</string>
-    <string name="settings_heads_up_lyric_notifications_summary">Показывает тексты песен через уведомления Android на устройствах, отличных от Flyme. Возможно, вам придется разрешить всплывающие уведомления для этого канала.</string>
-    <string name="notification_channel_heads_up_lyrics">Уведомления с текстами песен</string>
-    <string name="notification_channel_heads_up_lyrics_description">Показывает тексты песен через уведомления Android на устройствах, отличных от Flyme.</string>
     <string name="settings_floating_lyric_hide_when_paused">Скрыть тексты песен на рабочем столе во время паузы</string>
     <string name="settings_floating_lyric_hide_when_paused_summary">Скрыть плавающие тексты песен, когда воспроизведение приостановлено, а затем восстановить их, когда воспроизведение возобновится.</string>
     <string name="settings_desktop_lyric_hide_in_landscape">Скрывать текст на рабочем столе в альбомной ориентации</string>
@@ -940,7 +936,6 @@
     <string name="settings_samsung_floating_translation_summary_blocked">Когда уведомление о тексте FLYme скрыто, Halcyon повторно использует уведомление о воспроизведении и не может также записывать в тело плавающего уведомления Samsung.</string>
     <string name="settings_status_bar_phonetic_secondary">Показывать произношение или дополнительную строку в строке состояния</string>
     <string name="settings_status_bar_phonetic_secondary_summary">Отправьте второстепенную строку произношения или перевода в качестве второй строки текста строки состояния.</string>
-    <string name="settings_heads_up_lyric_secondary">Лирическая второстепенная линия хедз-ап</string>
     <string name="settings_enable_coloros_lock_screen_lyric">Тексты Lock Screen Island ColorOS</string>
     <string name="settings_enable_coloros_lock_screen_lyric_summary">Отправляет полный LRC-текст в Lock Screen Island ColorOS через MediaMetadata[&quot;lyricInfo&quot;]. Некоторые версии системы могут по-прежнему ограничивать поддерживаемые приложения.</string>
     <string name="settings_coloros_lock_screen_lyric_mode">Lyric delivery mode</string>

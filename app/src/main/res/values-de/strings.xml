@@ -141,10 +141,6 @@
     <string name="desktop_lyric_overlay_permission_required">Bitte zuerst die Berechtigung für schwebende Fenster erteilen</string>
     <string name="desktop_lyric_status_bar_mode">Schwebende Statusleisten-Lyrics</string>
     <string name="desktop_lyric_status_bar_mode_summary">Kompakten schwebenden Liedtext im freien Bereich der Statusleiste anzeigen, mit Touch-Durchleitung für Gesten zur Benachrichtigungsleiste</string>
-    <string name="settings_heads_up_lyric_notifications">Heads-up-Liedtextbenachrichtigungen</string>
-    <string name="settings_heads_up_lyric_notifications_summary">Zeigt Liedtexte über Android-Heads-up-Benachrichtigungen auf Nicht-Flyme-Geräten. Für diesen Kanal müssen Pop-up-Benachrichtigungen eventuell erlaubt werden.</string>
-    <string name="notification_channel_heads_up_lyrics">Heads-up-Liedtextbenachrichtigungen</string>
-    <string name="notification_channel_heads_up_lyrics_description">Zeigt Liedtexte über Android-Heads-up-Benachrichtigungen auf Nicht-Flyme-Geräten</string>
     <string name="settings_floating_lyric_hide_when_paused">Desktop-Lyrics bei Pause ausblenden</string>
     <string name="settings_floating_lyric_hide_when_paused_summary">Schwebenden Liedtext ausblenden, solange die Wiedergabe pausiert ist, und beim Fortsetzen wieder anzeigen</string>
     <string name="settings_desktop_lyric_hide_in_landscape">Desktop-Lyrics im Querformat ausblenden</string>
@@ -942,7 +938,6 @@
     <string name="settings_samsung_floating_translation_summary_blocked">Wenn die FLYme-Liedtextbenachrichtigung ausgeblendet ist, verwendet Halcyon die Wiedergabebenachrichtigung wieder und kann nicht zusätzlich in den Text der Samsung-Schwebebenachrichtigung schreiben.</string>
     <string name="settings_status_bar_phonetic_secondary">Aussprache oder zweite Zeile in der Statusleiste anzeigen</string>
     <string name="settings_status_bar_phonetic_secondary_summary">Aussprache oder Übersetzung als zweite Zeile der Statusleisten-Lyrics senden.</string>
-    <string name="settings_heads_up_lyric_secondary">Zweite Zeile für Heads-up-Liedtext</string>
     <string name="settings_enable_coloros_lock_screen_lyric">ColorOS-Sperrbildschirm-Insel-Liedtexte</string>
     <string name="settings_enable_coloros_lock_screen_lyric_summary">Sendet vollständige LRC-Liedtexte über MediaMetadata[&quot;lyricInfo&quot;] an die ColorOS-Sperrbildschirm-Insel. Einige Systemversionen können unterstützte Apps weiterhin einschränken.</string>
     <string name="settings_coloros_lock_screen_lyric_mode">Lyric delivery mode</string>

@@ -144,10 +144,6 @@
     <string name="desktop_lyric_overlay_permission_required">Please grant floating window permission first</string>
     <string name="desktop_lyric_status_bar_mode">Floating status bar lyrics</string>
     <string name="desktop_lyric_status_bar_mode_summary">Show compact floating lyrics in the empty status bar area, with touch passthrough for notification shade gestures</string>
-    <string name="settings_heads_up_lyric_notifications">Heads-up lyric notifications</string>
-    <string name="settings_heads_up_lyric_notifications_summary">Shows lyrics via Android heads-up notifications on non-Flyme devices. You may need to allow pop-up notifications for this channel.</string>
-    <string name="notification_channel_heads_up_lyrics">Heads-up lyric notifications</string>
-    <string name="notification_channel_heads_up_lyrics_description">Shows lyrics via Android heads-up notifications on non-Flyme devices</string>
     <string name="settings_floating_lyric_hide_when_paused">Hide desktop lyrics when paused</string>
     <string name="settings_floating_lyric_hide_when_paused_summary">Hide floating lyrics while playback is paused, then restore them when playback resumes</string>
     <string name="settings_desktop_lyric_hide_in_landscape">Hide desktop lyrics in landscape</string>
@@ -1125,7 +1121,6 @@
     <string name="settings_samsung_floating_translation_summary_blocked">When the FLYme lyric notification is hidden, Halcyon reuses the playback notification and cannot also write into the Samsung floating notification body.</string>
     <string name="settings_status_bar_phonetic_secondary">Show pronunciation or secondary line in status bar</string>
     <string name="settings_status_bar_phonetic_secondary_summary">Send the pronunciation or translation secondary line as the second line of the status bar lyric.</string>
-    <string name="settings_heads_up_lyric_secondary">Heads-up lyric secondary line</string>
     <string name="settings_enable_coloros_lock_screen_lyric">ColorOS Lock Screen Island lyrics</string>
     <string name="settings_enable_coloros_lock_screen_lyric_summary">Send full LRC lyrics to ColorOS Lock Screen Island through MediaMetadata[&quot;lyricInfo&quot;]; module rawLyric mode additionally sends word timing and exposes a translation button. Some system builds may still restrict supported apps.</string>
     <string name="settings_coloros_lock_screen_lyric_mode">Lyric delivery mode</string>

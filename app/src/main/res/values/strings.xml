@@ -148,10 +148,6 @@
     <string name="desktop_lyric_overlay_permission_required">请先授予悬浮窗权限</string>
     <string name="desktop_lyric_status_bar_mode">悬浮窗状态栏歌词</string>
     <string name="desktop_lyric_status_bar_mode_summary">在状态栏空白处显示迷你歌词，并触摸穿透避免影响下拉</string>
-    <string name="settings_heads_up_lyric_notifications">浮动通知歌词</string>
-    <string name="settings_heads_up_lyric_notifications_summary">在非 Flyme 设备上通过系统浮动通知显示歌词，可能需要允许该通知类别弹出</string>
-    <string name="notification_channel_heads_up_lyrics">浮动通知歌词</string>
-    <string name="notification_channel_heads_up_lyrics_description">在非 Flyme 设备上通过系统浮动通知显示歌词</string>
     <string name="settings_floating_lyric_hide_when_paused">桌面歌词暂停时隐藏</string>
     <string name="settings_floating_lyric_hide_when_paused_summary">暂停播放时隐藏悬浮歌词，恢复播放后自动显示</string>
     <string name="settings_desktop_lyric_hide_in_landscape">桌面歌词横屏时隐藏</string>
@@ -1383,7 +1379,6 @@
     <string name="settings_samsung_floating_translation_summary_blocked">隐藏 FLYme 歌词通知时复用播放通知，无法同时写入三星浮动通知正文。</string>
     <string name="settings_status_bar_phonetic_secondary">状态栏显示注音/副行</string>
     <string name="settings_status_bar_phonetic_secondary_summary">开启后将注音或翻译副行作为状态栏歌词的第二行传递。</string>
-    <string name="settings_heads_up_lyric_secondary">浮动通知歌词副行内容</string>
     <string name="settings_enable_coloros_lock_screen_lyric">ColorOS 锁屏岛歌词</string>
     <string name="settings_enable_coloros_lock_screen_lyric_summary">通过 MediaMetadata[&quot;lyricInfo&quot;] 向 ColorOS 锁屏岛传递整首 LRC 歌词；选择“模块 rawLyric”后会额外传递逐字时间轴和翻译按钮，部分系统版本可能仍受白名单限制。</string>
     <string name="settings_coloros_lock_screen_lyric_mode">歌词传递模式</string>

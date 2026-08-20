@@ -1,6 +1,5 @@
 package com.ella.music.ui.settings
 
-import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -137,7 +136,6 @@ internal fun SettingsLyricOutputControls(
     val scope = rememberCoroutineScope()
     val settingsManager = remember { SettingsManager.getInstance(context) }
     val tickerEnabled by settingsManager.tickerEnabled.collectAsState(initial = false)
-    val tickerHeadsUpLyrics by settingsManager.tickerHeadsUpLyrics.collectAsState(initial = false)
     val samsungFloatingLyricTranslation by settingsManager.samsungFloatingLyricTranslation.collectAsState(initial = false)
     val statusBarAllowPhonetic by settingsManager.statusBarAllowPhonetic.collectAsState(initial = false)
     val bluetoothLyricEnabled by settingsManager.bluetoothLyricEnabled.collectAsState(initial = false)
@@ -147,11 +145,6 @@ internal fun SettingsLyricOutputControls(
     val colorOsLockScreenLyricMode by settingsManager.colorOsLockScreenLyricMode.collectAsState(
         initial = SettingsManager.OPLUS_LYRIC_MODE_SYSTEM
     )
-    val isFlymeDevice = remember {
-        Build.MANUFACTURER.orEmpty().contains("meizu", ignoreCase = true) ||
-            Build.BRAND.orEmpty().contains("meizu", ignoreCase = true) ||
-            Build.DISPLAY.orEmpty().contains("flyme", ignoreCase = true)
-    }
     val labels = rememberLyricSecondaryLabels()
     val entries = remember(labels) { labels.map { DropdownItem(title = it) } }
     val oplusModeLabels = listOf(
@@ -171,57 +164,6 @@ internal fun SettingsLyricOutputControls(
                     settingsManager.setTickerEnabled(enabled)
                     if (enabled) settingsManager.setTickerHideNotification(true)
                 }
-        }
-    )
-
-    SwitchPreference(
-        title = stringResource(R.string.settings_heads_up_lyric_notifications),
-        summary = stringResource(R.string.settings_heads_up_lyric_notifications_summary),
-        enabled = tickerEnabled && !isFlymeDevice,
-        checked = tickerHeadsUpLyrics && !isFlymeDevice,
-        onCheckedChange = { enabled ->
-            if (!isFlymeDevice) {
-                playerViewModel?.setTickerHeadsUpLyrics(enabled)
-                    ?: scope.launch { settingsManager.setTickerHeadsUpLyrics(enabled) }
-            }
-        }
-    )
-
-    WindowSpinnerPreference(
-        title = stringResource(R.string.settings_heads_up_lyric_secondary),
-        summary = stringResource(
-            R.string.settings_current_value,
-            labels[lyricSecondaryIndex(samsungFloatingLyricTranslation, statusBarAllowPhonetic)]
-        ),
-        enabled = tickerEnabled && tickerHeadsUpLyrics && !isFlymeDevice,
-        items = entries,
-        selectedIndex = lyricSecondaryIndex(samsungFloatingLyricTranslation, statusBarAllowPhonetic),
-        onSelectedIndexChange = { index ->
-            when (index) {
-                SettingsManager.LYRIC_SECONDARY_TRANSLATION -> {
-                    playerViewModel?.setSamsungFloatingLyricTranslation(true)
-                        ?: scope.launch {
-                            settingsManager.setSamsungFloatingLyricTranslation(true)
-                            settingsManager.setStatusBarAllowPhonetic(false)
-                        }
-                }
-                SettingsManager.LYRIC_SECONDARY_PRONUNCIATION -> {
-                    playerViewModel?.setStatusBarAllowPhonetic(true)
-                        ?: scope.launch {
-                            settingsManager.setStatusBarAllowPhonetic(true)
-                            settingsManager.setSamsungFloatingLyricTranslation(false)
-                        }
-                }
-                else -> {
-                    playerViewModel?.let {
-                        it.setSamsungFloatingLyricTranslation(false)
-                        it.setStatusBarAllowPhonetic(false)
-                    } ?: scope.launch {
-                        settingsManager.setSamsungFloatingLyricTranslation(false)
-                        settingsManager.setStatusBarAllowPhonetic(false)
-                    }
-                }
-            }
         }
     )
     }

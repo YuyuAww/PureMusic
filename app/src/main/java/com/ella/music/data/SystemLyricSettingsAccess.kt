@@ -18,7 +18,6 @@ import com.ella.music.data.SettingsManager.Companion.KEY_XIAOMI_SUPER_ISLAND_SET
 import com.ella.music.data.SettingsManager.Companion.KEY_SAMSUNG_FLOATING_LYRIC_TRANSLATION
 import com.ella.music.data.SettingsManager.Companion.KEY_STATUS_BAR_ALLOW_PHONETIC
 import com.ella.music.data.SettingsManager.Companion.KEY_TICKER_ENABLED
-import com.ella.music.data.SettingsManager.Companion.KEY_TICKER_HEADS_UP_LYRICS
 import com.ella.music.data.SettingsManager.Companion.KEY_TICKER_HIDE_NOTIFICATION
 import com.ella.music.data.SettingsManager.Companion.KEY_MEDIA_NOTIFICATION_BUTTONS
 import com.ella.music.data.SettingsManager.Companion.normalizeMediaNotificationButtonIds
@@ -44,7 +43,6 @@ import kotlinx.coroutines.flow.map
 interface SystemLyricSettingsAccess {
     val tickerEnabled: Flow<Boolean>
     val tickerHideNotification: Flow<Boolean>
-    val tickerHeadsUpLyrics: Flow<Boolean>
     val mediaNotificationButtonIds: Flow<List<String>>
     val liveUpdateLyricEnabled: Flow<Boolean>
     val liveUpdateLyricMode: Flow<Int>
@@ -61,7 +59,6 @@ interface SystemLyricSettingsAccess {
     val colorOsLockScreenLyricMode: Flow<Int>
     suspend fun setTickerEnabled(enabled: Boolean)
     suspend fun setTickerHideNotification(enabled: Boolean)
-    suspend fun setTickerHeadsUpLyrics(enabled: Boolean)
     suspend fun setMediaNotificationButtonIds(ids: List<String>)
     suspend fun setLiveUpdateLyricEnabled(enabled: Boolean)
     suspend fun setLiveUpdateLyricMode(mode: Int)
@@ -89,7 +86,6 @@ internal class SystemLyricSettingsAccessImpl(private val context: Context) : Sys
 
     override val tickerEnabled: Flow<Boolean> = context.dataStore.data.map { it[KEY_TICKER_ENABLED] ?: false }
     override val tickerHideNotification: Flow<Boolean> = context.dataStore.data.map { it[KEY_TICKER_HIDE_NOTIFICATION] ?: true }
-    override val tickerHeadsUpLyrics: Flow<Boolean> = context.dataStore.data.map { it[KEY_TICKER_HEADS_UP_LYRICS] ?: false }
     override val mediaNotificationButtonIds: Flow<List<String>> = context.dataStore.data.map {
         normalizeMediaNotificationButtonIds(it[KEY_MEDIA_NOTIFICATION_BUTTONS].orEmpty())
     }
@@ -131,10 +127,6 @@ internal class SystemLyricSettingsAccessImpl(private val context: Context) : Sys
 
     override suspend fun setTickerHideNotification(enabled: Boolean) {
         context.dataStore.edit { it[KEY_TICKER_HIDE_NOTIFICATION] = enabled }
-    }
-
-    override suspend fun setTickerHeadsUpLyrics(enabled: Boolean) {
-        context.dataStore.edit { it[KEY_TICKER_HEADS_UP_LYRICS] = enabled }
     }
 
     override suspend fun setMediaNotificationButtonIds(ids: List<String>) {
