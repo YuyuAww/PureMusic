@@ -1224,7 +1224,6 @@
     <string name="song_more_detail_added_time">新增時間</string>
     <string name="song_more_detail_file_name">檔案名稱</string>
     <string name="song_more_detail_path">路徑</string>
-    <string name="song_more_loading_ai">正在讀取歌曲資訊和歌詞…</string>
     <string name="library_deleted_songs">已刪除 %1$d 首歌曲</string>
     <string name="library_delete_cancelled">已取消刪除</string>
     <string name="library_deleting_songs">正在刪除 %1$d 首歌曲</string>
@@ -1238,7 +1237,6 @@
     <string name="library_delete_selected_message">確定要永久刪除選取的 %1$d 首歌曲嗎？此操作可能會刪除本機音訊檔案。</string>
     <string name="library_status_label">狀態</string>
     <string name="library_retry">重試</string>
-    <string name="library_reinterpret">重新解讀</string>
     <string name="library_netease_info_unavailable">無法解析出可開啟的網易雲音樂資訊</string>
     <string name="library_decoded_json">解密 JSON</string>
     <string name="library_back_to_song_info">返回歌曲資訊</string>

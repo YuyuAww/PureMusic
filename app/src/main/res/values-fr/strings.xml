@@ -1204,7 +1204,6 @@
     <string name="song_more_detail_added_time">Date d’ajout</string>
     <string name="song_more_detail_file_name">Nom du fichier</string>
     <string name="song_more_detail_path">Chemin</string>
-    <string name="song_more_loading_ai">Chargement des infos du titre et des paroles...</string>
     <string name="library_deleted_songs">%1$d titres supprimés</string>
     <string name="library_delete_cancelled">Suppression annulée</string>
     <string name="library_deleting_songs">Suppression de %1$d titres</string>
@@ -1218,7 +1217,6 @@
     <string name="library_delete_selected_message">Supprimer définitivement les %1$d titres sélectionnés ? Cela peut supprimer les fichiers audio locaux.</string>
     <string name="library_status_label">État</string>
     <string name="library_retry">Réessayer</string>
-    <string name="library_reinterpret">Interpréter à nouveau</string>
     <string name="library_netease_info_unavailable">Aucune information NetEase navigable n’a pu être analysée</string>
     <string name="library_decoded_json">JSON décodé</string>
     <string name="library_back_to_song_info">Retour aux infos du titre</string>

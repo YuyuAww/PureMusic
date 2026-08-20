@@ -1204,7 +1204,6 @@
     <string name="song_more_detail_added_time">追加日</string>
     <string name="song_more_detail_file_name">ファイル名</string>
     <string name="song_more_detail_path">パス</string>
-    <string name="song_more_loading_ai">曲情報と歌詞を読み込み中…</string>
     <string name="library_deleted_songs">%1$d 曲を削除しました</string>
     <string name="library_delete_cancelled">削除をキャンセルしました</string>
     <string name="library_deleting_songs">%1$d 曲を削除中</string>
@@ -1218,7 +1217,6 @@
     <string name="library_delete_selected_message">選択した %1$d 曲を完全に削除しますか？この操作によりローカルオーディオファイルが削除される場合があります。</string>
     <string name="library_status_label">ステータス</string>
     <string name="library_retry">再試行</string>
-    <string name="library_reinterpret">再解説</string>
     <string name="library_netease_info_unavailable">移動できるネットイース情報を解析できませんでした</string>
     <string name="library_decoded_json">JSON をデコード</string>
     <string name="library_back_to_song_info">曲情報に戻る</string>

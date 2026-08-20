@@ -1204,7 +1204,6 @@
     <string name="song_more_detail_added_time">Hinzugefügt am</string>
     <string name="song_more_detail_file_name">Dateiname</string>
     <string name="song_more_detail_path">Pfad</string>
-    <string name="song_more_loading_ai">Titelinfos und Liedtext werden geladen…</string>
     <string name="library_deleted_songs">%1$d Titel gelöscht</string>
     <string name="library_delete_cancelled">Löschen abgebrochen</string>
     <string name="library_deleting_songs">%1$d Titel werden gelöscht</string>
@@ -1218,7 +1217,6 @@
     <string name="library_delete_selected_message">Die ausgewählten %1$d Titel dauerhaft löschen? Dadurch können lokale Audiodateien entfernt werden.</string>
     <string name="library_status_label">Status</string>
     <string name="library_retry">Erneut versuchen</string>
-    <string name="library_reinterpret">Erneut interpretieren</string>
     <string name="library_netease_info_unavailable">Keine navigierbaren NetEase-Informationen konnten gelesen werden</string>
     <string name="library_decoded_json">Dekodiertes JSON</string>
     <string name="library_back_to_song_info">Zurück zur Titelinfo</string>

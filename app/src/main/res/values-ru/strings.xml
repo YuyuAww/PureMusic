@@ -1202,7 +1202,6 @@
     <string name="song_more_detail_added_time">Добавлено время</string>
     <string name="song_more_detail_file_name">Имя файла</string>
     <string name="song_more_detail_path">Путь</string>
-    <string name="song_more_loading_ai">Загрузка информации о песне и текста...</string>
     <string name="library_deleted_songs">Удалены песни %1$d.</string>
     <string name="library_delete_cancelled">Удаление отменено</string>
     <string name="library_deleting_songs">Удаление песен %1$d</string>
@@ -1216,7 +1215,6 @@
     <string name="library_delete_selected_message">Удалить выбранные песни %1$d навсегда? Это может привести к удалению локальных аудиофайлов.</string>
     <string name="library_status_label">Статус</string>
     <string name="library_retry">Повторить попытку</string>
-    <string name="library_reinterpret">Интерпретировать еще раз</string>
     <string name="library_netease_info_unavailable">Никакая навигационная информация NetEase не может быть проанализирована.</string>
     <string name="library_decoded_json">Раскодированный JSON</string>
     <string name="library_back_to_song_info">Вернуться к информации о песне</string>

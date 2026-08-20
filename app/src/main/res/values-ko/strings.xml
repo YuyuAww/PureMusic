@@ -1204,7 +1204,6 @@
     <string name="song_more_detail_added_time">추가된 시간</string>
     <string name="song_more_detail_file_name">파일 이름</string>
     <string name="song_more_detail_path">경로</string>
-    <string name="song_more_loading_ai">곡 정보 및 가사 로드 중...</string>
     <string name="library_deleted_songs">%1$d 곡을 삭제했습니다</string>
     <string name="library_delete_cancelled">삭제가 취소되었습니다</string>
     <string name="library_deleting_songs">%1$d 곡 삭제 중</string>
@@ -1218,7 +1217,6 @@
     <string name="library_delete_selected_message">선택한 %1$d 곡을 영구적으로 삭제하시겠습니까? 로컬 오디오 파일이 제거될 수 있습니다.</string>
     <string name="library_status_label">상태</string>
     <string name="library_retry">재시도</string>
-    <string name="library_reinterpret">다시 해석해 보세요</string>
     <string name="library_netease_info_unavailable">탐색 가능한 NetEase 정보를 구문 분석할 수 없습니다</string>
     <string name="library_decoded_json">JSON 디코딩됨</string>
     <string name="library_back_to_song_info">곡 정보로 돌아가기</string>
