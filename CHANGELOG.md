@@ -5,7 +5,7 @@ From `1.2.4` to the latest `main` commit on 2026-08-09.
 中文更新日志
 - 更新 AndroidX Media3 至 `1.11.0`。
 - 新增 Android 16 Live Update 歌词通知，支持原文/翻译/注音选择、封面、Promoted Ongoing Notification，以及逐字歌词实时更新。
-- 新增小米 HyperOS 超级岛歌词，通过 Shizuku 接入 XMSF，支持可配置 Focus 歌词、封面、更新节流和桌面歌词重新同步，并避免影响媒体通知歌词与歌词页 seek。
+- 移除小米 HyperOS 超级岛歌词
 - 新增 iOS 风格液态玻璃悬浮底栏；移除 Kyant Backdrop，玻璃表面迁移至 miuix blur，支持拖拽切换、阻尼回弹、高光折射、按压气泡、内阴影和色散效果。
 - 修复底栏宽度塌陷、点击/滑动切换、指示气泡同步、拖拽回首页路由和从底栏进入设置页的标题间距；统一 GlassPill、MiniPlayer 与底栏的阴影和浮层高度，并放大 HyperOS 播放模式、随机和队列图标。
 - 修复暂停、seek、逐字、逐行、后台/不可见、静态歌词和暂无歌词渲染，避免暂停或多行歌词错误全亮、重复推进和滚动错位。
@@ -19,7 +19,7 @@ From `1.2.4` to the latest `main` commit on 2026-08-09.
 English Changelog
 - Updated AndroidX Media3 to `1.11.0`.
 - Added Android 16 Live Update lyric notifications with original / translation / pronunciation selection, artwork, promoted ongoing notification support, and word-level updates.
-- Added Xiaomi HyperOS Super Island lyric delivery through a Shizuku-backed XMSF bridge, with configurable Focus lyrics, artwork, throttled updates, and desktop-lyric resynchronization without disturbing media-notification lyrics or lyric-page seeking.
+- Removed Xiaomi HyperOS Super Island lyrics.
 - Added an iOS-style liquid-glass floating bottom bar. Removed Kyant Backdrop and migrated glass surfaces to miuix blur, with drag-to-switch navigation, damped rubber-band motion, highlight refraction, press bubbles, inner shadows, and chromatic aberration.
 - Fixed bottom-bar width collapse, click/slide switching, indicator synchronization, drag-to-home routing, and Settings title spacing; aligned GlassPill and MiniPlayer shadows with the bottom bar and enlarged HyperOS playback-mode, shuffle, and queue icons.
 - Fixed pause, seek, word-by-word, multi-line, off-screen, static, and no-lyrics rendering so paused or multi-line lyrics do not highlight, advance, or scroll incorrectly.

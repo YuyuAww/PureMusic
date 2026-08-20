@@ -290,9 +290,6 @@ dependencies {
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.focus.api)
-    implementation(libs.shizuku.api)
-    implementation(libs.shizuku.provider)
     implementation(libs.hidden.api.bypass)
     compileOnly(project(":hidden-api"))
 

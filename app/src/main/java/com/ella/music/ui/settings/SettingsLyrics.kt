@@ -54,7 +54,6 @@ internal fun SettingsLyricsSection(
     val hideLyricExtraInfo by settingsManager.hideLyricExtraInfo.collectAsState(initial = true)
     var showBlacklistSheet by remember { mutableStateOf(false) }
     var showLyricSizingSheet by remember { mutableStateOf(false) }
-    var showXiaomiSuperIslandSheet by remember { mutableStateOf(false) }
     var blacklistDraft by remember(lyricLineBlacklist) { mutableStateOf(lyricLineBlacklist.joinToString("\n")) }
 
     SettingsCardGroup(highlight = highlightKey == "lyric_basic" || highlightKey == "lyric_plugin_sources") {
@@ -124,24 +123,8 @@ internal fun SettingsLyricsSection(
         Column {
             SettingsLiveUpdateLyricControls(
                 playerViewModel = playerViewModel,
-                highlightKey = highlightKey,
-                onOpenXiaomiSuperIslandSettings = { showXiaomiSuperIslandSheet = true }
+                highlightKey = highlightKey
             )
-        }
-    }
-
-    EllaMiuixBottomSheet(
-        show = showXiaomiSuperIslandSheet,
-        title = stringResource(R.string.settings_xiaomi_super_island_custom),
-        onDismissRequest = { showXiaomiSuperIslandSheet = false }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 650.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            SettingsXiaomiSuperIslandControls()
         }
     }
 

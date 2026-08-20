@@ -13,8 +13,6 @@ import com.ella.music.data.SettingsManager.Companion.KEY_LIVE_UPDATE_LYRIC_ENABL
 import com.ella.music.data.SettingsManager.Companion.KEY_LIVE_UPDATE_LYRIC_DISPLAY_MODE
 import com.ella.music.data.SettingsManager.Companion.KEY_LIVE_UPDATE_LYRIC_MODE
 import com.ella.music.data.SettingsManager.Companion.KEY_LIVE_UPDATE_LYRIC_SECONDARY_MODE
-import com.ella.music.data.SettingsManager.Companion.KEY_XIAOMI_SUPER_ISLAND_LYRIC_ENABLED
-import com.ella.music.data.SettingsManager.Companion.KEY_XIAOMI_SUPER_ISLAND_SETTINGS
 import com.ella.music.data.SettingsManager.Companion.KEY_SAMSUNG_FLOATING_LYRIC_TRANSLATION
 import com.ella.music.data.SettingsManager.Companion.KEY_STATUS_BAR_ALLOW_PHONETIC
 import com.ella.music.data.SettingsManager.Companion.KEY_TICKER_ENABLED
@@ -48,8 +46,6 @@ interface SystemLyricSettingsAccess {
     val liveUpdateLyricMode: Flow<Int>
     val liveUpdateLyricDisplayMode: Flow<Int>
     val liveUpdateLyricSecondaryMode: Flow<Int>
-    val xiaomiSuperIslandLyricEnabled: Flow<Boolean>
-    val xiaomiSuperIslandSettings: Flow<XiaomiSuperIslandSettings>
     val samsungFloatingLyricTranslation: Flow<Boolean>
     val statusBarAllowPhonetic: Flow<Boolean>
     val bluetoothLyricEnabled: Flow<Boolean>
@@ -64,8 +60,6 @@ interface SystemLyricSettingsAccess {
     suspend fun setLiveUpdateLyricMode(mode: Int)
     suspend fun setLiveUpdateLyricDisplayMode(mode: Int)
     suspend fun setLiveUpdateLyricSecondaryMode(mode: Int)
-    suspend fun setXiaomiSuperIslandLyricEnabled(enabled: Boolean)
-    suspend fun setXiaomiSuperIslandSettings(settings: XiaomiSuperIslandSettings)
     suspend fun setSamsungFloatingLyricTranslation(enabled: Boolean)
     suspend fun setStatusBarAllowPhonetic(enabled: Boolean)
     suspend fun setBluetoothLyricEnabled(enabled: Boolean)
@@ -103,10 +97,6 @@ internal class SystemLyricSettingsAccessImpl(private val context: Context) : Sys
         (it[KEY_LIVE_UPDATE_LYRIC_SECONDARY_MODE] ?: LIVE_UPDATE_LYRIC_SECONDARY_MODE_SONG)
             .coerceIn(LIVE_UPDATE_LYRIC_SECONDARY_MODE_SONG, LIVE_UPDATE_LYRIC_SECONDARY_MODE_PRONUNCIATION)
     }
-    override val xiaomiSuperIslandLyricEnabled: Flow<Boolean> =
-        context.dataStore.data.map { it[KEY_XIAOMI_SUPER_ISLAND_LYRIC_ENABLED] ?: false }
-    override val xiaomiSuperIslandSettings: Flow<XiaomiSuperIslandSettings> =
-        context.dataStore.data.map { XiaomiSuperIslandSettings.decode(it[KEY_XIAOMI_SUPER_ISLAND_SETTINGS]) }
     override val samsungFloatingLyricTranslation: Flow<Boolean> =
         context.dataStore.data.map { it[KEY_SAMSUNG_FLOATING_LYRIC_TRANSLATION] ?: false }
     override val statusBarAllowPhonetic: Flow<Boolean> =
@@ -166,14 +156,6 @@ internal class SystemLyricSettingsAccessImpl(private val context: Context) : Sys
                 LIVE_UPDATE_LYRIC_SECONDARY_MODE_PRONUNCIATION
             )
         }
-    }
-
-    override suspend fun setXiaomiSuperIslandLyricEnabled(enabled: Boolean) {
-        context.dataStore.edit { it[KEY_XIAOMI_SUPER_ISLAND_LYRIC_ENABLED] = enabled }
-    }
-
-    override suspend fun setXiaomiSuperIslandSettings(settings: XiaomiSuperIslandSettings) {
-        context.dataStore.edit { it[KEY_XIAOMI_SUPER_ISLAND_SETTINGS] = settings.sanitized().encode() }
     }
 
     override suspend fun setSamsungFloatingLyricTranslation(enabled: Boolean) {

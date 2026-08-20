@@ -30,7 +30,6 @@ import com.ella.music.player.TickerBridge
 import com.ella.music.player.buildLiveLyricSecondaryText
 import com.ella.music.player.buildLiveLyricNotificationText
 import com.ella.music.player.MediaNotificationLyricPatchPolicy
-import com.ella.music.player.XiaomiSuperIslandLyricBridge
 import androidx.media3.common.Player
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -84,7 +83,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val settingsManager = SettingsManager.getInstance(application)
     val tickerBridge = TickerBridge(application)
     private val liveLyricNotificationBridge = LiveLyricNotificationBridge(application)
-    private val xiaomiSuperIslandLyricBridge = XiaomiSuperIslandLyricBridge(application, viewModelScope)
     val desktopLyricBridge = DesktopLyricBridge(application)
     private val playlistStore = PlaylistStore.getInstance(application)
     private val openSubsonicCollectionsStore = OpenSubsonicCollectionsStore.getInstance(application)
@@ -244,7 +242,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private var liveUpdateLyricMode = SettingsManager.LIVE_UPDATE_LYRIC_MODE_ORIGINAL
     private var liveUpdateLyricDisplayMode = SettingsManager.LIVE_UPDATE_LYRIC_DISPLAY_MODE_COMPACT
     private var liveUpdateLyricSecondaryMode = SettingsManager.LIVE_UPDATE_LYRIC_SECONDARY_MODE_SONG
-    private var xiaomiSuperIslandLyricEnabled = false
     private var desktopLyricHideWhenPausedEnabled = false
     private var desktopLyricStatusBarModeEnabled = false
     private var desktopLyricStatusBarHideWhenPausedEnabled = false
@@ -271,7 +268,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         observePlayState()
         initTicker()
         initLiveUpdateLyric()
-        initXiaomiSuperIslandLyric()
         initDesktopLyric()
         initLyricPageTranslation()
         initBluetoothLyric()
@@ -379,27 +375,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 liveUpdateLyricSecondaryMode = mode
                 lastLiveUpdateLyricPayload = null
                 if (liveUpdateLyricEnabled) resendLiveUpdateLyric(force = true)
-            }
-        }
-    }
-
-    private fun initXiaomiSuperIslandLyric() {
-        viewModelScope.launch {
-            settingsManager.xiaomiSuperIslandSettings.distinctUntilChanged().collect { settings ->
-                xiaomiSuperIslandLyricBridge.setSettings(settings)
-                if (xiaomiSuperIslandLyricEnabled) resendXiaomiSuperIslandLyric()
-            }
-        }
-        viewModelScope.launch {
-            xiaomiSuperIslandLyricEnabled = settingsManager.xiaomiSuperIslandLyricEnabled.first()
-            xiaomiSuperIslandLyricBridge.setEnabled(xiaomiSuperIslandLyricEnabled)
-            if (xiaomiSuperIslandLyricEnabled) resendXiaomiSuperIslandLyric()
-        }
-        viewModelScope.launch {
-            settingsManager.xiaomiSuperIslandLyricEnabled.distinctUntilChanged().collect { enabled ->
-                xiaomiSuperIslandLyricEnabled = enabled
-                xiaomiSuperIslandLyricBridge.setEnabled(enabled)
-                if (enabled) resendXiaomiSuperIslandLyric()
             }
         }
     }
@@ -696,7 +671,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                     lastBluetoothLyricPayload = null
                     bluetoothLyricRetryJob?.cancel()
                     tickerBridge.clearLyric()
-                    xiaomiSuperIslandLyricBridge.clear()
                     if (activeDesktopLyricHideWhenPaused()) {
                         desktopLyricBridge.clearLyric()
                     }
@@ -748,7 +722,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                         tickerBridge.clearLyric()
                         liveLyricNotificationBridge.clear()
                         lastLiveUpdateLyricPayload = null
-                        xiaomiSuperIslandLyricBridge.onPlaybackPaused()
                         if (activeDesktopLyricHideWhenPaused()) {
                             desktopLyricBridge.clearLyric()
                         } else {
@@ -818,7 +791,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             // helper deduplicates unchanged results, so this stays a 10 Hz calculation rather
             // than a 10 Hz notification stream.
             sendLiveUpdateLyric(index, currentLyrics, effectivePosition)
-            sendXiaomiSuperIslandLyric(index, currentLyrics, effectivePosition)
         }
         lastLyricPositionSongKey = songKey
         lastLyricPositionMs = effectivePosition
@@ -850,7 +822,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
         resendTickerLyric(force)
         resendLiveUpdateLyric(force)
-        resendXiaomiSuperIslandLyric()
         resendDesktopLyric()
     }
 
@@ -869,32 +840,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             index = _currentLyricIndex.value,
             lyrics = _lyrics.value,
             positionMs = effectiveLyricPositionMs()
-        )
-    }
-
-    private fun resendXiaomiSuperIslandLyric() {
-        if (!xiaomiSuperIslandLyricEnabled || !isPlaying.value) return
-        sendXiaomiSuperIslandLyric(
-            index = _currentLyricIndex.value,
-            lyrics = _lyrics.value,
-            positionMs = effectiveLyricPositionMs()
-        )
-    }
-
-    private fun sendXiaomiSuperIslandLyric(
-        index: Int,
-        lyrics: List<LyricLine>,
-        positionMs: Long
-    ) {
-        if (!xiaomiSuperIslandLyricEnabled || !isPlaying.value) return
-        val song = currentSong.value ?: return
-        val line = lyrics.getOrNull(index) ?: return
-        xiaomiSuperIslandLyricBridge.sendLyric(
-            song = song,
-            line = line,
-            positionMs = positionMs,
-            durationMs = duration.value,
-            artwork = liveUpdateArtwork
         )
     }
 
@@ -1071,7 +1016,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         lastBluetoothLyricPayload = null
         tickerBridge.clearLyric()
         liveLyricNotificationBridge.clear()
-        xiaomiSuperIslandLyricBridge.clear()
         desktopLyricBridge.clearLyric()
         playerManager.clearBluetoothLyric()
     }
@@ -1460,15 +1404,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun setXiaomiSuperIslandLyricEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsManager.setXiaomiSuperIslandLyricEnabled(enabled)
-            xiaomiSuperIslandLyricEnabled = enabled
-            xiaomiSuperIslandLyricBridge.setEnabled(enabled)
-            if (enabled) resendXiaomiSuperIslandLyric()
-        }
-    }
-
     fun setLiveUpdateLyricMode(mode: Int) {
         viewModelScope.launch {
             settingsManager.setLiveUpdateLyricMode(mode)
@@ -1641,7 +1576,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         sleepTimerController.dispose()
         tickerBridge.clearLyric()
         liveLyricNotificationBridge.clear()
-        xiaomiSuperIslandLyricBridge.destroy()
         playerManager.disconnect()
     }
 }
