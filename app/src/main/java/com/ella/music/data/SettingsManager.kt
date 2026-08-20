@@ -246,7 +246,6 @@ class SettingsManager(private val context: Context) :
         val KEY_HOME_TILE_GRADIENT_START_COLOR = stringPreferencesKey("home_tile_gradient_start_color")
         val KEY_HI_RES_LOGO_ENABLED = booleanPreferencesKey("hi_res_logo_enabled")
         val KEY_HI_RES_LOGO_URI = stringPreferencesKey("hi_res_logo_uri")
-        val KEY_WEB_MUSIC_SERVER_ENABLED = booleanPreferencesKey("web_music_server_enabled")
         val KEY_PLAYLIST_SPECIAL_ENTRIES_VISIBLE = booleanPreferencesKey("playlist_special_entries_visible")
         val KEY_PLAYLIST_CUSTOM_ORDER = stringPreferencesKey("playlist_custom_order")
         val KEY_FOLDER_PLAYLIST_CUSTOM_ORDER = stringPreferencesKey("folder_playlist_custom_order")
@@ -370,8 +369,6 @@ class SettingsManager(private val context: Context) :
         val KEY_SORT_PLAYLIST_LIST = intPreferencesKey("sort_playlist_list")
         val KEY_SORT_PLAYLIST_DETAIL_SONG = intPreferencesKey("sort_playlist_detail_song")
         val KEY_CATEGORY_GRID_COLUMNS = intPreferencesKey("category_grid_columns")
-        // 0 = only the on-device log, 1 = only Last.fm, 2 = merge both timelines.
-        val KEY_LISTENING_HISTORY_SOURCE = intPreferencesKey("listening_history_source")
         val KEY_HOME_DAILY_MIX_VISIBLE = booleanPreferencesKey("home_daily_mix_visible")
         val KEY_CONTINUE_PLAYBACK_ROW_VISIBLE = booleanPreferencesKey("continue_playback_row_visible")
         val KEY_HOME_RECENT_SECTION_MODE = intPreferencesKey("home_recent_section_mode")
@@ -475,10 +472,6 @@ class SettingsManager(private val context: Context) :
 
         const val PLAY_NEXT_MODE_REVERSE_STACK = 0
         const val PLAY_NEXT_MODE_FORWARD_STACK = 1
-
-        const val LISTENING_HISTORY_SOURCE_LOCAL = 0
-        const val LISTENING_HISTORY_SOURCE_LAST_FM = 1
-        const val LISTENING_HISTORY_SOURCE_COMBINED = 2
 
         const val OPLUS_LYRIC_MODE_SYSTEM = 0
         const val OPLUS_LYRIC_MODE_MODULE = 1
@@ -986,7 +979,6 @@ class SettingsManager(private val context: Context) :
             setBoolean(KEY_STARTUP_AUTO_PLAY)
             setBoolean(KEY_HOME_DAILY_MIX_VISIBLE)
             setBoolean(KEY_CONTINUE_PLAYBACK_ROW_VISIBLE)
-            setBoolean(KEY_WEB_MUSIC_SERVER_ENABLED)
             setBoolean(KEY_SLEEP_TIMER_STOP_AFTER_CURRENT)
             setBoolean(KEY_EQ_ENABLED)
             setBoolean(KEY_COMP_ENABLED)
@@ -1127,7 +1119,6 @@ class SettingsManager(private val context: Context) :
             setInt(KEY_PLAYER_BEAUTIFUL_LYRICS_BLUR)
             setInt(KEY_PLAYER_BEAUTIFUL_LYRICS_BRIGHTNESS)
             setInt(KEY_WEBDAV_AUTO_BACKUP_INTERVAL_HOURS)
-            setInt(KEY_LISTENING_HISTORY_SOURCE)
             setInt(KEY_SONG_RATING_DISPLAY_MODE)
 
             val dynamicSortKeyPrefixes = listOf(

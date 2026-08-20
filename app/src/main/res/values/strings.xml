@@ -220,8 +220,7 @@
     <string name="settings_library_scan_summary">扫描来源、文件夹、分隔符、标签刮削和桌面快捷方式</string>
     <string name="settings_library_source_summary">歌曲、歌手、专辑、流派、年份等库内容来自本地，还是 Navidrome / Emby / WebDAV（可缓存到本地，用刷新按钮更新缓存）</string>
     <string name="settings_library_source_local">本地</string>
-    <string name="settings_integrations">AI 与集成</string>
-    <string name="settings_integrations_summary">Ella 助手、OpenAI 兼容接口和 MCP 服务器</string>
+    <!-- AI 与集成已移除 -->
     <string name="settings_library_source">音乐来源</string>
     <string name="settings_scan_folders">扫描文件夹</string>
     <string name="settings_scan_folders_summary">管理本地目录、USB 目录和隐藏文件夹</string>
@@ -872,7 +871,7 @@
     <string name="settings_backup_settings_section">应用数据</string>
     <string name="settings_backup_playback_section">Prism Music</string>
     <string name="settings_backup_export_settings_title">导出应用数据</string>
-    <string name="settings_backup_export_settings_summary">导出设置、歌单、听歌历史、统计、AI 对话和在线源</string>
+    <string name="settings_backup_export_settings_summary">导出设置、歌单、听歌历史、统计和在线源</string>
     <string name="settings_backup_restore_settings_title">恢复应用数据</string>
     <string name="settings_backup_restore_settings_summary">从备份 JSON 恢复设置、歌单、历史、统计和在线源</string>
     <string name="settings_backup_export_playback_title">导出听歌历史到 Prism Music</string>
@@ -1995,12 +1994,7 @@
     <string name="playlist_export_open_file_failed">无法打开导出文件</string>
     <string name="playlist_favorites_default_name">我喜欢的音乐</string>
     <string name="playlist_import_default_name">导入歌单</string>
-    <string name="web_music_beta_title">局域网 Web 音乐服务（Beta）</string>
-    <string name="web_music_beta_summary">在可信局域网内浏览、播放和上传音乐。Beta 版暂无访问密码，请勿在公共网络开启</string>
-    <string name="web_music_beta_address">访问地址</string>
-    <string name="web_music_beta_address_unavailable">暂未找到可用的局域网地址</string>
-    <string name="web_music_beta_notification_channel">Web 音乐服务</string>
-    <string name="web_music_beta_notification">正在监听端口 %1$d</string>
+    <!-- Web 音乐服务已移除 -->
     <string name="about_summary_reorderable">可拖拽排序列表组件（Apache-2.0）</string>
 
     <!-- Lyrico plugin lyric matching -->
@@ -2071,38 +2065,8 @@
     <string name="player_lyrics_sustain_threshold_value">%1$d 毫秒</string>
 
     <!-- Last.fm listening history -->
-    <string name="settings_lastfm">Last.fm 听歌历史</string>
-    <string name="settings_lastfm_summary">授权后同步完整历史，并在播放达到条件时自动 Scrobble</string>
-    <string name="lastfm_history_source">听歌历史来源</string>
-    <string name="lastfm_history_source_summary">可仅查看本地记录、完整 Last.fm 历史，或将两者合并显示</string>
-    <string name="lastfm_history_source_local">仅本地历史</string>
-    <string name="lastfm_history_source_lastfm">仅 Last.fm 历史</string>
-    <string name="lastfm_history_source_combined">本地与 Last.fm 合并</string>
-    <string name="lastfm_connection">Last.fm 连接</string>
-    <string name="lastfm_api_key">Last.fm API Key</string>
-    <string name="lastfm_api_key_summary">在你的 Last.fm API 应用页面获取；仅用于公开请求</string>
-    <string name="lastfm_shared_secret">Last.fm Shared Secret</string>
-    <string name="lastfm_shared_secret_summary">仅用于签名授权和 Scrobble；使用 Android Keystore 加密保存，不会写入备份</string>
-    <string name="lastfm_connected_as">已连接：%1$s</string>
-    <string name="lastfm_not_connected">尚未连接 Last.fm</string>
-    <string name="lastfm_open_authorization">在浏览器中授权</string>
-    <string name="lastfm_open_authorization_summary">生成一次性 token，并打开 Last.fm 的授权页面</string>
-    <string name="lastfm_complete_authorization">我已在浏览器授权，完成连接</string>
-    <string name="lastfm_complete_authorization_summary">交换 session 并立即同步完整历史</string>
-    <string name="lastfm_sync_all_history">同步全部 Last.fm 历史</string>
-    <string name="lastfm_sync_all_history_summary">按 Last.fm 分页读取并缓存全部历史，离线也可浏览</string>
-    <string name="lastfm_retry_scrobbles">重新发送待上报记录</string>
-    <string name="lastfm_retry_scrobbles_summary">当前有 %1$d 条待上报记录</string>
-    <string name="lastfm_disconnect">断开 Last.fm</string>
-    <string name="lastfm_disconnect_summary">移除账号 session；已缓存的历史不会被删除</string>
-    <string name="lastfm_disconnected">已断开 Last.fm</string>
-    <string name="lastfm_action_success">操作完成</string>
-    <string name="lastfm_action_failed">操作失败：%1$s</string>
-    <string name="lastfm_sync_idle">尚未同步；待上报 %1$d 条</string>
-    <string name="lastfm_syncing">正在同步第 %1$d / %2$d 页，已获取 %3$d 条</string>
-    <string name="lastfm_sync_complete">已缓存 %1$d 条历史；待上报 %2$d 条</string>
-    <string name="lastfm_sync_failed">同步失败：%1$s</string>
-    <string name="lastfm_source_badge">Last.fm</string>
+    <!-- Last.fm 已移除 -->
+    <!-- lastfm_source_badge 已移除 -->
 
     <!-- Shown by MIUI/HyperOS in the uninstall confirmation dialog. -->
     <string name="miui_uninstall_title">就要说再见了吗？</string>

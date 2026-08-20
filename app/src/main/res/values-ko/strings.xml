@@ -195,8 +195,7 @@
     <string name="settings_library_scan_summary">스캔 소스, 폴더, 구분 기호, 태그 스크래핑 및 데스크톱 바로가기</string>
     <string name="settings_library_source_summary">곡, 아티스트, 앨범, 장르, 연도 등의 라이브러리 콘텐츠를 로컬에서 가져올지, Navidrome / Emby 서버에서 가져올지 선택합니다(로컬에 캐시되며 새로 고침 버튼으로 갱신)</string>
     <string name="settings_library_source_local">로컬</string>
-    <string name="settings_integrations">AI 및 통합</string>
-    <string name="settings_integrations_summary">Ella 보조자, OpenAI 호환 엔드포인트 및 MCP 서버</string>
+    <!-- AI 및 통합 제거됨 -->
     <string name="settings_library_source">음악 소스</string>
     <string name="settings_scan_folders">폴더 스캔</string>
     <string name="settings_scan_folders_summary">로컬 디렉터리, USB 디렉터리 및 숨김 폴더 관리</string>
@@ -623,7 +622,7 @@
     <string name="settings_backup_settings_section">설정</string>
     <string name="settings_backup_playback_section">청취 이력</string>
     <string name="settings_backup_export_settings_title">설정 내보내기</string>
-    <string name="settings_backup_export_settings_summary">앱 설정, 재생목록 및 AI 채팅 내보내기</string>
+    <string name="settings_backup_export_settings_summary">앱 설정, 재생목록 및 데이터 내보내기</string>
     <string name="settings_backup_restore_settings_title">설정 복원</string>
     <string name="settings_backup_restore_settings_summary">백업 JSON에서 앱 설정, 재생목록 및 AI 채팅을 복원합니다.</string>
     <string name="settings_backup_export_playback_title">청취 기록 내보내기</string>
@@ -1442,12 +1441,7 @@
     <string name="playlist_import_default_name">가져온 재생목록</string>
 
     <!-- MCP Server -->
-    <string name="web_music_beta_title">LAN Web 음악 서비스(Beta)</string>
-    <string name="web_music_beta_summary">신뢰할 수 있는 LAN에서 음악을 탐색, 재생 및 업로드합니다. Beta에는 접근 암호가 없으므로 공용 네트워크에서 사용하지 마세요</string>
-    <string name="web_music_beta_address">접속 주소</string>
-    <string name="web_music_beta_address_unavailable">사용 가능한 LAN 주소를 찾지 못했습니다</string>
-    <string name="web_music_beta_notification_channel">Web 음악 서비스</string>
-    <string name="web_music_beta_notification">포트 %1$d에서 수신 중</string>
+    <!-- Web 음악 서비스 제거됨 -->
     <string name="about_summary_reorderable">드래그하여 재정렬 목록 구성요소(Apache-2.0)</string>
     <string name="equalizer_band_count">%1$d 밴드</string>
     <string name="equalizer_bass_boost">베이스 부스트</string>
@@ -1844,39 +1838,8 @@
     <string name="category_arranger_page">편곡가 페이지</string>
     <string name="category_count_arrangers">편곡가 %1$d명</string>
 
-    <!-- Last.fm listening history -->
-    <string name="settings_lastfm">Last.fm 재생 기록</string>
-    <string name="settings_lastfm_summary">인증 후 전체 기록을 동기화하고 조건을 충족한 재생을 자동으로 Scrobble합니다</string>
-    <string name="lastfm_history_source">재생 기록 소스</string>
-    <string name="lastfm_history_source_summary">로컬 기록만, 전체 Last.fm 기록 또는 둘을 합쳐 표시합니다</string>
-    <string name="lastfm_history_source_local">로컬 기록만</string>
-    <string name="lastfm_history_source_lastfm">Last.fm 기록만</string>
-    <string name="lastfm_history_source_combined">로컬 및 Last.fm 통합</string>
-    <string name="lastfm_connection">Last.fm 연결</string>
-    <string name="lastfm_api_key">Last.fm API Key</string>
-    <string name="lastfm_api_key_summary">Last.fm API 애플리케이션 페이지에서 가져오며 공개 요청에만 사용됩니다</string>
-    <string name="lastfm_shared_secret">Last.fm Shared Secret</string>
-    <string name="lastfm_shared_secret_summary">서명 인증 및 Scrobble에만 사용되며 Android Keystore로 암호화되고 백업에서 제외됩니다</string>
-    <string name="lastfm_connected_as">연결된 계정: %1$s</string>
-    <string name="lastfm_not_connected">Last.fm에 연결되지 않음</string>
-    <string name="lastfm_open_authorization">브라우저에서 인증</string>
-    <string name="lastfm_open_authorization_summary">일회용 토큰을 만들고 Last.fm 인증 페이지를 엽니다</string>
-    <string name="lastfm_complete_authorization">브라우저 인증 완료, 연결 마치기</string>
-    <string name="lastfm_complete_authorization_summary">세션을 교환하고 전체 기록을 즉시 동기화합니다</string>
-    <string name="lastfm_sync_all_history">모든 Last.fm 기록 동기화</string>
-    <string name="lastfm_sync_all_history_summary">Last.fm 기록을 페이지별로 읽고 저장하여 오프라인에서도 볼 수 있게 합니다</string>
-    <string name="lastfm_retry_scrobbles">대기 중인 Scrobble 다시 보내기</string>
-    <string name="lastfm_retry_scrobbles_summary">재생 %1$d건이 전송 대기 중입니다</string>
-    <string name="lastfm_disconnect">Last.fm 연결 해제</string>
-    <string name="lastfm_disconnect_summary">계정 세션을 제거하며 저장된 기록은 유지됩니다</string>
-    <string name="lastfm_disconnected">Last.fm 연결이 해제되었습니다</string>
-    <string name="lastfm_action_success">완료됨</string>
-    <string name="lastfm_action_failed">실패: %1$s</string>
-    <string name="lastfm_sync_idle">아직 동기화되지 않음. Scrobble %1$d건 대기 중</string>
-    <string name="lastfm_syncing">%1$d / %2$d페이지 동기화 중, 재생 %3$d건 받음</string>
-    <string name="lastfm_sync_complete">재생 %1$d건 저장됨. Scrobble %2$d건 대기 중</string>
-    <string name="lastfm_sync_failed">동기화 실패: %1$s</string>
-    <string name="lastfm_source_badge">Last.fm</string>
+    <!-- Last.fm 제거됨 -->
+    <!-- lastfm_source_badge 제거됨 -->
 
     <string name="miui_uninstall_title">벌써 안녕인가요?</string>
     <string name="miui_uninstall_content">Halcyon과 여기까지 함께해 줘서 고마워요.</string>

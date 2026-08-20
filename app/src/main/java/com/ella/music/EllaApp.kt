@@ -7,7 +7,6 @@ import com.ella.music.data.AppLogStore
 import com.ella.music.data.AppIconManager
 import com.ella.music.data.SettingsManager
 import com.ella.music.data.webdav.WebDavClient
-import com.ella.music.web.WebMusicService
 import com.ella.music.oem.AppMemoryTrimAdapter
 import com.ella.music.player.PlaybackWidgetUpdater
 import com.ella.music.oem.HyperOsFairMemoryAdapter
@@ -18,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.lsposed.hiddenapibypass.HiddenApiBypass
@@ -53,11 +51,6 @@ class EllaApp : Application() {
             runCatching { LibrarySortUiState.warmUp(settingsManager) }
         }
 
-        appScope.launch {
-            if (settingsManager.webMusicServerEnabled.first()) {
-                WebMusicService.start(this@EllaApp)
-            }
-        }
         appScope.launch {
             settingsManager.appIconStyle
                 .distinctUntilChanged()

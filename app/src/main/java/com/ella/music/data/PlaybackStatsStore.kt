@@ -47,7 +47,6 @@ data class PlaybackHistoryEntry(
 
 object PlaybackHistorySource {
     const val LOCAL = "local"
-    const val LAST_FM = "lastfm"
 }
 
 class PlaybackStatsStore private constructor(context: Context) {

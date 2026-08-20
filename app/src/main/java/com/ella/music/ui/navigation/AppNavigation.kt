@@ -48,7 +48,6 @@ import com.ella.music.ui.settings.BottomNavigationSettingsScreen
 import com.ella.music.ui.settings.LyricFontScreen
 import com.ella.music.ui.settings.LyricPluginSourceSettingsScreen
 import com.ella.music.ui.settings.LogScreen
-import com.ella.music.ui.settings.LastFmSettingsScreen
 import com.ella.music.ui.settings.SettingsDetailScreen
 import com.ella.music.ui.settings.SettingsDetailMode
 import com.ella.music.ui.settings.SettingsScreen
@@ -141,15 +140,6 @@ sealed class Screen(val route: String) {
     }
     data object BottomNavigationSettings : Screen("settings_bottom_navigation")
     data object LibrarySettings : Screen("library_settings?highlight={highlight}") {
-        fun createRoute(highlight: String = "") = "library_settings?highlight=${java.net.URLEncoder.encode(highlight, "UTF-8")}"
-    }
-    data object IntegrationSettings : Screen("integration_settings?highlight={highlight}") {
-        fun createRoute(highlight: String = ""): String {
-            val encodedHighlight = java.net.URLEncoder.encode(highlight, "UTF-8")
-            return "integration_settings?highlight=$encodedHighlight"
-        }
-    }
-    data object LastFmSettings : Screen("lastfm_settings")
     data object LyricSettings : Screen("lyric_settings?highlight={highlight}") {
         fun createRoute(highlight: String = "") = "lyric_settings?highlight=${java.net.URLEncoder.encode(highlight, "UTF-8")}"
     }
@@ -596,7 +586,6 @@ fun AppNavigation(
                 onNavigateToAbout = { navController.navigate(Screen.About.route) },
                 onNavigateToAppearanceSettings = { navController.navigate(Screen.SettingsDetail.createRoute()) },
                 onNavigateToLibrarySettings = { navController.navigate(Screen.LibrarySettings.createRoute()) },
-                onNavigateToIntegrationSettings = { navController.navigate(Screen.IntegrationSettings.createRoute()) },
                 onNavigateToLyricSettings = { navController.navigate(Screen.LyricSettings.createRoute()) },
                 onNavigateToAudioSettings = { navController.navigate(Screen.AudioSettings.createRoute()) },
                 onNavigateToBackupSettings = { navController.navigate(Screen.BackupSettings.createRoute()) },
@@ -621,9 +610,6 @@ fun AppNavigation(
                 },
                 onNavigateToHighlightedLibrarySettings = { highlight ->
                     navController.navigate(Screen.LibrarySettings.createRoute(highlight))
-                },
-                onNavigateToHighlightedIntegrationSettings = { highlight ->
-                    navController.navigate(Screen.IntegrationSettings.createRoute(highlight))
                 },
                 onNavigateToHighlightedAudioSettings = { highlight ->
                     navController.navigate(Screen.AudioSettings.createRoute(highlight))
@@ -733,23 +719,6 @@ fun AppNavigation(
                 provider = RemoteMusicProvider.Emby,
                 onBack = { navController.popBackStack() }
             )
-        }
-
-        composable(
-            route = Screen.IntegrationSettings.route,
-            arguments = listOf(navArgument("highlight") { defaultValue = "" })
-        ) { backStackEntry ->
-            SettingsDetailScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToLyricFont = { navController.navigate(Screen.LyricFont.route) },
-                mode = SettingsDetailMode.Integrations,
-                highlightKey = backStackEntry.arguments?.getString("highlight").orEmpty(),
-                onNavigateToLastFmSettings = { navController.navigate(Screen.LastFmSettings.route) }
-            )
-        }
-
-        composable(Screen.LastFmSettings.route) {
-            LastFmSettingsScreen(onBack = { navController.popBackStack() })
         }
 
         composable(

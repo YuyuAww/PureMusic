@@ -6,8 +6,6 @@ import android.os.SystemClock
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.ella.music.data.AppLogStore
-import com.ella.music.data.lastfm.LastFmHistoryStore
-import com.ella.music.data.lastfm.ListeningHistorySource
 import com.ella.music.data.PlaylistStore
 import com.ella.music.data.PlaybackStatsStore
 import com.ella.music.data.SettingsManager
@@ -91,7 +89,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val playlistStore = PlaylistStore.getInstance(application)
     private val openSubsonicCollectionsStore = OpenSubsonicCollectionsStore.getInstance(application)
     private val playbackStatsStore = PlaybackStatsStore.getInstance(application)
-    private val lastFmHistoryStore = LastFmHistoryStore.getInstance(application)
     private val navidromeService = NavidromeService(application)
     private val playbackStatsTracker = PlayerPlaybackStatsTracker(
         playbackStatsStore = playbackStatsStore,
@@ -106,14 +103,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 if (config?.isConfigured == true && song.onlineId.isNotBlank()) {
                     runCatching { navidromeService.scrobble(config, song.onlineId) }
                         .onFailure { AppLogStore.warn(application, "SubsonicScrobble", "Failed to scrobble ${song.title}", it) }
-                }
-            }
-        },
-        onLastFmScrobbleEligible = { song, startedAt ->
-            viewModelScope.launch(Dispatchers.IO) {
-                val source = ListeningHistorySource.fromPreference(settingsManager.listeningHistorySource.first())
-                if (source.usesLastFm) {
-                    lastFmHistoryStore.enqueueScrobble(song, startedAt)
                 }
             }
         }
@@ -689,12 +678,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             playerManager.currentSong.collectLatest { song ->
                 if (song != null) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        val source = ListeningHistorySource.fromPreference(settingsManager.listeningHistorySource.first())
-                        if (source.usesLastFm) {
-                            lastFmHistoryStore.updateNowPlaying(song)
-                        }
-                    }
                     val songKey = song.lyricIdentityKey()
                     if (loadedLyricSongKey == songKey) {
                         updateCurrentLyricIndex()

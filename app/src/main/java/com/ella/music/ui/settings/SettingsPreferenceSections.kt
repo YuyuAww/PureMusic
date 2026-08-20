@@ -20,7 +20,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -151,66 +150,6 @@ internal fun SettingsLibrarySourceSection(
                 onClick = { onOpenWebDavConfig?.invoke() }
             )
         }
-    }
-}
-
-@Composable
-internal fun SettingsWebMusicSection(
-    highlightKey: String? = null
-) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val settingsManager = remember { SettingsManager.getInstance(context) }
-    val webMusicServerEnabled by settingsManager.webMusicServerEnabled.collectAsState(initial = false)
-    val uriHandler = LocalUriHandler.current
-    val webAddresses = remember(webMusicServerEnabled) {
-        if (webMusicServerEnabled) com.ella.music.web.WebMusicService.accessAddresses() else emptyList()
-    }
-
-    SmallTitle(text = stringResource(R.string.web_music_beta_title))
-    SettingsCardGroup(highlight = highlightKey == "web_music") {
-        Column {
-            SettingsFocusAnchor(active = highlightKey == "web_music") {
-                SwitchPreference(
-                    title = stringResource(R.string.web_music_beta_title),
-                    summary = stringResource(R.string.web_music_beta_summary),
-                    checked = webMusicServerEnabled,
-                    onCheckedChange = { enabled ->
-                        scope.launch {
-                            settingsManager.setWebMusicServerEnabled(enabled)
-                            if (enabled) {
-                                com.ella.music.web.WebMusicService.start(context)
-                            } else {
-                                com.ella.music.web.WebMusicService.stop(context)
-                            }
-                        }
-                    }
-                )
-            }
-            if (webMusicServerEnabled) {
-                ArrowPreference(
-                    title = stringResource(R.string.web_music_beta_address),
-                    summary = webAddresses.joinToString("\n")
-                        .ifBlank { stringResource(R.string.web_music_beta_address_unavailable) },
-                    onClick = { webAddresses.firstOrNull()?.let(uriHandler::openUri) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-internal fun SettingsLastFmSection(
-    highlightKey: String? = null,
-    onOpenLastFmSettings: () -> Unit
-) {
-    SmallTitle(text = stringResource(R.string.settings_lastfm))
-    SettingsCardGroup(highlight = highlightKey == "lastfm") {
-        ArrowPreference(
-            title = stringResource(R.string.settings_lastfm),
-            summary = stringResource(R.string.settings_lastfm_summary),
-            onClick = onOpenLastFmSettings
-        )
     }
 }
 

@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ella.music.R
 import com.ella.music.data.PlaybackHistoryEntry
-import com.ella.music.data.PlaybackHistorySource
 import com.ella.music.data.audioQualitySummary
 import com.ella.music.data.model.AudioInfo
 import com.ella.music.data.model.Song
@@ -407,21 +406,6 @@ private fun ListeningTimelineRow(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            if (entry.entry.source == PlaybackHistorySource.LAST_FM) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(MiuixTheme.colorScheme.primary.copy(alpha = 0.18f))
-                                        .padding(horizontal = 5.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.lastfm_source_badge),
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MiuixTheme.colorScheme.primary
-                                    )
-                                }
-                            }
                             audioInfo?.let {
                                 audioQualitySummary(it).listTag?.let { tag ->
                                     Box(

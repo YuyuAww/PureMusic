@@ -41,7 +41,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 enum class SettingsDetailMode {
     AppearanceHome,
     LibraryScanning,
-    Integrations,
     Lyrics
 }
 
@@ -60,7 +59,6 @@ fun SettingsDetailScreen(
     onNavigateToEmbyConfig: (() -> Unit)? = null,
     onNavigateToWebDavConfig: (() -> Unit)? = null,
     onNavigateToLyricPluginSources: () -> Unit = {},
-    onNavigateToLastFmSettings: () -> Unit = {},
     onNavigateToBottomNavigationSettings: () -> Unit = {},
     mainViewModel: com.ella.music.viewmodel.MainViewModel? = null
 ) {
@@ -128,7 +126,6 @@ fun SettingsDetailScreen(
                 showHomeDisplayPage -> stringResource(R.string.settings_home_display)
                 effectiveMode == SettingsDetailMode.AppearanceHome -> stringResource(R.string.settings_appearance_home)
                 effectiveMode == SettingsDetailMode.LibraryScanning -> stringResource(R.string.settings_library_scan)
-                effectiveMode == SettingsDetailMode.Integrations -> stringResource(R.string.settings_integrations)
                 else -> stringResource(R.string.settings_lyrics)
             },
             color = pageBackground,
@@ -249,12 +246,6 @@ fun SettingsDetailScreen(
                     SettingsScanSection(highlightKey = highlightKey)
                     SettingsTagScrapingSection(highlightKey = highlightKey)
                     SettingsDesktopShortcutSection(highlightKey = highlightKey)
-                }
-                SettingsDetailMode.Integrations -> {
-                    SettingsLastFmSection(
-                        highlightKey = highlightKey,
-                        onOpenLastFmSettings = onNavigateToLastFmSettings
-                    )
                 }
                 SettingsDetailMode.Lyrics -> {
                     SettingsLyricsSection(

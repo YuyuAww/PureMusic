@@ -190,8 +190,7 @@
     <string name="settings_library_scan_summary">掃描來源、資料夾、分隔符號、標籤擷取與桌面捷徑</string>
     <string name="settings_library_source_summary">歌曲、歌手、專輯、曲風、年份等媒體庫內容來自本機，還是 Navidrome / Emby / WebDAV（可快取到本機，並以重新整理按鈕更新快取）</string>
     <string name="settings_library_source_local">本機</string>
-    <string name="settings_integrations">AI 與整合服務</string>
-    <string name="settings_integrations_summary">Ella 助理、OpenAI 相容端點與 MCP 伺服器</string>
+    <!-- AI 與整合服務 已移除 -->
     <string name="settings_library_source">音樂來源</string>
     <string name="settings_scan_folders">掃描資料夾</string>
     <string name="settings_scan_folders_summary">管理本機目錄、USB 目錄和隱藏資料夾</string>
@@ -643,7 +642,7 @@
     <string name="settings_backup_settings_section">設定</string>
     <string name="settings_backup_playback_section">播放紀錄</string>
     <string name="settings_backup_export_settings_title">匯出設定</string>
-    <string name="settings_backup_export_settings_summary">匯出應用程式設定、播放清單與 AI 對話</string>
+    <string name="settings_backup_export_settings_summary">匯出應用程式設定、播放清單與資料</string>
     <string name="settings_backup_restore_settings_title">還原設定</string>
     <string name="settings_backup_restore_settings_summary">從備份 JSON 還原應用程式設定、播放清單與 AI 對話</string>
     <string name="settings_backup_export_playback_title">匯出播放紀錄</string>
@@ -1463,12 +1462,7 @@
     <string name="playlist_import_default_name">匯入播放清單</string>
 
     <!-- MCP Server -->
-    <string name="web_music_beta_title">區域網路 Web 音樂服務（Beta）</string>
-    <string name="web_music_beta_summary">在可信任的區域網路內瀏覽、播放及上傳音樂。Beta 版暫無存取密碼，請勿在公共網路啟用</string>
-    <string name="web_music_beta_address">存取位址</string>
-    <string name="web_music_beta_address_unavailable">找不到可用的區域網路位址</string>
-    <string name="web_music_beta_notification_channel">Web 音樂服務</string>
-    <string name="web_music_beta_notification">正在監聽連接埠 %1$d</string>
+    <!-- 區域網路 Web 音樂服務 已移除 -->
     <string name="about_summary_reorderable">可拖曳排序列表元件（Apache-2.0）</string>
     <string name="equalizer_band_count">%1$d 段</string>
     <string name="equalizer_bass_boost">重低音增強</string>
@@ -1844,39 +1838,8 @@
     <string name="category_arranger_page">編曲家頁</string>
     <string name="category_count_arrangers">%1$d 位編曲家</string>
 
-    <!-- Last.fm 聆聽歷史 -->
-    <string name="settings_lastfm">Last.fm 聆聽歷史</string>
-    <string name="settings_lastfm_summary">授權後同步完整歷史，並在播放達到條件時自動 Scrobble</string>
-    <string name="lastfm_history_source">聆聽歷史來源</string>
-    <string name="lastfm_history_source_summary">可僅查看本機記錄、完整 Last.fm 歷史，或將兩者合併顯示</string>
-    <string name="lastfm_history_source_local">僅本機歷史</string>
-    <string name="lastfm_history_source_lastfm">僅 Last.fm 歷史</string>
-    <string name="lastfm_history_source_combined">本機與 Last.fm 合併</string>
-    <string name="lastfm_connection">Last.fm 連線</string>
-    <string name="lastfm_api_key">Last.fm API Key</string>
-    <string name="lastfm_api_key_summary">在你的 Last.fm API 應用頁面取得；僅用於公開請求</string>
-    <string name="lastfm_shared_secret">Last.fm Shared Secret</string>
-    <string name="lastfm_shared_secret_summary">僅用於簽名授權和 Scrobble；以 Android Keystore 加密保存，不會寫入備份</string>
-    <string name="lastfm_connected_as">已連線：%1$s</string>
-    <string name="lastfm_not_connected">尚未連線 Last.fm</string>
-    <string name="lastfm_open_authorization">在瀏覽器中授權</string>
-    <string name="lastfm_open_authorization_summary">產生一次性 token，並開啟 Last.fm 授權頁面</string>
-    <string name="lastfm_complete_authorization">我已在瀏覽器授權，完成連線</string>
-    <string name="lastfm_complete_authorization_summary">交換 session 並立即同步完整歷史</string>
-    <string name="lastfm_sync_all_history">同步全部 Last.fm 歷史</string>
-    <string name="lastfm_sync_all_history_summary">按 Last.fm 分頁讀取並快取全部歷史，離線也可瀏覽</string>
-    <string name="lastfm_retry_scrobbles">重新傳送待上報記錄</string>
-    <string name="lastfm_retry_scrobbles_summary">目前有 %1$d 條待上報記錄</string>
-    <string name="lastfm_disconnect">中斷 Last.fm 連線</string>
-    <string name="lastfm_disconnect_summary">移除帳號 session；已快取的歷史不會被刪除</string>
-    <string name="lastfm_disconnected">已中斷 Last.fm 連線</string>
-    <string name="lastfm_action_success">操作完成</string>
-    <string name="lastfm_action_failed">操作失敗：%1$s</string>
-    <string name="lastfm_sync_idle">尚未同步；待上報 %1$d 條</string>
-    <string name="lastfm_syncing">正在同步第 %1$d / %2$d 頁，已取得 %3$d 條</string>
-    <string name="lastfm_sync_complete">已快取 %1$d 條歷史；待上報 %2$d 條</string>
-    <string name="lastfm_sync_failed">同步失敗：%1$s</string>
-    <string name="lastfm_source_badge">Last.fm</string>
+    <!-- Last.fm 已移除 -->
+    <!-- lastfm_source_badge 已移除 -->
 
     <string name="miui_uninstall_title">就要說再見了嗎？</string>
     <string name="miui_uninstall_content">謝謝你陪 Halcyon 走過這一程，願旋律仍在你心裡迴響。</string>

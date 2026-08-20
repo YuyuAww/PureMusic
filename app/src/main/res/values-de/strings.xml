@@ -195,8 +195,7 @@
     <string name="settings_library_scan_summary">Quellen, Ordner, Trennzeichen, Tag-Scraping und Startbildschirm-Verknüpfungen scannen</string>
     <string name="settings_library_source_summary">Ob Mediathekinhalte wie Titel, Interpreten, Alben, Genres und Jahre lokal oder von einem Navidrome-/Emby-Server stammen (lokal zwischengespeichert, Aktualisierung über die Aktualisieren-Schaltfläche)</string>
     <string name="settings_library_source_local">Lokal</string>
-    <string name="settings_integrations">KI und Integrationen</string>
-    <string name="settings_integrations_summary">Ella-Assistentin, OpenAI-kompatible Endpunkte und MCP-Server</string>
+    <!-- KI und Integrationen entfernt -->
     <string name="settings_library_source">Musikquellen</string>
     <string name="settings_scan_folders">Ordner scannen</string>
     <string name="settings_scan_folders_summary">Lokale Ordner, USB-Ordner und ausgeblendete Ordner verwalten</string>
@@ -623,7 +622,7 @@
     <string name="settings_backup_settings_section">Einstellungen</string>
     <string name="settings_backup_playback_section">Hörverlauf</string>
     <string name="settings_backup_export_settings_title">Einstellungen exportieren</string>
-    <string name="settings_backup_export_settings_summary">App-Einstellungen, Playlists und KI-Chats exportieren</string>
+    <string name="settings_backup_export_settings_summary">App-Einstellungen, Playlists und Daten exportieren</string>
     <string name="settings_backup_restore_settings_title">Einstellungen wiederherstellen</string>
     <string name="settings_backup_restore_settings_summary">App-Einstellungen, Playlists und KI-Chats aus einer JSON-Sicherung wiederherstellen</string>
     <string name="settings_backup_export_playback_title">Hörverlauf exportieren</string>
@@ -1442,12 +1441,7 @@
     <string name="playlist_import_default_name">Importierte Playlist</string>
 
     <!-- MCP Server -->
-    <string name="web_music_beta_title">LAN-Webmusikdienst (Beta)</string>
-    <string name="web_music_beta_summary">Musik in einem vertrauenswürdigen LAN durchsuchen, abspielen und hochladen. Die Beta hat noch kein Zugangspasswort; nicht in öffentlichen Netzen aktivieren</string>
-    <string name="web_music_beta_address">Zugriffsadresse</string>
-    <string name="web_music_beta_address_unavailable">Keine nutzbare LAN-Adresse gefunden</string>
-    <string name="web_music_beta_notification_channel">Webmusikdienst</string>
-    <string name="web_music_beta_notification">Lauscht auf Port %1$d</string>
+    <!-- Web-Musikdienst entfernt -->
     <string name="about_summary_reorderable">Listenkomponente zum Ziehen und Neuordnen (Apache-2.0)</string>
     <string name="equalizer_band_count">%1$d Bänder</string>
     <string name="equalizer_bass_boost">Bassverstärkung</string>
@@ -1844,39 +1838,8 @@
     <string name="category_arranger_page">Arrangeur-Seite</string>
     <string name="category_count_arrangers">%1$d Arrangeure</string>
 
-    <!-- Last.fm listening history -->
-    <string name="settings_lastfm">Last.fm-Wiedergabeverlauf</string>
-    <string name="settings_lastfm_summary">Nach der Autorisierung den vollständigen Verlauf synchronisieren und geeignete Wiedergaben automatisch scrobbeln</string>
-    <string name="lastfm_history_source">Quelle des Wiedergabeverlaufs</string>
-    <string name="lastfm_history_source_summary">Nur lokale Einträge, den vollständigen Last.fm-Verlauf oder beide zusammen anzeigen</string>
-    <string name="lastfm_history_source_local">Nur lokaler Verlauf</string>
-    <string name="lastfm_history_source_lastfm">Nur Last.fm-Verlauf</string>
-    <string name="lastfm_history_source_combined">Lokaler und Last.fm-Verlauf</string>
-    <string name="lastfm_connection">Last.fm-Verbindung</string>
-    <string name="lastfm_api_key">Last.fm API Key</string>
-    <string name="lastfm_api_key_summary">Auf der Last.fm-API-Anwendungsseite erhältlich; wird nur für öffentliche Anfragen verwendet</string>
-    <string name="lastfm_shared_secret">Last.fm Shared Secret</string>
-    <string name="lastfm_shared_secret_summary">Nur für signierte Autorisierung und Scrobbles; mit Android Keystore verschlüsselt und von Sicherungen ausgeschlossen</string>
-    <string name="lastfm_connected_as">Verbunden als: %1$s</string>
-    <string name="lastfm_not_connected">Nicht mit Last.fm verbunden</string>
-    <string name="lastfm_open_authorization">Im Browser autorisieren</string>
-    <string name="lastfm_open_authorization_summary">Einmaliges Token erstellen und Last.fm-Autorisierungsseite öffnen</string>
-    <string name="lastfm_complete_authorization">Im Browser autorisiert – Verbindung abschließen</string>
-    <string name="lastfm_complete_authorization_summary">Sitzung austauschen und vollständigen Verlauf sofort synchronisieren</string>
-    <string name="lastfm_sync_all_history">Gesamten Last.fm-Verlauf synchronisieren</string>
-    <string name="lastfm_sync_all_history_summary">Verlauf seitenweise von Last.fm abrufen und zwischenspeichern, damit er offline verfügbar bleibt</string>
-    <string name="lastfm_retry_scrobbles">Ausstehende Scrobbles erneut senden</string>
-    <string name="lastfm_retry_scrobbles_summary">%1$d Wiedergaben warten auf Übermittlung</string>
-    <string name="lastfm_disconnect">Last.fm-Verbindung trennen</string>
-    <string name="lastfm_disconnect_summary">Kontositzung entfernen; der zwischengespeicherte Verlauf bleibt erhalten</string>
-    <string name="lastfm_disconnected">Last.fm-Verbindung getrennt</string>
-    <string name="lastfm_action_success">Abgeschlossen</string>
-    <string name="lastfm_action_failed">Fehlgeschlagen: %1$s</string>
-    <string name="lastfm_sync_idle">Noch nicht synchronisiert; %1$d Scrobbles ausstehend</string>
-    <string name="lastfm_syncing">Seite %1$d / %2$d wird synchronisiert, %3$d Wiedergaben empfangen</string>
-    <string name="lastfm_sync_complete">%1$d Wiedergaben zwischengespeichert; %2$d Scrobbles ausstehend</string>
-    <string name="lastfm_sync_failed">Synchronisierung fehlgeschlagen: %1$s</string>
-    <string name="lastfm_source_badge">Last.fm</string>
+    <!-- Last.fm entfernt -->
+    <!-- lastfm_source_badge entfernt -->
 
     <string name="miui_uninstall_title">Schon dabei zu gehen?</string>
     <string name="miui_uninstall_content">Danke, dass du dieses Stück mit Halcyon gegangen bist.</string>

@@ -216,8 +216,7 @@
     <string name="settings_library_scan_summary">Scan sources, folders, separators, tag scraping, and desktop shortcuts</string>
     <string name="settings_library_source_summary">Whether library content such as songs, artists, albums, genres, and years comes from local storage or Navidrome / Emby / WebDAV (cached locally, refresh with the refresh button)</string>
     <string name="settings_library_source_local">Local</string>
-    <string name="settings_integrations">AI and integrations</string>
-    <string name="settings_integrations_summary">Ella assistant, OpenAI-compatible endpoints, and MCP server</string>
+    <!-- AI and integrations removed -->
     <string name="settings_library_source">Music sources</string>
     <string name="settings_scan_folders">Scan folders</string>
     <string name="settings_scan_folders_summary">Manage local directories, USB directories, and hidden folders</string>
@@ -723,7 +722,7 @@
     <string name="settings_backup_settings_section">App data</string>
     <string name="settings_backup_playback_section">Prism Music</string>
     <string name="settings_backup_export_settings_title">Export app data</string>
-    <string name="settings_backup_export_settings_summary">Export settings, playlists, history, stats, AI chats, and online sources</string>
+    <string name="settings_backup_export_settings_summary">Export settings, playlists, history, stats, and online sources</string>
     <string name="settings_backup_restore_settings_title">Restore app data</string>
     <string name="settings_backup_restore_settings_summary">Restore settings, playlists, history, stats, and online sources from JSON</string>
     <string name="settings_backup_export_playback_title">Export history to Prism Music</string>
@@ -1641,12 +1640,7 @@
     <string name="playlist_favorites_default_name">My Favorites</string>
     <string name="playlist_import_default_name">Imported playlist</string>
 
-    <string name="web_music_beta_title">LAN Web music service (Beta)</string>
-    <string name="web_music_beta_summary">Browse, play, and upload music on a trusted LAN. Beta has no access password; do not enable it on public networks</string>
-    <string name="web_music_beta_address">Access address</string>
-    <string name="web_music_beta_address_unavailable">No usable LAN address found</string>
-    <string name="web_music_beta_notification_channel">Web music service</string>
-    <string name="web_music_beta_notification">Listening on port %1$d</string>
+    <!-- Web music service removed -->
     <string name="about_summary_reorderable">Drag-to-reorder list component (Apache-2.0)</string>
     <string name="equalizer_band_count">%1$d bands</string>
     <string name="equalizer_bass_boost">Bass Boost</string>
@@ -1890,39 +1884,8 @@
     <string name="category_arranger_page">Arranger page</string>
     <string name="category_count_arrangers">%1$d arrangers</string>
 
-    <!-- Last.fm listening history -->
-    <string name="settings_lastfm">Last.fm listening history</string>
-    <string name="settings_lastfm_summary">Synchronize full history after authorization and automatically scrobble eligible plays</string>
-    <string name="lastfm_history_source">Listening history source</string>
-    <string name="lastfm_history_source_summary">View only local records, full Last.fm history, or merge both</string>
-    <string name="lastfm_history_source_local">Local history only</string>
-    <string name="lastfm_history_source_lastfm">Last.fm history only</string>
-    <string name="lastfm_history_source_combined">Local and Last.fm combined</string>
-    <string name="lastfm_connection">Last.fm connection</string>
-    <string name="lastfm_api_key">Last.fm API Key</string>
-    <string name="lastfm_api_key_summary">Get it from your Last.fm API application page; used only for public requests</string>
-    <string name="lastfm_shared_secret">Last.fm Shared Secret</string>
-    <string name="lastfm_shared_secret_summary">Used only for signed authorization and scrobbles; encrypted with Android Keystore and excluded from backups</string>
-    <string name="lastfm_connected_as">Connected as: %1$s</string>
-    <string name="lastfm_not_connected">Not connected to Last.fm</string>
-    <string name="lastfm_open_authorization">Authorize in browser</string>
-    <string name="lastfm_open_authorization_summary">Create a one-time token and open the Last.fm authorization page</string>
-    <string name="lastfm_complete_authorization">I authorized in browser, complete connection</string>
-    <string name="lastfm_complete_authorization_summary">Exchange the session and synchronize the full history immediately</string>
-    <string name="lastfm_sync_all_history">Synchronize all Last.fm history</string>
-    <string name="lastfm_sync_all_history_summary">Read and cache history page by page from Last.fm so it remains browsable offline</string>
-    <string name="lastfm_retry_scrobbles">Retry queued scrobbles</string>
-    <string name="lastfm_retry_scrobbles_summary">%1$d plays are waiting to be submitted</string>
-    <string name="lastfm_disconnect">Disconnect Last.fm</string>
-    <string name="lastfm_disconnect_summary">Remove the account session; cached history is kept</string>
-    <string name="lastfm_disconnected">Last.fm disconnected</string>
-    <string name="lastfm_action_success">Completed</string>
-    <string name="lastfm_action_failed">Failed: %1$s</string>
-    <string name="lastfm_sync_idle">Not synchronized yet; %1$d scrobbles are queued</string>
-    <string name="lastfm_syncing">Synchronizing page %1$d / %2$d, received %3$d plays</string>
-    <string name="lastfm_sync_complete">Cached %1$d plays; %2$d scrobbles are queued</string>
-    <string name="lastfm_sync_failed">Synchronization failed: %1$s</string>
-    <string name="lastfm_source_badge">Last.fm</string>
+    <!-- Last.fm removed -->
+    <!-- lastfm_source_badge removed -->
 
     <string name="miui_uninstall_title">Leaving so soon?</string>
     <string name="miui_uninstall_content">Thanks for walking this stretch with Halcyon.</string>

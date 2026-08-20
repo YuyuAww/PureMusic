@@ -195,8 +195,7 @@
     <string name="settings_library_scan_summary">Сканирование источников, папок, разделителей, очистки тегов и ярлыков на рабочем столе.</string>
     <string name="settings_library_source_summary">Откуда берётся содержимое библиотеки — песни, исполнители, альбомы, жанры, годы и т. д.: из локального хранилища или с сервера Navidrome / Emby (кэшируется локально, обновляется кнопкой обновления)</string>
     <string name="settings_library_source_local">Локально</string>
-    <string name="settings_integrations">ИИ и интеграции</string>
-    <string name="settings_integrations_summary">Помощник Ella, конечные точки, совместимые с OpenAI, и сервер MCP</string>
+    <!-- ИИ и интеграции удалено -->
     <string name="settings_library_source">Источники музыки</string>
     <string name="settings_scan_folders">Сканировать папки</string>
     <string name="settings_scan_folders_summary">Управление локальными каталогами, каталогами USB и скрытыми папками.</string>
@@ -621,7 +620,7 @@
     <string name="settings_backup_settings_section">Настройки</string>
     <string name="settings_backup_playback_section">История прослушивания</string>
     <string name="settings_backup_export_settings_title">Экспорт настроек</string>
-    <string name="settings_backup_export_settings_summary">Экспортируйте настройки приложений, плейлисты и чаты AI.</string>
+    <string name="settings_backup_export_settings_summary">Экспортировать настройки, плейлисты и данные</string>
     <string name="settings_backup_restore_settings_title">Восстановить настройки</string>
     <string name="settings_backup_restore_settings_summary">Восстановление настроек приложения, плейлистов и чатов AI из резервной копии JSON</string>
     <string name="settings_backup_export_playback_title">Экспортировать историю прослушивания</string>
@@ -1428,12 +1427,7 @@
     <string name="playlist_favorites_default_name">Мои избранные</string>
     <string name="playlist_import_default_name">Импортированный плейлист</string>
     <!-- MCP Server -->
-    <string name="web_music_beta_title">Музыкальный Web-сервис в локальной сети (Beta)</string>
-    <string name="web_music_beta_summary">Просмотр, воспроизведение и загрузка музыки в доверенной локальной сети. В Beta пока нет пароля; не включайте в общедоступных сетях</string>
-    <string name="web_music_beta_address">Адрес доступа</string>
-    <string name="web_music_beta_address_unavailable">Подходящий адрес локальной сети не найден</string>
-    <string name="web_music_beta_notification_channel">Музыкальный Web-сервис</string>
-    <string name="web_music_beta_notification">Прослушивание порта %1$d</string>
+    <!-- Музыкальный Web-сервис удалено -->
     <string name="about_summary_reorderable">Компонент списка перетаскивания (Apache-2.0)</string>
 
     <string name="equalizer_band_count">%1$d полос</string>
@@ -1831,39 +1825,8 @@
     <string name="category_arranger_page">Страница аранжировщика</string>
     <string name="category_count_arrangers">Аранжировщиков: %1$d</string>
 
-    <!-- Last.fm listening history -->
-    <string name="settings_lastfm">История прослушиваний Last.fm</string>
-    <string name="settings_lastfm_summary">После авторизации синхронизировать всю историю и автоматически отправлять подходящие прослушивания</string>
-    <string name="lastfm_history_source">Источник истории прослушиваний</string>
-    <string name="lastfm_history_source_summary">Показывать только локальную историю, всю историю Last.fm или объединять обе</string>
-    <string name="lastfm_history_source_local">Только локальная история</string>
-    <string name="lastfm_history_source_lastfm">Только история Last.fm</string>
-    <string name="lastfm_history_source_combined">Локальная история и Last.fm</string>
-    <string name="lastfm_connection">Подключение Last.fm</string>
-    <string name="lastfm_api_key">Last.fm API Key</string>
-    <string name="lastfm_api_key_summary">Получите на странице приложения Last.fm API; используется только для публичных запросов</string>
-    <string name="lastfm_shared_secret">Last.fm Shared Secret</string>
-    <string name="lastfm_shared_secret_summary">Используется только для подписанной авторизации и отправки прослушиваний; зашифрован Android Keystore и исключён из резервных копий</string>
-    <string name="lastfm_connected_as">Подключено как: %1$s</string>
-    <string name="lastfm_not_connected">Нет подключения к Last.fm</string>
-    <string name="lastfm_open_authorization">Авторизовать в браузере</string>
-    <string name="lastfm_open_authorization_summary">Создать одноразовый токен и открыть страницу авторизации Last.fm</string>
-    <string name="lastfm_complete_authorization">Авторизация в браузере выполнена — завершить подключение</string>
-    <string name="lastfm_complete_authorization_summary">Получить сессию и сразу синхронизировать всю историю</string>
-    <string name="lastfm_sync_all_history">Синхронизировать всю историю Last.fm</string>
-    <string name="lastfm_sync_all_history_summary">Постранично загрузить и сохранить историю Last.fm для просмотра без сети</string>
-    <string name="lastfm_retry_scrobbles">Повторить отправку ожидающих записей</string>
-    <string name="lastfm_retry_scrobbles_summary">Ожидают отправки прослушиваний: %1$d</string>
-    <string name="lastfm_disconnect">Отключить Last.fm</string>
-    <string name="lastfm_disconnect_summary">Удалить сессию аккаунта; сохранённая история останется</string>
-    <string name="lastfm_disconnected">Last.fm отключён</string>
-    <string name="lastfm_action_success">Готово</string>
-    <string name="lastfm_action_failed">Ошибка: %1$s</string>
-    <string name="lastfm_sync_idle">Ещё не синхронизировано; ожидают отправки: %1$d</string>
-    <string name="lastfm_syncing">Синхронизация страницы %1$d / %2$d, получено прослушиваний: %3$d</string>
-    <string name="lastfm_sync_complete">Сохранено прослушиваний: %1$d; ожидают отправки: %2$d</string>
-    <string name="lastfm_sync_failed">Ошибка синхронизации: %1$s</string>
-    <string name="lastfm_source_badge">Last.fm</string>
+    <!-- Last.fm удалено -->
+    <!-- lastfm_source_badge удалено -->
 
     <string name="miui_uninstall_title">Уже прощаемся?</string>
     <string name="miui_uninstall_content">Спасибо, что прошёл этот путь с Halcyon.</string>

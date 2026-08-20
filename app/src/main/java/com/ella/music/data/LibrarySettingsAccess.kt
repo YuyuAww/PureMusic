@@ -3,8 +3,6 @@ package com.ella.music.data
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.ella.music.data.SettingsManager.Companion.LISTENING_HISTORY_SOURCE_COMBINED
-import com.ella.music.data.SettingsManager.Companion.LISTENING_HISTORY_SOURCE_LOCAL
 import com.ella.music.data.SettingsManager.Companion.PLAY_NEXT_MODE_FORWARD_STACK
 import com.ella.music.data.SettingsManager.Companion.PLAY_NEXT_MODE_REVERSE_STACK
 import com.ella.music.data.SettingsManager.Companion.SEARCH_ALL_CATEGORY_TYPES
@@ -29,9 +27,6 @@ import com.ella.music.data.SettingsManager.Companion.KEY_FULL_TAG_SEARCH_PROMPT_
 import com.ella.music.data.SettingsManager.Companion.KEY_GENRE_PROTECTED_NAMES
 import com.ella.music.data.SettingsManager.Companion.KEY_GENRE_SEPARATORS
 import com.ella.music.data.SettingsManager.Companion.KEY_INITIAL_SCAN_PROMPT_HANDLED
-import com.ella.music.data.SettingsManager.Companion.KEY_LISTENING_HISTORY_SOURCE
-import com.ella.music.data.SettingsManager.Companion.KEY_LOCAL_PLAYLIST_SCAN_PROMPT_HANDLED
-import com.ella.music.data.SettingsManager.Companion.KEY_LYRIC_TIMING_EDITOR_ID
 import com.ella.music.data.SettingsManager.Companion.KEY_METADATA_EDITOR_ID
 import com.ella.music.data.SettingsManager.Companion.KEY_SPECTRUM_VIEWER_ID
 import com.ella.music.data.SettingsManager.Companion.KEY_MIN_DURATION
@@ -95,7 +90,6 @@ interface LibrarySettingsAccess {
     val searchAllCategoryTypes: Flow<Set<String>>
     val searchAllSongMatchTypes: Flow<Set<String>>
     val songRatingDisplayMode: Flow<Int>
-    val listeningHistorySource: Flow<Int>
     val initialScanPromptHandled: Flow<Boolean>
     val localPlaylistScanPromptHandled: Flow<Boolean>
     val notificationPermissionPromptHandled: Flow<Boolean>
@@ -148,7 +142,6 @@ interface LibrarySettingsAccess {
     suspend fun setSearchAllCategoryTypeEnabled(type: String, enabled: Boolean)
     suspend fun setSearchAllSongMatchTypeEnabled(type: String, enabled: Boolean)
     suspend fun setSongRatingDisplayMode(mode: Int)
-    suspend fun setListeningHistorySource(source: Int)
     suspend fun setInitialScanPromptHandled(handled: Boolean)
     suspend fun setLocalPlaylistScanPromptHandled(handled: Boolean)
     suspend fun setNotificationPermissionPromptHandled(handled: Boolean)
@@ -220,10 +213,6 @@ internal class LibrarySettingsAccessImpl(private val context: Context) : Library
     override val songRatingDisplayMode: Flow<Int> = context.dataStore.data.map {
         (it[KEY_SONG_RATING_DISPLAY_MODE] ?: SONG_RATING_DISPLAY_STAR_NUMBER)
             .coerceIn(SONG_RATING_DISPLAY_STAR_NUMBER, SONG_RATING_DISPLAY_STARS)
-    }
-    override val listeningHistorySource: Flow<Int> = context.dataStore.data.map {
-        (it[KEY_LISTENING_HISTORY_SOURCE] ?: LISTENING_HISTORY_SOURCE_LOCAL)
-            .coerceIn(LISTENING_HISTORY_SOURCE_LOCAL, LISTENING_HISTORY_SOURCE_COMBINED)
     }
     override val initialScanPromptHandled: Flow<Boolean> =
         context.dataStore.data.map { it[KEY_INITIAL_SCAN_PROMPT_HANDLED] ?: false }
@@ -564,15 +553,6 @@ internal class LibrarySettingsAccessImpl(private val context: Context) : Library
             it[KEY_SONG_RATING_DISPLAY_MODE] = mode.coerceIn(
                 SONG_RATING_DISPLAY_STAR_NUMBER,
                 SONG_RATING_DISPLAY_STARS
-            )
-        }
-    }
-
-    override suspend fun setListeningHistorySource(source: Int) {
-        context.dataStore.edit {
-            it[KEY_LISTENING_HISTORY_SOURCE] = source.coerceIn(
-                LISTENING_HISTORY_SOURCE_LOCAL,
-                LISTENING_HISTORY_SOURCE_COMBINED
             )
         }
     }
