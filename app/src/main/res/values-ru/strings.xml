@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">Главная</string>
@@ -389,34 +389,6 @@
     <string name="home_now_playing_song">Сейчас играет: %1$s</string>
     <string name="home_random_song_count">Перемешать песни %1$d</string>
     <string name="home_play_daily_mix">Включи ежедневный микс</string>
-    <string name="home_ai_section">ИИ</string>
-    <string name="home_ai_playlist">AI-помощник по воспроизведению</string>
-    <string name="home_ai_playlist_summary">Можно вызывать для воспроизведения только местные песни; он не будет удалять или изменять песни. Библиотека: песни %1$d</string>
-    <string name="home_ai_playlist_loading">Чтение настроек AI и создание плейлиста…</string>
-    <string name="home_ai_playlist_play">Создание и воспроизведение плейлиста AI</string>
-    <string name="home_ai_chat_open">Открыть чат с ИИ</string>
-    <string name="home_ai_playlist_started">Воспроизведение "%1$s": песни %2$d</string>
-    <string name="home_ai_playlist_failed">Рекомендация AI не удалась: %1$s</string>
-    <string name="ai_chat_title">Ella помощник по прослушиванию</string>
-    <string name="ai_chat_disclaimer">ИИ может ошибаться; он может только читать библиотеку и воспроизводить местные песни</string>
-    <string name="ai_chat_empty_title">Что вы хотите услышать дальше?</string>
-    <string name="ai_chat_empty_summary">Попросите ИИ порекомендовать музыку из вашей библиотеки, недавнее воспроизведение и статистику прослушивания или объяснить ваш музыкальный вкус.</string>
-    <string name="ai_chat_prompt_today">Порекомендуйте набор песен на сегодняшний вечер на основе того, что я недавно сыграл.</string>
-    <string name="ai_chat_prompt_recent">Подведите итог моим недавним любимым исполнителям и жанрам.</string>
-    <string name="ai_chat_prompt_genre">Выбирайте песни из моей библиотеки, которые я редко играю, но которые могут мне понравиться.</string>
-    <string name="ai_chat_input_hint">Спросить Ella</string>
-    <string name="ai_chat_send">Отправить</string>
-    <string name="ai_chat_thinking">Ищу в библиотеке и думаю…</string>
-    <string name="ai_chat_failed">Генерация не удалась: %1$s</string>
-    <string name="ai_chat_play_songs">Воспроизвести песни, рекомендованные %1$d</string>
-    <string name="ai_chat_add_to_queue">Добавить в очередь</string>
-    <string name="ai_chat_create_playlist">Создать плейлист</string>
-    <string name="ai_chat_added_to_queue">Добавлено в очередь: песни %1$d.</string>
-    <string name="ai_chat_playlist_name">Рекомендуемый плейлист Ella</string>
-    <string name="ai_chat_playlist_created">Создал "%1$s": песни %2$d.</string>
-    <string name="ai_chat_new_session">Новый чат</string>
-    <string name="ai_chat_delete_session">Удалить сеанс</string>
-    <string name="ai_chat_delete_session_confirm">Удалить этот сеанс?</string>
     <string name="category_artist">Художники</string>
     <string name="category_album">Альбомы</string>
     <string name="category_folder">Папки</string>
@@ -884,13 +856,6 @@
     <string name="settings_home_customize">Настройка дома</string>
     <string name="settings_daily_mix">Ежедневно</string>
     <string name="settings_daily_mix_summary">Управляйте самой популярной карточкой на главной странице.</string>
-    <string name="settings_ai_mix">Рекомендуемый AI плейлист</string>
-    <string name="settings_ai_mix_summary">Управляйте карточкой рекомендаций AI на главной странице.</string>
-    <string name="settings_ai_interpretation">Интерпретация ИИ</string>
-    <string name="settings_openai_api_key_summary">Используется для интерпретации песен AI и хранится только на этом устройстве.</string>
-    <string name="settings_openai_base_url_summary">OpenAI-совместимая конечная точка завершения чата; /chat/completions добавляется автоматически</string>
-    <string name="settings_openai_model">Модель OpenAI</string>
-    <string name="settings_openai_model_summary">Например %1$s; измените его на любую модель, доступную для вашего аккаунта</string>
     <string name="settings_lyric_share_card">Лирическая открытка</string>
     <string name="settings_lyric_share_use_lyric_font">Используйте лирический шрифт</string>
     <string name="settings_lyric_share_use_lyric_font_summary">Предварительный просмотр и общие карточки соответствуют пользовательскому шрифту и насыщенности страницы с текстом песни.</string>
@@ -1207,7 +1172,6 @@
     <string name="song_more_delete_permanently">Удалить навсегда</string>
     <string name="song_more_edit_tags_title">Изменить информацию тега песни</string>
     <string name="song_more_lyric_timing">Лирический тайминг</string>
-    <string name="song_more_ai_title">ИИ интерпретация песни</string>
     <string name="song_more_add_to_playlist">Добавить в плейлист</string>
     <string name="song_more_add_position_start">Добавить для начала</string>
     <string name="song_more_add_position_end">Добавить в конец</string>
@@ -1239,7 +1203,6 @@
     <string name="song_more_detail_file_name">Имя файла</string>
     <string name="song_more_detail_path">Путь</string>
     <string name="song_more_loading_ai">Загрузка информации о песне и текста...</string>
-    <string name="song_more_ai_failed">Интерпретация ИИ не удалась</string>
     <string name="library_deleted_songs">Удалены песни %1$d.</string>
     <string name="library_delete_cancelled">Удаление отменено</string>
     <string name="library_deleting_songs">Удаление песен %1$d</string>
@@ -1251,9 +1214,7 @@
     <string name="library_range_select">Выбор диапазона</string>
     <string name="library_song_count_sorted">Песни %1$d · %2$s</string>
     <string name="library_delete_selected_message">Удалить выбранные песни %1$d навсегда? Это может привести к удалению локальных аудиофайлов.</string>
-    <string name="library_ai_missing_api_key">Перейдите в «Настройки» &gt; «Настройки» &gt; «Интерпретация AI» и сначала введите ключ OpenAI API.</string>
     <string name="library_status_label">Статус</string>
-    <string name="library_ai_loading">Загрузка информации о песне и текста, а затем запрос интерпретации OpenAI...</string>
     <string name="library_retry">Повторить попытку</string>
     <string name="library_reinterpret">Интерпретировать еще раз</string>
     <string name="library_netease_info_unavailable">Никакая навигационная информация NetEase не может быть проанализирована.</string>
@@ -1398,14 +1359,6 @@
     <string name="lx_online_download_failed">Загрузка не удалась</string>
     <!-- i18n: AI data-layer errors -->
     <string name="error_library_empty">Библиотека пуста. Пожалуйста, сначала отсканируйте местные песни.</string>
-    <string name="error_ai_no_playable_songs">ИИ не вернул ни одной воспроизводимой песни.</string>
-    <string name="ai_default_playlist_title">Рекомендуемый AI плейлист</string>
-    <string name="error_openai_missing_api_key">Пожалуйста, сначала введите ключ OpenAI API в настройках.</string>
-    <string name="error_ai_chat_empty_message">Пожалуйста, введите вопрос.</string>
-    <string name="error_openai_request_failed">Запрос OpenAI не выполнен (HTTP %1$d) %2$s</string>
-    <string name="error_openai_api_error_separator">: </string>
-    <string name="error_openai_empty_response">OpenAI вернул пустой ответ</string>
-    <string name="error_ai_disallowed_action">ИИ вернул запрещенное действие: %1$s</string>
     <!-- i18n: Settings defaults (non-const, resolved via Context) -->
     <string name="settings_default_lx_source_name">источник LX</string>
     <string name="settings_default_custom_font_name">Пользовательский шрифт</string>
@@ -1482,9 +1435,6 @@
     <string name="playlist_favorites_default_name">Мои избранные</string>
     <string name="playlist_import_default_name">Импортированный плейлист</string>
     <!-- MCP Server -->
-    <string name="settings_mcp_server">Сервер MCP</string>
-    <string name="settings_mcp_server_summary">Разрешить ИИ-помощникам (например, Claude) управлять воспроизведением музыки по протоколу MCP.</string>
-    <string name="settings_mcp_server_running">Прослушивание порта %1$d</string>
     <string name="web_music_beta_title">Музыкальный Web-сервис в локальной сети (Beta)</string>
     <string name="web_music_beta_summary">Просмотр, воспроизведение и загрузка музыки в доверенной локальной сети. В Beta пока нет пароля; не включайте в общедоступных сетях</string>
     <string name="web_music_beta_address">Адрес доступа</string>
@@ -1773,8 +1723,6 @@
     <string name="settings_backup_type_personalization_summary">Тема, отображение текста, поведение плеера и другие настройки</string>
     <string name="settings_backup_type_library_scan">Настройки медиатеки и сканирования</string>
     <string name="settings_backup_type_library_scan_summary">Настройки папок сканирования, разбора тегов, сортировки и отображения медиатеки</string>
-    <string name="settings_backup_type_ai_config_chat">Настройки ИИ и переписка</string>
-    <string name="settings_backup_type_ai_config_chat_summary">Настройки интерфейса ИИ и история переписки</string>
     <string name="settings_backup_type_playback_stats">Статистика прослушивания</string>
     <string name="settings_backup_type_playback_stats_summary">История воспроизведения, рейтинги и число прослушиваний</string>
     <string name="settings_backup_type_playlists">Плейлисты</string>

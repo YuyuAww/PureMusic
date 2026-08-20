@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">ホーム</string>
@@ -391,34 +391,6 @@
     <string name="home_now_playing_song">再生中：%1$s</string>
     <string name="home_random_song_count">%1$d 曲をシャッフル再生</string>
     <string name="home_play_daily_mix">デイリーミックスを再生</string>
-    <string name="home_ai_section">AI</string>
-    <string name="home_ai_playlist">AI 再生アシスタント</string>
-    <string name="home_ai_playlist_summary">ローカル曲の再生のみ許可されています。曲の削除や変更は行いません。現在のライブラリ：%1$d 曲</string>
-    <string name="home_ai_playlist_loading">AI 設定を読み込み、プレイリストを生成中…</string>
-    <string name="home_ai_playlist_play">AI おすすめプレイリストを生成して再生</string>
-    <string name="home_ai_chat_open">AI チャットを開く</string>
-    <string name="home_ai_playlist_started">「%1$s」を再生中：%2$d 曲</string>
-    <string name="home_ai_playlist_failed">AI おすすめの生成に失敗：%1$s</string>
-    <string name="ai_chat_title">Ella 音楽アシスタント</string>
-    <string name="ai_chat_disclaimer">AI は誤りを含む可能性があります。ライブラリの読み取りとローカル曲の再生のみ許可されています</string>
-    <string name="ai_chat_empty_title">次に何を聴きたいですか？</string>
-    <string name="ai_chat_empty_summary">AI があなたのライブラリ、最近の再生履歴、再生統計に基づいて曲をおすすめしたり、音楽の好みを解説します。</string>
-    <string name="ai_chat_prompt_today">最近聴いた曲から、今夜に合う曲を何曲かおすすめしてください</string>
-    <string name="ai_chat_prompt_recent">最近よく聴くアーティストとジャンルをまとめてください</string>
-    <string name="ai_chat_prompt_genre">ライブラリから、あまり聴いていないけれど好きそうな曲を選んでください</string>
-    <string name="ai_chat_input_hint">Ella に質問する</string>
-    <string name="ai_chat_send">送信</string>
-    <string name="ai_chat_thinking">ライブラリを検索して考え中…</string>
-    <string name="ai_chat_failed">生成に失敗：%1$s</string>
-    <string name="ai_chat_play_songs">おすすめの %1$d 曲を再生</string>
-    <string name="ai_chat_add_to_queue">再生キューに追加</string>
-    <string name="ai_chat_create_playlist">プレイリストを作成</string>
-    <string name="ai_chat_added_to_queue">再生キューに追加しました：%1$d 曲</string>
-    <string name="ai_chat_playlist_name">Ella おすすめプレイリスト</string>
-    <string name="ai_chat_playlist_created">「%1$s」を作成しました：%2$d 曲</string>
-    <string name="ai_chat_new_session">新しい会話</string>
-    <string name="ai_chat_delete_session">セッションを削除</string>
-    <string name="ai_chat_delete_session_confirm">このセッションを削除しますか？</string>
     <string name="category_artist">アーティスト</string>
     <string name="category_album">アルバム</string>
     <string name="category_folder">フォルダ</string>
@@ -886,13 +858,6 @@
     <string name="settings_home_customize">ホームカスタマイズ</string>
     <string name="settings_daily_mix">デイリーミックス</string>
     <string name="settings_daily_mix_summary">ホーム上部のデイリーミックスラージカードの表示を制御</string>
-    <string name="settings_ai_mix">AI おすすめプレイリスト</string>
-    <string name="settings_ai_mix_summary">ホームの AI おすすめプレイリストカードの表示を制御</string>
-    <string name="settings_ai_interpretation">AI 解説</string>
-    <string name="settings_openai_api_key_summary">曲の AI 解説に使用。ローカルにのみ保存</string>
-    <string name="settings_openai_base_url_summary">OpenAI 互換 Chat Completions アドレス。/chat/completions が自動補完されます</string>
-    <string name="settings_openai_model">OpenAI モデル</string>
-    <string name="settings_openai_model_summary">例：%1$s。アカウントで利用可能なモデルに合わせて変更可能</string>
     <string name="settings_lyric_share_card">歌詞カード共有</string>
     <string name="settings_lyric_share_use_lyric_font">歌詞フォントを使用</string>
     <string name="settings_lyric_share_use_lyric_font_summary">オンにすると、共有カードとプレビューが歌詞ページのカスタムフォントと太さに従います</string>
@@ -1209,7 +1174,6 @@
     <string name="song_more_delete_permanently">完全に削除</string>
     <string name="song_more_edit_tags_title">曲のタグ情報を編集</string>
     <string name="song_more_lyric_timing">歌詞タイミング調整</string>
-    <string name="song_more_ai_title">AI で曲を解説</string>
     <string name="song_more_add_to_playlist">プレイリストに追加</string>
     <string name="song_more_add_position_start">先頭に追加</string>
     <string name="song_more_add_position_end">末尾に追加</string>
@@ -1241,7 +1205,6 @@
     <string name="song_more_detail_file_name">ファイル名</string>
     <string name="song_more_detail_path">パス</string>
     <string name="song_more_loading_ai">曲情報と歌詞を読み込み中…</string>
-    <string name="song_more_ai_failed">AI 解説に失敗しました</string>
     <string name="library_deleted_songs">%1$d 曲を削除しました</string>
     <string name="library_delete_cancelled">削除をキャンセルしました</string>
     <string name="library_deleting_songs">%1$d 曲を削除中</string>
@@ -1253,9 +1216,7 @@
     <string name="library_range_select">範囲選択</string>
     <string name="library_song_count_sorted">%1$d 曲 · %2$s</string>
     <string name="library_delete_selected_message">選択した %1$d 曲を完全に削除しますか？この操作によりローカルオーディオファイルが削除される場合があります。</string>
-    <string name="library_ai_missing_api_key">先に設定 > アプリ設定 > AI 解説 で OpenAI API Key を入力してください。</string>
     <string name="library_status_label">ステータス</string>
-    <string name="library_ai_loading">曲情報と歌詞を読み込み、OpenAI に解説をリクエスト中…</string>
     <string name="library_retry">再試行</string>
     <string name="library_reinterpret">再解説</string>
     <string name="library_netease_info_unavailable">移動できるネットイース情報を解析できませんでした</string>
@@ -1407,14 +1368,6 @@
 
     <!-- i18n: AI data-layer errors -->
     <string name="error_library_empty">ライブラリが空です。先にローカル曲をスキャンしてください</string>
-    <string name="error_ai_no_playable_songs">AI が再生可能な曲を返しませんでした</string>
-    <string name="ai_default_playlist_title">AI おすすめプレイリスト</string>
-    <string name="error_openai_missing_api_key">先に設定で OpenAI API Key を入力してください</string>
-    <string name="error_ai_chat_empty_message">質問を入力してください</string>
-    <string name="error_openai_request_failed">OpenAI リクエストに失敗しました（HTTP %1$d）%2$s</string>
-    <string name="error_openai_api_error_separator">：</string>
-    <string name="error_openai_empty_response">OpenAI の応答が空です</string>
-    <string name="error_ai_disallowed_action">AI が許可されていない操作を返しました：%1$s</string>
 
     <!-- i18n: Settings defaults (non-const, resolved via Context) -->
     <string name="settings_default_lx_source_name">LXソース</string>
@@ -1496,9 +1449,6 @@
     <string name="playlist_import_default_name">インポートプレイリスト</string>
 
     <!-- MCP Server -->
-    <string name="settings_mcp_server">MCP サーバー</string>
-    <string name="settings_mcp_server_summary">AI アシスタント（Claude など）が MCP プロトコル経由で音楽再生を制御できるようにします</string>
-    <string name="settings_mcp_server_running">ポート %1$d でリッスン中</string>
     <string name="web_music_beta_title">LAN Web 音楽サービス（Beta）</string>
     <string name="web_music_beta_summary">信頼できる LAN 内で音楽の閲覧、再生、アップロードができます。Beta 版にはアクセスパスワードがないため、公共ネットワークでは有効にしないでください</string>
     <string name="web_music_beta_address">アクセスアドレス</string>
@@ -1786,8 +1736,6 @@
     <string name="settings_backup_type_personalization_summary">テーマ、歌詞表示、プレーヤーの動作、その他の設定</string>
     <string name="settings_backup_type_library_scan">ライブラリとスキャン設定</string>
     <string name="settings_backup_type_library_scan_summary">スキャンフォルダ、タグ解析、並び順、ライブラリ表示に関する設定</string>
-    <string name="settings_backup_type_ai_config_chat">AI設定と会話</string>
-    <string name="settings_backup_type_ai_config_chat_summary">AIインターフェース設定と会話履歴</string>
     <string name="settings_backup_type_playback_stats">再生統計</string>
     <string name="settings_backup_type_playback_stats_summary">再生履歴、ランキング、再生回数</string>
     <string name="settings_backup_type_playlists">プレイリスト</string>

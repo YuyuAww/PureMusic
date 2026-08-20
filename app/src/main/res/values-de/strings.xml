@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">Start</string>
@@ -391,34 +391,6 @@
     <string name="home_now_playing_song">Aktuelle Wiedergabe: %1$s</string>
     <string name="home_random_song_count">%1$d Titel zufällig wiedergeben</string>
     <string name="home_play_daily_mix">Täglichen Mix wiedergeben</string>
-    <string name="home_ai_section">KI</string>
-    <string name="home_ai_playlist">KI-Wiedergabeassistent</string>
-    <string name="home_ai_playlist_summary">Kann nur lokale Titel zur Wiedergabe aufrufen; Titel werden nicht gelöscht oder geändert. Mediathek: %1$d Titel</string>
-    <string name="home_ai_playlist_loading">KI-Einstellungen werden gelesen und eine Playlist wird erstellt…</string>
-    <string name="home_ai_playlist_play">KI-Playlist erstellen und wiedergeben</string>
-    <string name="home_ai_chat_open">KI-Chat öffnen</string>
-    <string name="home_ai_playlist_started">„%1$s“ wird wiedergegeben: %2$d Titel</string>
-    <string name="home_ai_playlist_failed">KI-Empfehlung fehlgeschlagen: %1$s</string>
-    <string name="ai_chat_title">Ella-Hörassistentin</string>
-    <string name="ai_chat_disclaimer">KI kann sich irren; sie kann nur die Mediathek lesen und lokale Titel wiedergeben</string>
-    <string name="ai_chat_empty_title">Was möchtest du als Nächstes hören?</string>
-    <string name="ai_chat_empty_summary">Bitte die KI um Empfehlungen aus deiner Mediathek, deinem aktuellen Hörverlauf und deinen Hörstatistiken oder um eine Erklärung deines Musikgeschmacks.</string>
-    <string name="ai_chat_prompt_today">Empfiehl mir für heute Abend einige Titel basierend auf dem, was ich zuletzt gehört habe</string>
-    <string name="ai_chat_prompt_recent">Fasse meine zuletzt bevorzugten Künstler und Genres zusammen</string>
-    <string name="ai_chat_prompt_genre">Wähle Titel aus meiner Mediathek aus, die ich selten höre, aber mögen könnte</string>
-    <string name="ai_chat_input_hint">Ella fragen</string>
-    <string name="ai_chat_send">Senden</string>
-    <string name="ai_chat_thinking">Mediathek wird durchsucht und ausgewertet…</string>
-    <string name="ai_chat_failed">Generierung fehlgeschlagen: %1$s</string>
-    <string name="ai_chat_play_songs">%1$d empfohlene Titel wiedergeben</string>
-    <string name="ai_chat_add_to_queue">Zur Warteschlange hinzufügen</string>
-    <string name="ai_chat_create_playlist">Playlist erstellen</string>
-    <string name="ai_chat_added_to_queue">Zur Warteschlange hinzugefügt: %1$d Titel</string>
-    <string name="ai_chat_playlist_name">Von Ella empfohlene Playlist</string>
-    <string name="ai_chat_playlist_created">„%1$s“ erstellt: %2$d Titel</string>
-    <string name="ai_chat_new_session">Neuer Chat</string>
-    <string name="ai_chat_delete_session">Sitzung löschen</string>
-    <string name="ai_chat_delete_session_confirm">Diese Sitzung löschen?</string>
     <string name="category_artist">Künstler</string>
     <string name="category_album">Alben</string>
     <string name="category_folder">Ordner</string>
@@ -886,13 +858,6 @@
     <string name="settings_home_customize">Startseite anpassen</string>
     <string name="settings_daily_mix">Tagesempfehlung</string>
     <string name="settings_daily_mix_summary">Obere Empfehlungskarte auf der Startseite steuern</string>
-    <string name="settings_ai_mix">KI-empfohlene Playlist</string>
-    <string name="settings_ai_mix_summary">KI-Empfehlungskarte auf der Startseite steuern</string>
-    <string name="settings_ai_interpretation">KI-Interpretation</string>
-    <string name="settings_openai_api_key_summary">Wird für die KI-Interpretation von Titeln verwendet und nur auf diesem Gerät gespeichert</string>
-    <string name="settings_openai_base_url_summary">OpenAI-kompatibler Chat-Completions-Endpunkt; /chat/completions wird automatisch angehängt</string>
-    <string name="settings_openai_model">OpenAI-Modell</string>
-    <string name="settings_openai_model_summary">Zum Beispiel %1$s; ändere es zu einem beliebigen Modell, das für dein Konto verfügbar ist</string>
     <string name="settings_lyric_share_card">Liedtext-Teilen-Karte</string>
     <string name="settings_lyric_share_use_lyric_font">Liedtextschrift verwenden</string>
     <string name="settings_lyric_share_use_lyric_font_summary">Vorschau und geteilte Karten verwenden die benutzerdefinierte Schrift und Stärke der Liedtextseite</string>
@@ -1209,7 +1174,6 @@
     <string name="song_more_delete_permanently">Dauerhaft löschen</string>
     <string name="song_more_edit_tags_title">Tag-Infos des Titels bearbeiten</string>
     <string name="song_more_lyric_timing">Liedtext-Timing</string>
-    <string name="song_more_ai_title">KI-Titelinterpretation</string>
     <string name="song_more_add_to_playlist">Zur Playlist hinzufügen</string>
     <string name="song_more_add_position_start">Am Anfang hinzufügen</string>
     <string name="song_more_add_position_end">Am Ende hinzufügen</string>
@@ -1241,7 +1205,6 @@
     <string name="song_more_detail_file_name">Dateiname</string>
     <string name="song_more_detail_path">Pfad</string>
     <string name="song_more_loading_ai">Titelinfos und Liedtext werden geladen…</string>
-    <string name="song_more_ai_failed">KI-Interpretation fehlgeschlagen</string>
     <string name="library_deleted_songs">%1$d Titel gelöscht</string>
     <string name="library_delete_cancelled">Löschen abgebrochen</string>
     <string name="library_deleting_songs">%1$d Titel werden gelöscht</string>
@@ -1253,9 +1216,7 @@
     <string name="library_range_select">Bereich auswählen</string>
     <string name="library_song_count_sorted">%1$d Titel · %2$s</string>
     <string name="library_delete_selected_message">Die ausgewählten %1$d Titel dauerhaft löschen? Dadurch können lokale Audiodateien entfernt werden.</string>
-    <string name="library_ai_missing_api_key">Gehe zuerst zu Einstellungen > App-Einstellungen > KI-Interpretation und trage den OpenAI-API-Schlüssel ein.</string>
     <string name="library_status_label">Status</string>
-    <string name="library_ai_loading">Titelinfos und Liedtexte werden geladen, danach wird die OpenAI-Interpretation angefordert…</string>
     <string name="library_retry">Erneut versuchen</string>
     <string name="library_reinterpret">Erneut interpretieren</string>
     <string name="library_netease_info_unavailable">Keine navigierbaren NetEase-Informationen konnten gelesen werden</string>
@@ -1407,14 +1368,6 @@
 
     <!-- i18n: AI data-layer errors -->
     <string name="error_library_empty">Mediathek ist leer. Bitte zuerst lokale Titel scannen.</string>
-    <string name="error_ai_no_playable_songs">KI hat keine abspielbaren Titel zurückgegeben</string>
-    <string name="ai_default_playlist_title">KI-empfohlene Playlist</string>
-    <string name="error_openai_missing_api_key">Bitte zuerst den OpenAI-API-Schlüssel in den Einstellungen eingeben.</string>
-    <string name="error_ai_chat_empty_message">Bitte eine Frage eingeben.</string>
-    <string name="error_openai_request_failed">OpenAI-Anfrage fehlgeschlagen (HTTP %1$d) %2$s</string>
-    <string name="error_openai_api_error_separator">: </string>
-    <string name="error_openai_empty_response">OpenAI hat eine leere Antwort zurückgegeben</string>
-    <string name="error_ai_disallowed_action">KI hat eine nicht erlaubte Aktion zurückgegeben: %1$s</string>
 
     <!-- i18n: Settings defaults (non-const, resolved via Context) -->
     <string name="settings_default_lx_source_name">LX-Quelle</string>
@@ -1496,9 +1449,6 @@
     <string name="playlist_import_default_name">Importierte Playlist</string>
 
     <!-- MCP Server -->
-    <string name="settings_mcp_server">MCP-Server</string>
-    <string name="settings_mcp_server_summary">KI-Assistenten wie Claude erlauben, die Musikwiedergabe über das MCP-Protokoll zu steuern</string>
-    <string name="settings_mcp_server_running">Lauscht auf Port %1$d</string>
     <string name="web_music_beta_title">LAN-Webmusikdienst (Beta)</string>
     <string name="web_music_beta_summary">Musik in einem vertrauenswürdigen LAN durchsuchen, abspielen und hochladen. Die Beta hat noch kein Zugangspasswort; nicht in öffentlichen Netzen aktivieren</string>
     <string name="web_music_beta_address">Zugriffsadresse</string>
@@ -1786,8 +1736,6 @@
     <string name="settings_backup_type_personalization_summary">Design, Songtextanzeige, Player-Verhalten und weitere Einstellungen</string>
     <string name="settings_backup_type_library_scan">Bibliotheks- und Scaneinstellungen</string>
     <string name="settings_backup_type_library_scan_summary">Einstellungen für Scan-Ordner, Tag-Analyse, Sortierung und Bibliotheksanzeige</string>
-    <string name="settings_backup_type_ai_config_chat">KI-Konfiguration und Chats</string>
-    <string name="settings_backup_type_ai_config_chat_summary">KI-Schnittstellenkonfiguration und Chatverlauf</string>
     <string name="settings_backup_type_playback_stats">Wiedergabestatistik</string>
     <string name="settings_backup_type_playback_stats_summary">Wiedergabeverlauf, Ranglisten und Wiedergabeanzahl</string>
     <string name="settings_backup_type_playlists">Wiedergabelisten</string>

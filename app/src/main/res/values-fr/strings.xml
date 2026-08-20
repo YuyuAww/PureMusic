@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">Accueil</string>
@@ -391,34 +391,6 @@
     <string name="home_now_playing_song">Lecture en cours : %1$s</string>
     <string name="home_random_song_count">Lecture aléatoire de %1$d titres</string>
     <string name="home_play_daily_mix">Lire le mix du jour</string>
-    <string name="home_ai_section">IA</string>
-    <string name="home_ai_playlist">Assistant de lecture IA</string>
-    <string name="home_ai_playlist_summary">Peut uniquement lancer des titres locaux ; ne supprimera ni ne modifiera aucun titre. Bibliothèque : %1$d titres</string>
-    <string name="home_ai_playlist_loading">Lecture des paramètres IA et génération d’une playlist…</string>
-    <string name="home_ai_playlist_play">Générer et lire une playlist IA</string>
-    <string name="home_ai_chat_open">Ouvrir le chat IA</string>
-    <string name="home_ai_playlist_started">Lecture de « %1$s » : %2$d titres</string>
-    <string name="home_ai_playlist_failed">Échec de la recommandation IA : %1$s</string>
-    <string name="ai_chat_title">Assistant d’écoute Ella</string>
-    <string name="ai_chat_disclaimer">L’IA peut se tromper ; elle peut seulement lire la bibliothèque et lancer des titres locaux</string>
-    <string name="ai_chat_empty_title">Qu’avez-vous envie d’écouter ensuite ?</string>
-    <string name="ai_chat_empty_summary">Demandez à l’IA de recommander des titres de votre bibliothèque, de vos écoutes récentes et de vos statistiques, ou d’expliquer vos goûts musicaux.</string>
-    <string name="ai_chat_prompt_today">Recommande-moi une sélection de titres pour ce soir d’après mes écoutes récentes</string>
-    <string name="ai_chat_prompt_recent">Résume mes artistes et genres favoris récents</string>
-    <string name="ai_chat_prompt_genre">Choisis dans ma bibliothèque des titres que j’écoute rarement mais qui pourraient me plaire</string>
-    <string name="ai_chat_input_hint">Demander à Ella</string>
-    <string name="ai_chat_send">Envoyer</string>
-    <string name="ai_chat_thinking">Recherche dans la bibliothèque et réflexion…</string>
-    <string name="ai_chat_failed">Échec de la génération : %1$s</string>
-    <string name="ai_chat_play_songs">Lire %1$d titres recommandés</string>
-    <string name="ai_chat_add_to_queue">Ajouter à la file</string>
-    <string name="ai_chat_create_playlist">Créer une playlist</string>
-    <string name="ai_chat_added_to_queue">Ajouté à la file : %1$d titres</string>
-    <string name="ai_chat_playlist_name">Playlist recommandée par Ella</string>
-    <string name="ai_chat_playlist_created">« %1$s » créée : %2$d titres</string>
-    <string name="ai_chat_new_session">Nouveau chat</string>
-    <string name="ai_chat_delete_session">Supprimer la session</string>
-    <string name="ai_chat_delete_session_confirm">Supprimer cette session ?</string>
     <string name="category_artist">Artistes</string>
     <string name="category_album">Albums</string>
     <string name="category_folder">Dossiers</string>
@@ -886,13 +858,6 @@
     <string name="settings_home_customize">Personnalisation de l’accueil</string>
     <string name="settings_daily_mix">Sélection quotidienne</string>
     <string name="settings_daily_mix_summary">Contrôler la carte mise en avant en haut de la page d’accueil</string>
-    <string name="settings_ai_mix">Playlist recommandée par IA</string>
-    <string name="settings_ai_mix_summary">Contrôler la carte de recommandation IA sur la page d’accueil</string>
-    <string name="settings_ai_interpretation">Interprétation IA</string>
-    <string name="settings_openai_api_key_summary">Utilisée pour l’interprétation IA des titres et stockée uniquement sur cet appareil</string>
-    <string name="settings_openai_base_url_summary">Point de terminaison Chat Completions compatible OpenAI ; /chat/completions est ajouté automatiquement</string>
-    <string name="settings_openai_model">Modèle OpenAI</string>
-    <string name="settings_openai_model_summary">Par exemple %1$s ; remplacez-le par tout modèle disponible pour votre compte</string>
     <string name="settings_lyric_share_card">Carte de partage de paroles</string>
     <string name="settings_lyric_share_use_lyric_font">Utiliser la police des paroles</string>
     <string name="settings_lyric_share_use_lyric_font_summary">Les aperçus et cartes partagées suivent la police et la graisse personnalisées de la page des paroles</string>
@@ -1209,7 +1174,6 @@
     <string name="song_more_delete_permanently">Supprimer définitivement</string>
     <string name="song_more_edit_tags_title">Modifier les tags du titre</string>
     <string name="song_more_lyric_timing">Synchronisation des paroles</string>
-    <string name="song_more_ai_title">Interprétation IA du titre</string>
     <string name="song_more_add_to_playlist">Ajouter à une playlist</string>
     <string name="song_more_add_position_start">Ajouter au début</string>
     <string name="song_more_add_position_end">Ajouter à la fin</string>
@@ -1241,7 +1205,6 @@
     <string name="song_more_detail_file_name">Nom du fichier</string>
     <string name="song_more_detail_path">Chemin</string>
     <string name="song_more_loading_ai">Chargement des infos du titre et des paroles...</string>
-    <string name="song_more_ai_failed">Échec de l’interprétation IA</string>
     <string name="library_deleted_songs">%1$d titres supprimés</string>
     <string name="library_delete_cancelled">Suppression annulée</string>
     <string name="library_deleting_songs">Suppression de %1$d titres</string>
@@ -1253,9 +1216,7 @@
     <string name="library_range_select">Sélection par plage</string>
     <string name="library_song_count_sorted">%1$d titres · %2$s</string>
     <string name="library_delete_selected_message">Supprimer définitivement les %1$d titres sélectionnés ? Cela peut supprimer les fichiers audio locaux.</string>
-    <string name="library_ai_missing_api_key">Allez dans Paramètres > Préférences > Interprétation IA et renseignez d’abord la clé API OpenAI.</string>
     <string name="library_status_label">État</string>
-    <string name="library_ai_loading">Chargement des infos du titre et des paroles, puis demande d’interprétation à OpenAI...</string>
     <string name="library_retry">Réessayer</string>
     <string name="library_reinterpret">Interpréter à nouveau</string>
     <string name="library_netease_info_unavailable">Aucune information NetEase navigable n’a pu être analysée</string>
@@ -1407,14 +1368,6 @@
 
     <!-- i18n : erreurs de couche de données IA -->
     <string name="error_library_empty">La bibliothèque est vide. Veuillez d’abord analyser les titres locaux.</string>
-    <string name="error_ai_no_playable_songs">L’IA n’a renvoyé aucun titre lisible</string>
-    <string name="ai_default_playlist_title">Playlist recommandée par IA</string>
-    <string name="error_openai_missing_api_key">Veuillez d’abord saisir la clé API OpenAI dans les paramètres.</string>
-    <string name="error_ai_chat_empty_message">Veuillez saisir une question.</string>
-    <string name="error_openai_request_failed">Échec de la requête OpenAI (HTTP %1$d) %2$s</string>
-    <string name="error_openai_api_error_separator"> : </string>
-    <string name="error_openai_empty_response">OpenAI a renvoyé une réponse vide</string>
-    <string name="error_ai_disallowed_action">L’IA a renvoyé une action interdite : %1$s</string>
 
     <!-- i18n : valeurs par défaut des paramètres (non constantes, résolues via Context) -->
     <string name="settings_default_lx_source_name">Source LX</string>
@@ -1496,9 +1449,6 @@
     <string name="playlist_import_default_name">Playlist importée</string>
 
     <!-- Serveur MCP -->
-    <string name="settings_mcp_server">Serveur MCP</string>
-    <string name="settings_mcp_server_summary">Autoriser les assistants IA (comme Claude) à contrôler la lecture musicale via le protocole MCP</string>
-    <string name="settings_mcp_server_running">Écoute sur le port %1$d</string>
     <string name="web_music_beta_title">Service musical Web local (bêta)</string>
     <string name="web_music_beta_summary">Parcourez, écoutez et transférez de la musique sur un réseau local de confiance. La bêta n’a pas de mot de passe ; ne l’activez pas sur un réseau public</string>
     <string name="web_music_beta_address">Adresse d’accès</string>
@@ -1786,8 +1736,6 @@
     <string name="settings_backup_type_personalization_summary">Thème, affichage des paroles, comportement du lecteur et autres préférences</string>
     <string name="settings_backup_type_library_scan">Réglages de la bibliothèque et de l\'analyse</string>
     <string name="settings_backup_type_library_scan_summary">Réglages des dossiers analysés, de l\'analyse des métadonnées, du tri et de l\'affichage de la bibliothèque</string>
-    <string name="settings_backup_type_ai_config_chat">Configuration IA et conversations</string>
-    <string name="settings_backup_type_ai_config_chat_summary">Configuration de l\'interface IA et historique des conversations</string>
     <string name="settings_backup_type_playback_stats">Statistiques d\'écoute</string>
     <string name="settings_backup_type_playback_stats_summary">Historique de lecture, classements et nombre de lectures</string>
     <string name="settings_backup_type_playlists">Playlists</string>

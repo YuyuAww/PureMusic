@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">홈</string>
@@ -391,34 +391,6 @@
     <string name="home_now_playing_song">지금 재생 중: %1$s</string>
     <string name="home_random_song_count">%1$d 곡 셔플</string>
     <string name="home_play_daily_mix">일일 믹스 재생</string>
-    <string name="home_ai_section">AI</string>
-    <string name="home_ai_playlist">AI 재생 도우미</string>
-    <string name="home_ai_playlist_summary">재생을 위해 로컬 곡만 호출할 수 있습니다. 곡을 삭제하거나 수정하지 않습니다. 라이브러리: %1$d 곡</string>
-    <string name="home_ai_playlist_loading">AI 설정을 읽고 재생목록을 생성하는 중…</string>
-    <string name="home_ai_playlist_play">AI 재생목록 생성 및 재생</string>
-    <string name="home_ai_chat_open">AI 채팅 열기</string>
-    <string name="home_ai_playlist_started">"%1$s" 재생: %2$d 곡</string>
-    <string name="home_ai_playlist_failed">AI 추천 실패: %1$s</string>
-    <string name="ai_chat_title">Ella 청취 도우미</string>
-    <string name="ai_chat_disclaimer">AI는 틀릴 수 있습니다. 라이브러리를 읽고 로컬 곡만 재생할 수 있습니다.</string>
-    <string name="ai_chat_empty_title">다음에는 무엇을 듣고 싶으신가요?</string>
-    <string name="ai_chat_empty_summary">AI에게 라이브러리, 최근 재생, 청취 통계를 추천하거나 음악 취향을 설명해달라고 요청하세요.</string>
-    <string name="ai_chat_prompt_today">최근에 연주한 곡을 바탕으로 오늘 밤에 어울리는 곡 세트를 추천해 주세요.</string>
-    <string name="ai_chat_prompt_recent">최근 내가 좋아하는 아티스트와 장르를 요약해보자</string>
-    <string name="ai_chat_prompt_genre">자주 재생하지 않지만 내 라이브러리에서 좋아할 만한 곡을 선택하세요.</string>
-    <string name="ai_chat_input_hint">Ella에게 물어보세요</string>
-    <string name="ai_chat_send">보내기</string>
-    <string name="ai_chat_thinking">라이브러리를 검색하고 생각하는 중…</string>
-    <string name="ai_chat_failed">생성 실패: %1$s</string>
-    <string name="ai_chat_play_songs">%1$d 추천곡 재생</string>
-    <string name="ai_chat_add_to_queue">재생 대기열에 추가</string>
-    <string name="ai_chat_create_playlist">재생목록 만들기</string>
-    <string name="ai_chat_added_to_queue">재생 대기열에 추가됨: %1$d곡</string>
-    <string name="ai_chat_playlist_name">Ella 추천 재생목록</string>
-    <string name="ai_chat_playlist_created">"%1$s" 생성: %2$d 곡</string>
-    <string name="ai_chat_new_session">새 채팅</string>
-    <string name="ai_chat_delete_session">세션 삭제</string>
-    <string name="ai_chat_delete_session_confirm">이 세션을 삭제하시겠습니까?</string>
     <string name="category_artist">아티스트</string>
     <string name="category_album">앨범</string>
     <string name="category_folder">폴더</string>
@@ -886,13 +858,6 @@
     <string name="settings_home_customize">홈 커스터마이징</string>
     <string name="settings_daily_mix">일일 특홈</string>
     <string name="settings_daily_mix_summary">홈 페이지의 상위 추천 카드 제어</string>
-    <string name="settings_ai_mix">AI 추천 재생목록</string>
-    <string name="settings_ai_mix_summary">홈페이지에서 AI 추천 카드를 제어하세요</string>
-    <string name="settings_ai_interpretation">AI 해석</string>
-    <string name="settings_openai_api_key_summary">곡 AI 해석에 사용되며 이 기기에만 저장됩니다</string>
-    <string name="settings_openai_base_url_summary">OpenAI 호환 채팅 완료 엔드포인트; /chat/completions가 자동으로 추가됩니다.</string>
-    <string name="settings_openai_model">OpenAI 모델</string>
-    <string name="settings_openai_model_summary">예를 들어 %1$s; 귀하의 계정에서 사용 가능한 모델로 변경하세요</string>
     <string name="settings_lyric_share_card">가사 공유 카드</string>
     <string name="settings_lyric_share_use_lyric_font">가사 글꼴 사용</string>
     <string name="settings_lyric_share_use_lyric_font_summary">미리보기 및 공유 카드는 가사 페이지 사용자 지정 글꼴 및 두께를 따릅니다.</string>
@@ -1209,7 +1174,6 @@
     <string name="song_more_delete_permanently">영구 삭제</string>
     <string name="song_more_edit_tags_title">곡 태그 정보 수정</string>
     <string name="song_more_lyric_timing">가사 타이밍</string>
-    <string name="song_more_ai_title">AI 곡 해석</string>
     <string name="song_more_add_to_playlist">재생목록에 추가</string>
     <string name="song_more_add_position_start">시작에 추가</string>
     <string name="song_more_add_position_end">끝에 추가</string>
@@ -1241,7 +1205,6 @@
     <string name="song_more_detail_file_name">파일 이름</string>
     <string name="song_more_detail_path">경로</string>
     <string name="song_more_loading_ai">곡 정보 및 가사 로드 중...</string>
-    <string name="song_more_ai_failed">AI 해석 실패</string>
     <string name="library_deleted_songs">%1$d 곡을 삭제했습니다</string>
     <string name="library_delete_cancelled">삭제가 취소되었습니다</string>
     <string name="library_deleting_songs">%1$d 곡 삭제 중</string>
@@ -1253,9 +1216,7 @@
     <string name="library_range_select">범위 선택</string>
     <string name="library_song_count_sorted">%1$d 곡 · %2$s</string>
     <string name="library_delete_selected_message">선택한 %1$d 곡을 영구적으로 삭제하시겠습니까? 로컬 오디오 파일이 제거될 수 있습니다.</string>
-    <string name="library_ai_missing_api_key">설정 > 환경설정 > AI 해석으로 이동하여 먼저 OpenAI API 키를 입력하세요.</string>
     <string name="library_status_label">상태</string>
-    <string name="library_ai_loading">곡 정보와 가사를 로드한 후 OpenAI 해석을 요청하는 중...</string>
     <string name="library_retry">재시도</string>
     <string name="library_reinterpret">다시 해석해 보세요</string>
     <string name="library_netease_info_unavailable">탐색 가능한 NetEase 정보를 구문 분석할 수 없습니다</string>
@@ -1407,14 +1368,6 @@
 
     <!-- i18n: AI data-layer errors -->
     <string name="error_library_empty">라이브러리가 비어 있습니다. 먼저 로컬 곡을 스캔하세요.</string>
-    <string name="error_ai_no_playable_songs">AI가 재생 가능한 곡을 반환하지 않았습니다</string>
-    <string name="ai_default_playlist_title">AI 추천 재생목록</string>
-    <string name="error_openai_missing_api_key">먼저 설정에서 OpenAI API 키를 입력하세요.</string>
-    <string name="error_ai_chat_empty_message">질문을 입력하세요.</string>
-    <string name="error_openai_request_failed">OpenAI 요청 실패(HTTP %1$d) %2$s</string>
-    <string name="error_openai_api_error_separator">: </string>
-    <string name="error_openai_empty_response">OpenAI가 빈 응답을 반환했습니다</string>
-    <string name="error_ai_disallowed_action">AI가 허용되지 않는 작업을 반환했습니다: %1$s</string>
 
     <!-- i18n: Settings defaults (non-const, resolved via Context) -->
     <string name="settings_default_lx_source_name">LX 소스</string>
@@ -1496,9 +1449,6 @@
     <string name="playlist_import_default_name">가져온 재생목록</string>
 
     <!-- MCP Server -->
-    <string name="settings_mcp_server">MCP 서버</string>
-    <string name="settings_mcp_server_summary">AI 보조자(예: Claude)가 MCP 프로토콜을 통해 음악 재생을 제어하도록 허용합니다.</string>
-    <string name="settings_mcp_server_running">포트 %1$d에서 수신 중</string>
     <string name="web_music_beta_title">LAN Web 음악 서비스(Beta)</string>
     <string name="web_music_beta_summary">신뢰할 수 있는 LAN에서 음악을 탐색, 재생 및 업로드합니다. Beta에는 접근 암호가 없으므로 공용 네트워크에서 사용하지 마세요</string>
     <string name="web_music_beta_address">접속 주소</string>
@@ -1786,8 +1736,6 @@
     <string name="settings_backup_type_personalization_summary">테마, 가사 표시, 플레이어 동작 및 기타 환경설정</string>
     <string name="settings_backup_type_library_scan">라이브러리 및 스캔 설정</string>
     <string name="settings_backup_type_library_scan_summary">스캔 폴더, 태그 분석, 정렬, 라이브러리 표시 관련 설정</string>
-    <string name="settings_backup_type_ai_config_chat">AI 설정 및 대화</string>
-    <string name="settings_backup_type_ai_config_chat_summary">AI 인터페이스 설정과 대화 기록</string>
     <string name="settings_backup_type_playback_stats">재생 통계</string>
     <string name="settings_backup_type_playback_stats_summary">재생 기록, 순위, 재생 횟수</string>
     <string name="settings_backup_type_playlists">재생목록</string>

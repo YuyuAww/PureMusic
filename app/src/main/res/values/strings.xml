@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">首页</string>
@@ -1268,13 +1268,6 @@
     <string name="settings_home_customize">首页自定义</string>
     <string name="settings_daily_mix">每日精选</string>
     <string name="settings_daily_mix_summary">控制首页顶部每日精选大卡片显示</string>
-    <string name="settings_ai_mix">AI 推荐歌单</string>
-    <string name="settings_ai_mix_summary">控制首页 AI 推荐歌单卡片显示</string>
-    <string name="settings_ai_interpretation">AI 解读</string>
-    <string name="settings_openai_api_key_summary">用于歌曲 AI 解读；只保存在本机</string>
-    <string name="settings_openai_base_url_summary">OpenAI 兼容 Chat Completions 地址；会自动补全 /chat/completions</string>
-    <string name="settings_openai_model">OpenAI 模型</string>
-    <string name="settings_openai_model_summary">例如 %1$s；可按账号可用模型自行修改</string>
     <string name="settings_lyric_share_card">歌词卡片分享</string>
     <string name="settings_lyric_share_use_lyric_font">字体应用到歌词卡片</string>
     <string name="settings_lyric_share_use_lyric_font_summary">开启后分享卡片和预览会跟随歌词页的自定义字体与粗细</string>

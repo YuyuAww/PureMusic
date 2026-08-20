@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">首頁</string>
@@ -391,34 +391,6 @@
     <string name="home_now_playing_song">正在播放：%1$s</string>
     <string name="home_random_song_count">隨機播放 %1$d 首歌</string>
     <string name="home_play_daily_mix">播放每日精選</string>
-    <string name="home_ai_section">AI</string>
-    <string name="home_ai_playlist">AI 播放助理</string>
-    <string name="home_ai_playlist_summary">只允許呼叫本機歌曲播放，不會刪除或修改歌曲；目前音樂庫有 %1$d 首歌</string>
-    <string name="home_ai_playlist_loading">正在讀取 AI 設定並產生播放清單…</string>
-    <string name="home_ai_playlist_play">產生並播放 AI 推薦播放清單</string>
-    <string name="home_ai_chat_open">開啟 AI 對話</string>
-    <string name="home_ai_playlist_started">正在播放「%1$s」：%2$d 首</string>
-    <string name="home_ai_playlist_failed">AI 推薦失敗：%1$s</string>
-    <string name="ai_chat_title">Ella 聽歌助理</string>
-    <string name="ai_chat_disclaimer">AI 可能出錯；只允許讀取音樂庫並播放本機歌曲</string>
-    <string name="ai_chat_empty_title">接下來想聽點什麼？</string>
-    <string name="ai_chat_empty_summary">可以讓 AI 根據你的音樂庫、最近播放與聽歌統計推薦歌曲，也可以解釋你的音樂偏好。</string>
-    <string name="ai_chat_prompt_today">按我最近聽的歌推薦一組今晚適合聽的歌</string>
-    <string name="ai_chat_prompt_recent">幫我整理最近偏愛的藝人和曲風</string>
-    <string name="ai_chat_prompt_genre">從音樂庫中挑一些不太常聽但可能會喜歡的歌</string>
-    <string name="ai_chat_input_hint">問問 Ella</string>
-    <string name="ai_chat_send">傳送</string>
-    <string name="ai_chat_thinking">正在搜尋音樂庫並思考…</string>
-    <string name="ai_chat_failed">產生失敗：%1$s</string>
-    <string name="ai_chat_play_songs">播放推薦的 %1$d 首</string>
-    <string name="ai_chat_add_to_queue">加入播放佇列</string>
-    <string name="ai_chat_create_playlist">建立播放清單</string>
-    <string name="ai_chat_added_to_queue">已加入播放佇列：%1$d 首</string>
-    <string name="ai_chat_playlist_name">Ella 推薦播放清單</string>
-    <string name="ai_chat_playlist_created">已建立「%1$s」：%2$d 首</string>
-    <string name="ai_chat_new_session">新對話</string>
-    <string name="ai_chat_delete_session">刪除對話</string>
-    <string name="ai_chat_delete_session_confirm">確定要刪除這個對話嗎？</string>
     <string name="category_artist">藝人</string>
     <string name="category_album">專輯</string>
     <string name="category_folder">資料夾</string>
@@ -906,13 +878,6 @@
     <string name="settings_home_customize">首頁自訂</string>
     <string name="settings_daily_mix">每日精選</string>
     <string name="settings_daily_mix_summary">控制首頁頂部每日精選大卡片顯示</string>
-    <string name="settings_ai_mix">AI 推薦播放清單</string>
-    <string name="settings_ai_mix_summary">控制首頁 AI 推薦播放清單卡片顯示</string>
-    <string name="settings_ai_interpretation">AI 解讀</string>
-    <string name="settings_openai_api_key_summary">用於歌曲 AI 解讀；只儲存在本機</string>
-    <string name="settings_openai_base_url_summary">OpenAI 相容 Chat Completions 位址；會自動補全 /chat/completions</string>
-    <string name="settings_openai_model">OpenAI 模型</string>
-    <string name="settings_openai_model_summary">例如 %1$s；可按帳號可用模型自行修改</string>
     <string name="settings_lyric_share_card">歌詞卡片分享</string>
     <string name="settings_lyric_share_use_lyric_font">使用歌詞字體</string>
     <string name="settings_lyric_share_use_lyric_font_summary">開啟後分享卡片和預覽會跟隨歌詞頁的自訂字體與粗細</string>
@@ -1229,7 +1194,6 @@
     <string name="song_more_delete_permanently">永久刪除</string>
     <string name="song_more_edit_tags_title">編輯歌曲標籤資訊</string>
     <string name="song_more_lyric_timing">歌詞打軸</string>
-    <string name="song_more_ai_title">AI 解讀歌曲</string>
     <string name="song_more_add_to_playlist">加入播放清單</string>
     <string name="song_more_add_position_start">加入開頭</string>
     <string name="song_more_add_position_end">加入結尾</string>
@@ -1261,7 +1225,6 @@
     <string name="song_more_detail_file_name">檔案名稱</string>
     <string name="song_more_detail_path">路徑</string>
     <string name="song_more_loading_ai">正在讀取歌曲資訊和歌詞…</string>
-    <string name="song_more_ai_failed">AI 解讀失敗</string>
     <string name="library_deleted_songs">已刪除 %1$d 首歌曲</string>
     <string name="library_delete_cancelled">已取消刪除</string>
     <string name="library_deleting_songs">正在刪除 %1$d 首歌曲</string>
@@ -1273,9 +1236,7 @@
     <string name="library_range_select">範圍選取</string>
     <string name="library_song_count_sorted">%1$d 首歌曲 · %2$s</string>
     <string name="library_delete_selected_message">確定要永久刪除選取的 %1$d 首歌曲嗎？此操作可能會刪除本機音訊檔案。</string>
-    <string name="library_ai_missing_api_key">請先到「設定 &gt; 應用程式偏好設定 &gt; AI 解讀」填寫 OpenAI API Key。</string>
     <string name="library_status_label">狀態</string>
-    <string name="library_ai_loading">正在讀取歌曲資訊和歌詞，並請求 OpenAI 解讀…</string>
     <string name="library_retry">重試</string>
     <string name="library_reinterpret">重新解讀</string>
     <string name="library_netease_info_unavailable">無法解析出可開啟的網易雲音樂資訊</string>
@@ -1427,14 +1388,6 @@
 
     <!-- i18n: AI data-layer errors -->
     <string name="error_library_empty">音樂庫是空的，請先掃描本機歌曲</string>
-    <string name="error_ai_no_playable_songs">AI 沒有回傳可播放歌曲</string>
-    <string name="ai_default_playlist_title">AI 推薦播放清單</string>
-    <string name="error_openai_missing_api_key">請先在設定中填寫 OpenAI API Key</string>
-    <string name="error_ai_chat_empty_message">請輸入問題</string>
-    <string name="error_openai_request_failed">OpenAI 請求失敗（HTTP %1$d）%2$s</string>
-    <string name="error_openai_api_error_separator">：</string>
-    <string name="error_openai_empty_response">OpenAI 回應為空</string>
-    <string name="error_ai_disallowed_action">AI 回傳了不允許的操作：%1$s</string>
 
     <!-- i18n: Settings defaults (non-const, resolved via Context) -->
     <string name="settings_default_lx_source_name">LX 來源</string>
@@ -1517,9 +1470,6 @@
     <string name="playlist_import_default_name">匯入播放清單</string>
 
     <!-- MCP Server -->
-    <string name="settings_mcp_server">MCP 伺服器</string>
-    <string name="settings_mcp_server_summary">允許 AI 助理（例如 Claude）透過 MCP 協定控制音樂播放</string>
-    <string name="settings_mcp_server_running">正在監聽連接埠 %1$d</string>
     <string name="web_music_beta_title">區域網路 Web 音樂服務（Beta）</string>
     <string name="web_music_beta_summary">在可信任的區域網路內瀏覽、播放及上傳音樂。Beta 版暫無存取密碼，請勿在公共網路啟用</string>
     <string name="web_music_beta_address">存取位址</string>
@@ -1810,8 +1760,6 @@
     <string name="settings_backup_type_personalization_summary">主題、歌詞顯示、播放器行為與其他偏好設定</string>
     <string name="settings_backup_type_library_scan">音樂庫與掃描設定</string>
     <string name="settings_backup_type_library_scan_summary">掃描目錄、標籤解析、排序與音樂庫顯示相關設定</string>
-    <string name="settings_backup_type_ai_config_chat">AI 設定及對話</string>
-    <string name="settings_backup_type_ai_config_chat_summary">AI 介面設定與對話紀錄</string>
     <string name="settings_backup_type_playback_stats">聽歌統計</string>
     <string name="settings_backup_type_playback_stats_summary">播放紀錄、排行榜與播放次數</string>
     <string name="settings_backup_type_playlists">播放清單</string>

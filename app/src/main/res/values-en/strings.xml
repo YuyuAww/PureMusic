@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Halcyon</string>
     <string name="tab_home">Home</string>
@@ -1041,13 +1041,6 @@
     <string name="settings_home_customize">Home customization</string>
     <string name="settings_daily_mix">Daily featured</string>
     <string name="settings_daily_mix_summary">Control the top featured card on the home page</string>
-    <string name="settings_ai_mix">AI recommended playlist</string>
-    <string name="settings_ai_mix_summary">Control the AI recommendation card on the home page</string>
-    <string name="settings_ai_interpretation">AI interpretation</string>
-    <string name="settings_openai_api_key_summary">Used for song AI interpretation and stored only on this device</string>
-    <string name="settings_openai_base_url_summary">OpenAI-compatible Chat Completions endpoint; /chat/completions is appended automatically</string>
-    <string name="settings_openai_model">OpenAI model</string>
-    <string name="settings_openai_model_summary">For example %1$s; change it to any model available to your account</string>
     <string name="settings_lyric_share_card">Lyric share card</string>
     <string name="settings_lyric_share_use_lyric_font">Apply font to lyric card</string>
     <string name="settings_lyric_share_use_lyric_font_summary">Preview and shared cards follow the lyric page custom font and weight</string>
