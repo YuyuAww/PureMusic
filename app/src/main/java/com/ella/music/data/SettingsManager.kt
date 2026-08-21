@@ -1200,7 +1200,6 @@ class SettingsManager(private val context: Context) :
             setString(KEY_HOME_LIBRARY_TILE_ORDER)
             setString(KEY_HOME_HIDDEN_LIBRARY_TILES)
             setString(KEY_APP_LANGUAGE)
-            setString(KEY_APP_ICON_STYLE)
             setString(KEY_BOTTOM_BAR_GLASS_EFFECT)
             setString(KEY_BOTTOM_DOCK_ITEMS)
             setString(KEY_LYRIC_OFFSET_OVERRIDES)
