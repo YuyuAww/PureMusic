@@ -785,12 +785,6 @@
     <string name="settings_dynamic_cover_enabled">アニメーションカバーを有効にしました</string>
     <string name="settings_dynamic_cover_permission_grant">システム設定で動画権限を付与してからアニメーションカバーを有効にしてください</string>
     <string name="settings_dynamic_cover_permission_denied">動画権限が付与されていません。アニメーションカバーを無効にしました</string>
-    <string name="settings_startup_poster">起動ポスター</string>
-    <string name="settings_startup_poster_summary">有効にして画像を選択すると、Halcyon を開くたびに %1$.1f 秒間表示されます</string>
-    <string name="settings_startup_poster_duration">起動ポスターの表示時間</string>
-    <string name="settings_startup_poster_duration_summary">アプリを開くたびにポスターを表示する時間を設定します</string>
-    <string name="settings_startup_poster_duration_value">%1$.1f 秒</string>
-    <string name="settings_startup_poster_image">起動ポスター画像を選択</string>
     <string name="settings_app_wallpaper">グローバルカスタム壁紙</string>
     <string name="settings_app_wallpaper_summary">ライブラリ、アルバム、プレイリスト、フォルダなどのページの背景にカスタム壁紙を表示</string>
     <string name="settings_app_wallpaper_image">壁紙画像を選択</string>

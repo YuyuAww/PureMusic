@@ -785,12 +785,6 @@
     <string name="settings_dynamic_cover_enabled">Dynamisches Cover aktiviert</string>
     <string name="settings_dynamic_cover_permission_grant">Vor dem Aktivieren dynamischer Cover die Video-Berechtigung in den Systemeinstellungen erteilen</string>
     <string name="settings_dynamic_cover_permission_denied">Video-Berechtigung nicht erteilt, dynamisches Cover wurde deaktiviert</string>
-    <string name="settings_startup_poster">Startposter</string>
-    <string name="settings_startup_poster_summary">Nach dem Aktivieren und Auswählen eines Bildes wird es beim Öffnen von Halcyon %1$.1f Sekunden angezeigt</string>
-    <string name="settings_startup_poster_duration">Startposter-Dauer</string>
-    <string name="settings_startup_poster_duration_summary">Legt fest, wie lange das Poster beim Öffnen der App sichtbar bleibt</string>
-    <string name="settings_startup_poster_duration_value">%1$.1f Sek.</string>
-    <string name="settings_startup_poster_image">Bild für Startposter auswählen</string>
     <string name="settings_app_wallpaper">Globales eigenes Hintergrundbild</string>
     <string name="settings_app_wallpaper_summary">Eigenes Hintergrundbild hinter Mediathek, Album, Playlist, Ordner und ähnlichen Seiten anzeigen</string>
     <string name="settings_app_wallpaper_image">Hintergrundbild auswählen</string>

@@ -783,12 +783,6 @@
     <string name="settings_dynamic_cover_enabled">Динамическая обложка включена</string>
     <string name="settings_dynamic_cover_permission_grant">Предоставьте разрешение на видео в настройках системы, прежде чем включать динамическую обложку.</string>
     <string name="settings_dynamic_cover_permission_denied">Разрешение на видео не предоставлено, динамическая обложка отключена.</string>
-    <string name="settings_startup_poster">Плакат стартапа</string>
-    <string name="settings_startup_poster_summary">После включения и выбора изображения показывать его %1$.1f с при каждом открытии Halcyon</string>
-    <string name="settings_startup_poster_duration">Длительность стартового плаката</string>
-    <string name="settings_startup_poster_duration_summary">Задаёт время показа плаката при открытии приложения</string>
-    <string name="settings_startup_poster_duration_value">%1$.1f с</string>
-    <string name="settings_startup_poster_image">Выберите изображение постера стартапа</string>
     <string name="settings_app_wallpaper">Глобальные пользовательские обои</string>
     <string name="settings_app_wallpaper_summary">Показывать пользовательские обои позади библиотеки, альбома, списка воспроизведения, папки и подобных страниц.</string>
     <string name="settings_app_wallpaper_image">Выберите изображение обоев</string>

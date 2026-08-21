@@ -22,11 +22,8 @@ import com.ella.music.data.SettingsManager.Companion.HOME_RECENT_SECTION_MODE_PL
 import com.ella.music.data.SettingsManager.Companion.DEFAULT_SHORTCUT_FOLDER_LABEL
 import com.ella.music.data.SettingsManager.Companion.DEFAULT_SHORTCUT_LIBRARY_LABEL
 import com.ella.music.data.SettingsManager.Companion.DEFAULT_SHORTCUT_PLAYLISTS_LABEL
-import com.ella.music.data.SettingsManager.Companion.DEFAULT_STARTUP_POSTER_DURATION_MS
 import com.ella.music.data.SettingsManager.Companion.normalizeAppShortcutOrder
 import com.ella.music.data.SettingsManager.Companion.normalizeBottomDockItems
-import com.ella.music.data.SettingsManager.Companion.STARTUP_POSTER_DURATION_MAX_MS
-import com.ella.music.data.SettingsManager.Companion.STARTUP_POSTER_DURATION_MIN_MS
 import com.ella.music.data.SettingsManager.Companion.KEY_APP_FONT_SCALE_PERCENT
 import com.ella.music.data.SettingsManager.Companion.KEY_APP_DISPLAY_SCALE_PERCENT
 import com.ella.music.data.SettingsManager.Companion.KEY_APP_LANGUAGE
@@ -62,9 +59,6 @@ import com.ella.music.data.SettingsManager.Companion.KEY_MONET_COLOR_MODE
 import com.ella.music.data.SettingsManager.Companion.KEY_SHORTCUT_FOLDER_LABEL
 import com.ella.music.data.SettingsManager.Companion.KEY_SHORTCUT_LIBRARY_LABEL
 import com.ella.music.data.SettingsManager.Companion.KEY_SHORTCUT_PLAYLISTS_LABEL
-import com.ella.music.data.SettingsManager.Companion.KEY_STARTUP_POSTER_DURATION_MS
-import com.ella.music.data.SettingsManager.Companion.KEY_STARTUP_POSTER_ENABLED
-import com.ella.music.data.SettingsManager.Companion.KEY_STARTUP_POSTER_URI
 import com.ella.music.data.SettingsManager.Companion.KEY_THEME_MODE
 import java.util.Locale
 import kotlinx.coroutines.flow.Flow
@@ -73,7 +67,7 @@ import org.json.JSONObject
 
 /**
  * App-wide appearance and home customisation: theme, language, icon style, bottom dock,
- * startup poster, wallpaper, home cards/tiles/sections, Hi-Res logo, launcher shortcuts and artist covers.
+ * wallpaper, home cards/tiles/sections, Hi-Res logo, launcher shortcuts and artist covers.
  *
  * Extracted verbatim from [SettingsManager], which implements this interface via class
  * delegation so every call site keeps using settingsManager.<member> unchanged. All flow
@@ -92,9 +86,6 @@ interface AppearanceSettingsAccess {
     val bottomDockItems: Flow<List<String>>
     val artistCoverFolderUri: Flow<String>
     val artistCoverCarousel: Flow<Boolean>
-    val startupPosterEnabled: Flow<Boolean>
-    val startupPosterUri: Flow<String>
-    val startupPosterDurationMs: Flow<Int>
     val appWallpaperEnabled: Flow<Boolean>
     val appWallpaperUri: Flow<String>
     val appWallpaperOpacity: Flow<Int>
@@ -131,9 +122,6 @@ interface AppearanceSettingsAccess {
     suspend fun setBottomDockItems(items: List<String>)
     suspend fun setArtistCoverCarousel(carousel: Boolean)
     suspend fun setArtistCoverFolderUri(uri: String)
-    suspend fun setStartupPosterEnabled(enabled: Boolean)
-    suspend fun setStartupPosterUri(uri: String)
-    suspend fun setStartupPosterDurationMs(durationMs: Int)
     suspend fun setAppWallpaperEnabled(enabled: Boolean)
     suspend fun setAppWallpaperUri(uri: String)
     suspend fun setAppWallpaperOpacity(opacity: Int)
@@ -207,15 +195,6 @@ internal class AppearanceSettingsAccessImpl(private val context: Context) : Appe
     override val artistCoverCarousel: Flow<Boolean> =
         context.dataStore.data.map { it[KEY_ARTIST_COVER_CAROUSEL] ?: true }
 
-    override val startupPosterEnabled: Flow<Boolean> =
-        context.dataStore.data.map { it[KEY_STARTUP_POSTER_ENABLED] ?: false }
-    override val startupPosterUri: Flow<String> =
-        context.dataStore.data.map { it[KEY_STARTUP_POSTER_URI] ?: "" }
-    override val startupPosterDurationMs: Flow<Int> =
-        context.dataStore.data.map {
-            (it[KEY_STARTUP_POSTER_DURATION_MS] ?: DEFAULT_STARTUP_POSTER_DURATION_MS)
-                .coerceIn(STARTUP_POSTER_DURATION_MIN_MS, STARTUP_POSTER_DURATION_MAX_MS)
-        }
     override val appWallpaperEnabled: Flow<Boolean> =
         context.dataStore.data.map { it[KEY_APP_WALLPAPER_ENABLED] ?: false }
     override val appWallpaperUri: Flow<String> =
@@ -346,26 +325,6 @@ internal class AppearanceSettingsAccessImpl(private val context: Context) : Appe
             } else {
                 prefs[KEY_ARTIST_COVER_FOLDER_URI] = safeUri
             }
-        }
-    }
-
-    override suspend fun setStartupPosterEnabled(enabled: Boolean) {
-        context.dataStore.edit { it[KEY_STARTUP_POSTER_ENABLED] = enabled }
-    }
-
-    override suspend fun setStartupPosterUri(uri: String) {
-        context.dataStore.edit {
-            val safeUri = uri.trim()
-            if (safeUri.isBlank()) it.remove(KEY_STARTUP_POSTER_URI) else it[KEY_STARTUP_POSTER_URI] = safeUri
-        }
-    }
-
-    override suspend fun setStartupPosterDurationMs(durationMs: Int) {
-        context.dataStore.edit {
-            it[KEY_STARTUP_POSTER_DURATION_MS] = durationMs.coerceIn(
-                STARTUP_POSTER_DURATION_MIN_MS,
-                STARTUP_POSTER_DURATION_MAX_MS
-            )
         }
     }
 

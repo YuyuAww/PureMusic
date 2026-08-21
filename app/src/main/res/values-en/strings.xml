@@ -948,12 +948,6 @@
     <string name="settings_dynamic_cover_custom_folders_remove">Clear dynamic cover folders</string>
     <string name="settings_dynamic_cover_custom_folders_remove_summary">Remove selected custom dynamic cover folders</string>
     <string name="settings_dynamic_cover_folder_saved">Dynamic cover folder added</string>
-    <string name="settings_startup_poster">Startup poster</string>
-    <string name="settings_startup_poster_summary">After enabling and choosing an image, show it for %1$.1f seconds whenever Halcyon opens</string>
-    <string name="settings_startup_poster_duration">Startup poster duration</string>
-    <string name="settings_startup_poster_duration_summary">Set how long the poster remains visible when the app opens</string>
-    <string name="settings_startup_poster_duration_value">%1$.1f sec</string>
-    <string name="settings_startup_poster_image">Choose startup poster image</string>
     <string name="settings_app_wallpaper">Global custom wallpaper</string>
     <string name="settings_app_wallpaper_summary">Show a custom wallpaper behind library, album, playlist, folder, and similar pages</string>
     <string name="settings_app_wallpaper_image">Choose wallpaper image</string>

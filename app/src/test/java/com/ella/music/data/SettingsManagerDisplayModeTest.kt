@@ -6,11 +6,6 @@ import org.junit.Test
 class SettingsManagerDisplayModeTest {
 
     @Test
-    fun `new installations show the startup poster for one second`() {
-        assertEquals(1_000, SettingsManager.DEFAULT_STARTUP_POSTER_DURATION_MS)
-    }
-
-    @Test
     fun `new installations use the adaptive large-screen landscape player`() {
         assertEquals(
             SettingsManager.PLAYER_LANDSCAPE_STYLE_WIDE,

@@ -220,9 +220,6 @@ class SettingsManager(private val context: Context) :
         val KEY_SHOW_ONLINE_MV_IN_LISTS = booleanPreferencesKey("show_online_mv_in_lists")
         val KEY_ARTIST_COVER_FOLDER_URI = stringPreferencesKey("artist_cover_folder_uri")
         val KEY_ARTIST_COVER_CAROUSEL = booleanPreferencesKey("artist_cover_carousel")
-        val KEY_STARTUP_POSTER_ENABLED = booleanPreferencesKey("startup_poster_enabled")
-        val KEY_STARTUP_POSTER_URI = stringPreferencesKey("startup_poster_uri")
-        val KEY_STARTUP_POSTER_DURATION_MS = intPreferencesKey("startup_poster_duration_ms")
         val KEY_APP_WALLPAPER_ENABLED = booleanPreferencesKey("app_wallpaper_enabled")
         val KEY_APP_WALLPAPER_URI = stringPreferencesKey("app_wallpaper_uri")
         val KEY_APP_WALLPAPER_OPACITY = intPreferencesKey("app_wallpaper_opacity")
@@ -605,10 +602,6 @@ class SettingsManager(private val context: Context) :
         const val LYRIC_SECONDARY_PRONUNCIATION = 2
         const val MINI_PLAYER_RIGHT_NEXT = 0
         const val MINI_PLAYER_RIGHT_QUEUE = 1
-        const val STARTUP_POSTER_DURATION_MIN_MS = 100
-        const val STARTUP_POSTER_DURATION_MAX_MS = 3_000
-        // Keep startup responsive while still allowing the poster to be noticed.
-        const val DEFAULT_STARTUP_POSTER_DURATION_MS = 1_000
         const val SONG_RATING_DISPLAY_STAR_NUMBER = 0
         const val SONG_RATING_DISPLAY_STARS = 1
         const val MEDIA_NOTIFICATION_BUTTON_PLAYBACK_MODE = "playback_mode"
@@ -942,7 +935,6 @@ class SettingsManager(private val context: Context) :
             setBoolean(KEY_SHOW_LOCAL_MV_IN_LISTS)
             setBoolean(KEY_SHOW_ONLINE_MV_IN_LISTS)
             setBoolean(KEY_ARTIST_COVER_CAROUSEL)
-            setBoolean(KEY_STARTUP_POSTER_ENABLED)
             setBoolean(KEY_APP_WALLPAPER_ENABLED)
             setBoolean(KEY_PLAYER_BACKGROUND_ENABLED)
             setBoolean(KEY_PLAYER_BEAUTIFUL_LYRICS_BACKGROUND)
@@ -1091,7 +1083,6 @@ class SettingsManager(private val context: Context) :
             setInt(KEY_DESKTOP_LYRIC_STATUS_BAR_OPACITY)
             setInt(KEY_DESKTOP_LYRIC_STATUS_BAR_TEXT_COLOR)
             setInt(KEY_SLEEP_TIMER_CUSTOM_MINUTES)
-            setInt(KEY_STARTUP_POSTER_DURATION_MS)
             setInt(KEY_APP_WALLPAPER_OPACITY)
             setInt(KEY_APP_WALLPAPER_DIM)
             setInt(KEY_APP_WALLPAPER_CONTENT_OVERLAY)
@@ -1176,7 +1167,6 @@ class SettingsManager(private val context: Context) :
             setString(KEY_LYRIC_TRANSLATION_CJK_FONT_NAME)
             setString(KEY_LYRIC_TRANSLATION_CJK_FONT_PATH)
             setString(KEY_LYRIC_SHARE_CUSTOM_INFO)
-            setString(KEY_STARTUP_POSTER_URI)
             setString(KEY_APP_WALLPAPER_URI)
             setString(KEY_PLAYER_BACKGROUND_URI)
             setString(KEY_HOME_CARD_COLOR)
@@ -1226,7 +1216,6 @@ class SettingsManager(private val context: Context) :
                 }
             }
 
-            clearMissingCustomImage(KEY_STARTUP_POSTER_ENABLED, KEY_STARTUP_POSTER_URI)
             clearMissingCustomImage(KEY_APP_WALLPAPER_ENABLED, KEY_APP_WALLPAPER_URI)
             clearMissingCustomImage(KEY_PLAYER_BACKGROUND_ENABLED, KEY_PLAYER_BACKGROUND_URI)
             clearMissingCustomImage(KEY_HI_RES_LOGO_ENABLED, KEY_HI_RES_LOGO_URI)

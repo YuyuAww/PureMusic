@@ -55,7 +55,7 @@ It focuses on local music and lyrics, with a MIUI / HyperOS-inspired interface, 
 - Supports dynamic video covers matched by song, album, or global fallback.
 - Supports a custom artist-cover folder and dynamic artist video covers on artist pages.
 - Static artist artwork is selected in this order: custom asset, sole/collaborative album artist, then sole/collaborative song artist.
-- Supports global custom wallpapers, launch posters, custom Hi-Res badges, and optional player button outlines.
+- Supports global custom wallpapers, custom Hi-Res badges, and optional player button outlines.
 - Supports Beautiful Lyrics-style dynamic backgrounds for the lyrics page, tablet landscape player, and landscape cover page, with speed, blur, and brightness controls.
 - The Compose lyrics page supports an Apple Music-style dynamic background, word-lift animation, smooth relayout, and consistent transitions between immersive lyrics and the player.
 - Supports Monet dynamic color derived from the system wallpaper or the current song cover.

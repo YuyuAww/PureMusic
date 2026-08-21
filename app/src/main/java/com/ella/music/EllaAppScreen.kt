@@ -136,9 +136,6 @@ fun EllaApp(
                 appWallpaperOpacity = settingsManager.appWallpaperOpacity.first(),
                 appWallpaperDim = settingsManager.appWallpaperDim.first(),
                 appWallpaperContentOverlay = settingsManager.appWallpaperContentOverlay.first(),
-                startupPosterEnabled = settingsManager.startupPosterEnabled.first(),
-                startupPosterUri = settingsManager.startupPosterUri.first(),
-                startupPosterDurationMs = settingsManager.startupPosterDurationMs.first(),
                 notificationPermissionPromptHandled = settingsManager.notificationPermissionPromptHandled.first()
             )
         }
@@ -457,15 +454,9 @@ fun EllaApp(
     val appWallpaperContentOverlay by settingsManager.appWallpaperContentOverlay.collectAsState(
         initial = initialUiSettings.appWallpaperContentOverlay
     )
-    val startupPosterEnabled by settingsManager.startupPosterEnabled.collectAsState(initial = initialUiSettings.startupPosterEnabled)
-    val startupPosterUri by settingsManager.startupPosterUri.collectAsState(initial = initialUiSettings.startupPosterUri)
-    val startupPosterDurationMs by settingsManager.startupPosterDurationMs.collectAsState(
-        initial = initialUiSettings.startupPosterDurationMs
-    )
     val notificationPermissionPromptHandled by settingsManager.notificationPermissionPromptHandled.collectAsState(
         initial = initialUiSettings.notificationPermissionPromptHandled
     )
-    var showStartupPoster by rememberSaveable { mutableStateOf(true) }
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -476,13 +467,6 @@ fun EllaApp(
                 context.getString(R.string.notification_permission_denied_hint),
                 Toast.LENGTH_LONG
             ).show()
-        }
-    }
-
-    LaunchedEffect(startupPosterEnabled, startupPosterUri, startupPosterDurationMs) {
-        if (startupPosterEnabled && startupPosterUri.isNotBlank() && showStartupPoster) {
-            kotlinx.coroutines.delay(startupPosterDurationMs.toLong())
-            showStartupPoster = false
         }
     }
 
@@ -558,9 +542,7 @@ fun EllaApp(
     val currentTabRoute = currentRoute.toCurrentTabRoute()
 
     val wallpaperVisible = appWallpaperEnabled && appWallpaperUri.isNotBlank()
-    val startupPosterVisible = startupPosterEnabled && startupPosterUri.isNotBlank() && showStartupPoster
-    LaunchedEffect(startupPosterVisible, notificationPermissionPromptHandled) {
-        if (startupPosterVisible) return@LaunchedEffect
+    LaunchedEffect(notificationPermissionPromptHandled) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@LaunchedEffect
         if (notificationPermissionPromptHandled) return@LaunchedEffect
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
@@ -578,70 +560,49 @@ fun EllaApp(
             .fillMaxSize()
             .background(MiuixTheme.colorScheme.background)
     ) {
-        if (startupPosterVisible) {
+        if (wallpaperVisible) {
+            val wallpaperDimAlpha = appWallpaperDim.coerceIn(0, 80) / 100f
+            val wallpaperWash = if (isDarkTheme) ComposeColor.Black else ComposeColor.White
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(ComposeColor.Black)
+                    .graphicsLayer { alpha = appWallpaperOpacity.coerceIn(20, 100) / 100f }
             ) {
                 SafeCoverImage(
-                    model = Uri.parse(startupPosterUri),
+                    model = Uri.parse(appWallpaperUri),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
-                    sizePx = 1800,
+                    sizePx = 1600,
                     showDefaultPlaceholder = false
                 )
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(ComposeColor.Black.copy(alpha = 0.10f))
-                )
-            }
-        } else {
-            if (wallpaperVisible) {
-                val wallpaperDimAlpha = appWallpaperDim.coerceIn(0, 80) / 100f
-                val wallpaperWash = if (isDarkTheme) ComposeColor.Black else ComposeColor.White
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer { alpha = appWallpaperOpacity.coerceIn(20, 100) / 100f }
-                ) {
-                    SafeCoverImage(
-                        model = Uri.parse(appWallpaperUri),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        sizePx = 1600,
-                        showDefaultPlaceholder = false
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        wallpaperWash.copy(alpha = wallpaperDimAlpha * 0.95f),
-                                        wallpaperWash.copy(alpha = wallpaperDimAlpha * 0.55f),
-                                        wallpaperWash.copy(alpha = (wallpaperDimAlpha * 1.15f).coerceAtMost(0.9f))
-                                    )
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    wallpaperWash.copy(alpha = wallpaperDimAlpha * 0.95f),
+                                    wallpaperWash.copy(alpha = wallpaperDimAlpha * 0.55f),
+                                    wallpaperWash.copy(alpha = (wallpaperDimAlpha * 1.15f).coerceAtMost(0.9f))
                                 )
                             )
-                    )
-                }
-                val contentOverlayAlpha = appWallpaperContentOverlay.coerceIn(0, 80) / 100f
-                val contentOverlayColor = if (isDarkTheme) {
-                    ComposeColor.Black.copy(alpha = (contentOverlayAlpha * 0.82f).coerceAtMost(0.70f))
-                } else {
-                    ComposeColor.White.copy(alpha = (contentOverlayAlpha * 0.95f).coerceAtMost(0.78f))
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(contentOverlayColor)
+                        )
                 )
             }
+            val contentOverlayAlpha = appWallpaperContentOverlay.coerceIn(0, 80) / 100f
+            val contentOverlayColor = if (isDarkTheme) {
+                ComposeColor.Black.copy(alpha = (contentOverlayAlpha * 0.82f).coerceAtMost(0.70f))
+            } else {
+                ComposeColor.White.copy(alpha = (contentOverlayAlpha * 0.95f).coerceAtMost(0.78f))
+            }
             Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(contentOverlayColor)
+            )
+        }
+        Box(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
@@ -870,8 +831,5 @@ private data class EllaInitialUiSettings(
     val appWallpaperOpacity: Int,
     val appWallpaperDim: Int,
     val appWallpaperContentOverlay: Int,
-    val startupPosterEnabled: Boolean,
-    val startupPosterUri: String,
-    val startupPosterDurationMs: Int,
     val notificationPermissionPromptHandled: Boolean
 )

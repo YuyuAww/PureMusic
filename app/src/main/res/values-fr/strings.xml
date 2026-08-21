@@ -785,12 +785,6 @@
     <string name="settings_dynamic_cover_enabled">Pochette dynamique activée</string>
     <string name="settings_dynamic_cover_permission_grant">Accordez l’autorisation vidéo dans les paramètres système avant d’activer la pochette dynamique</string>
     <string name="settings_dynamic_cover_permission_denied">Autorisation vidéo non accordée, la pochette dynamique a été désactivée</string>
-    <string name="settings_startup_poster">Affiche de démarrage</string>
-    <string name="settings_startup_poster_summary">Après activation et sélection d’une image, l’afficher pendant %1$.1f secondes à chaque ouverture de Halcyon</string>
-    <string name="settings_startup_poster_duration">Durée de l’affiche de démarrage</string>
-    <string name="settings_startup_poster_duration_summary">Définit la durée d’affichage de l’affiche à l’ouverture de l’application</string>
-    <string name="settings_startup_poster_duration_value">%1$.1f s</string>
-    <string name="settings_startup_poster_image">Choisir l’image d’affiche de démarrage</string>
     <string name="settings_app_wallpaper">Fond d’écran personnalisé global</string>
     <string name="settings_app_wallpaper_summary">Afficher un fond personnalisé derrière la bibliothèque, les albums, playlists, dossiers et pages similaires</string>
     <string name="settings_app_wallpaper_image">Choisir l’image de fond</string>

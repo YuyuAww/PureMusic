@@ -1135,12 +1135,6 @@
     <string name="settings_dynamic_cover_custom_folders_remove">清除动态封面文件夹</string>
     <string name="settings_dynamic_cover_custom_folders_remove_summary">移除已选择的自定义动态封面文件夹</string>
     <string name="settings_dynamic_cover_folder_saved">已添加动态封面文件夹</string>
-    <string name="settings_startup_poster">开屏海报</string>
-    <string name="settings_startup_poster_summary">开启并选择图片后，每次打开 Halcyon 时显示 %1$.1f 秒</string>
-    <string name="settings_startup_poster_duration">开屏海报时长</string>
-    <string name="settings_startup_poster_duration_summary">设置每次启动时显示海报的时长</string>
-    <string name="settings_startup_poster_duration_value">%1$.1f 秒</string>
-    <string name="settings_startup_poster_image">选择开屏海报图片</string>
     <string name="settings_app_wallpaper">全局自定义壁纸</string>
     <string name="settings_app_wallpaper_summary">在音乐库、专辑、歌单、文件夹等页面背后显示自定义壁纸</string>
     <string name="settings_app_wallpaper_image">选择壁纸图片</string>

@@ -805,12 +805,6 @@
     <string name="settings_dynamic_cover_enabled">已開啟動態封面</string>
     <string name="settings_dynamic_cover_permission_grant">請在系統設定中授予影片權限後再開啟動態封面</string>
     <string name="settings_dynamic_cover_permission_denied">尚未授予影片權限，已關閉動態封面</string>
-    <string name="settings_startup_poster">啟動畫面海報</string>
-    <string name="settings_startup_poster_summary">開啟並選擇圖片後，每次開啟 Halcyon 時顯示 %1$.1f 秒</string>
-    <string name="settings_startup_poster_duration">啟動畫面海報時長</string>
-    <string name="settings_startup_poster_duration_summary">設定每次啟動時顯示海報的時長</string>
-    <string name="settings_startup_poster_duration_value">%1$.1f 秒</string>
-    <string name="settings_startup_poster_image">選擇啟動畫面海報圖片</string>
     <string name="settings_app_wallpaper">全域自訂桌布</string>
     <string name="settings_app_wallpaper_summary">在音樂庫、專輯、播放清單、資料夾等頁面背景顯示自訂桌布</string>
     <string name="settings_app_wallpaper_image">選擇桌布圖片</string>

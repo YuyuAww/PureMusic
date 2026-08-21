@@ -47,11 +47,6 @@ internal fun SettingsAppearanceSection(
     val systemBarsReserveSpace by settingsManager.systemBarsReserveSpace.collectAsState(
         initial = SettingsManager.DEFAULT_SYSTEM_BARS_RESERVE_SPACE
     )
-    val startupPosterEnabled by settingsManager.startupPosterEnabled.collectAsState(initial = false)
-    val startupPosterUri by settingsManager.startupPosterUri.collectAsState(initial = "")
-    val startupPosterDurationMs by settingsManager.startupPosterDurationMs.collectAsState(
-        initial = SettingsManager.DEFAULT_STARTUP_POSTER_DURATION_MS
-    )
     val appWallpaperEnabled by settingsManager.appWallpaperEnabled.collectAsState(initial = false)
     val appWallpaperUri by settingsManager.appWallpaperUri.collectAsState(initial = "")
     val appWallpaperOpacity by settingsManager.appWallpaperOpacity.collectAsState(initial = 100)
@@ -262,11 +257,6 @@ internal fun SettingsAppearanceSection(
         }
     }
 
-    val startupPosterPicker = rememberAppearanceImagePicker(
-        currentUri = startupPosterUri,
-        imageName = "startup_poster",
-        onImagePersisted = settingsManager::setStartupPosterUri
-    )
     val appWallpaperPicker = rememberAppearanceImagePicker(
         currentUri = appWallpaperUri,
         imageName = "app_wallpaper",
@@ -424,51 +414,6 @@ internal fun SettingsAppearanceSection(
                     scope.launch { settingsManager.setSystemBarsReserveSpace(it) }
                 }
             )
-            SwitchPreference(
-                title = stringResource(R.string.settings_startup_poster),
-                summary = stringResource(
-                    R.string.settings_startup_poster_summary,
-                    startupPosterDurationMs / 1_000f
-                ),
-                checked = startupPosterEnabled,
-                onCheckedChange = {
-                    scope.launch { settingsManager.setStartupPosterEnabled(it) }
-                }
-            )
-            SettingsIntSliderPreference(
-                title = stringResource(R.string.settings_startup_poster_duration),
-                summary = stringResource(R.string.settings_startup_poster_duration_summary),
-                value = startupPosterDurationMs / 100,
-                valueRange = 1..30,
-                valueText = stringResource(
-                    R.string.settings_startup_poster_duration_value,
-                    startupPosterDurationMs / 1_000f
-                ),
-                enabled = startupPosterEnabled && startupPosterUri.isNotBlank(),
-                steps = 28,
-                onValueChange = { scope.launch { settingsManager.setStartupPosterDurationMs(it * 100) } }
-            )
-            ArrowPreference(
-                title = stringResource(R.string.settings_startup_poster_image),
-                summary = if (startupPosterUri.isBlank()) {
-                    stringResource(R.string.settings_custom_image_not_selected)
-                } else {
-                    stringResource(R.string.settings_custom_image_selected)
-                },
-                onClick = { startupPosterPicker.launch(arrayOf("image/*")) }
-            )
-            if (startupPosterUri.isNotBlank()) {
-                ArrowPreference(
-                    title = stringResource(R.string.settings_custom_image_remove),
-                    summary = stringResource(R.string.settings_custom_image_remove_summary),
-                    onClick = {
-                        scope.launch {
-                            context.deletePersistedCustomImage(startupPosterUri)
-                            settingsManager.setStartupPosterUri("")
-                        }
-                    }
-                )
-            }
         }
     }
 
