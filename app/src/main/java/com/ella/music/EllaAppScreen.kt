@@ -1,4 +1,4 @@
-package com.ella.music
+﻿package com.ella.music
 
 import android.Manifest
 import android.app.Activity
@@ -816,7 +816,6 @@ fun EllaApp(
             )
         }
     }
-}
 
 private data class EllaInitialUiSettings(
     val miniPlayerLyricSecondary: Int,
