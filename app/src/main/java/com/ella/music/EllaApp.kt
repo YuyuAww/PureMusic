@@ -4,7 +4,6 @@ import android.app.Application
 import android.os.Build
 import com.ella.music.data.AppLogcatCollector
 import com.ella.music.data.AppLogStore
-import com.ella.music.data.AppIconManager
 import com.ella.music.data.SettingsManager
 import com.ella.music.data.webdav.WebDavClient
 import com.ella.music.oem.AppMemoryTrimAdapter
@@ -51,13 +50,6 @@ class EllaApp : Application() {
             runCatching { LibrarySortUiState.warmUp(settingsManager) }
         }
 
-        appScope.launch {
-            settingsManager.appIconStyle
-                .distinctUntilChanged()
-                .collect { style ->
-                    AppIconManager.apply(this@EllaApp, style)
-                }
-        }
         appScope.launch {
             settingsManager.widgetSafeLayout
                 .distinctUntilChanged()

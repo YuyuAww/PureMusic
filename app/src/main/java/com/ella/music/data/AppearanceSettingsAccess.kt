@@ -27,7 +27,6 @@ import com.ella.music.data.SettingsManager.Companion.normalizeAppShortcutOrder
 import com.ella.music.data.SettingsManager.Companion.normalizeBottomDockItems
 import com.ella.music.data.SettingsManager.Companion.STARTUP_POSTER_DURATION_MAX_MS
 import com.ella.music.data.SettingsManager.Companion.STARTUP_POSTER_DURATION_MIN_MS
-import com.ella.music.data.SettingsManager.Companion.KEY_APP_ICON_STYLE
 import com.ella.music.data.SettingsManager.Companion.KEY_APP_FONT_SCALE_PERCENT
 import com.ella.music.data.SettingsManager.Companion.KEY_APP_DISPLAY_SCALE_PERCENT
 import com.ella.music.data.SettingsManager.Companion.KEY_APP_LANGUAGE
@@ -88,7 +87,6 @@ interface AppearanceSettingsAccess {
     val appLanguage: Flow<String>
     val appFontScalePercent: Flow<Int>
     val appDisplayScalePercent: Flow<Int>
-    val appIconStyle: Flow<String>
     val widgetSafeLayout: Flow<Boolean>
     val bottomBarGlassEffect: Flow<BottomBarGlassEffect>
     val bottomDockItems: Flow<List<String>>
@@ -128,7 +126,6 @@ interface AppearanceSettingsAccess {
     suspend fun setAppLanguage(languageTag: String)
     suspend fun setAppFontScalePercent(percent: Int)
     suspend fun setAppDisplayScalePercent(percent: Int)
-    suspend fun setAppIconStyle(style: String)
     suspend fun setWidgetSafeLayout(enabled: Boolean)
     suspend fun setBottomBarGlassEffect(effect: BottomBarGlassEffect)
     suspend fun setBottomDockItems(items: List<String>)
@@ -188,8 +185,6 @@ internal class AppearanceSettingsAccessImpl(private val context: Context) : Appe
                 SettingsManager.APP_DISPLAY_SCALE_MAX_PERCENT
             )
         }
-    override val appIconStyle: Flow<String> =
-        context.dataStore.data.map { AppIconManager.normalize(it[KEY_APP_ICON_STYLE]) }
     override val widgetSafeLayout: Flow<Boolean> =
         context.dataStore.data.map { it[KEY_WIDGET_SAFE_LAYOUT] ?: false }
     override val bottomBarGlassEffect: Flow<BottomBarGlassEffect> = context.dataStore.data.map { preferences ->
@@ -323,10 +318,6 @@ internal class AppearanceSettingsAccessImpl(private val context: Context) : Appe
                 SettingsManager.APP_DISPLAY_SCALE_MAX_PERCENT
             )
         }
-    }
-
-    override suspend fun setAppIconStyle(style: String) {
-        context.dataStore.edit { it[KEY_APP_ICON_STYLE] = AppIconManager.normalize(style) }
     }
 
     override suspend fun setWidgetSafeLayout(enabled: Boolean) {

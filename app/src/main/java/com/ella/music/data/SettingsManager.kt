@@ -66,7 +66,6 @@ class SettingsManager(private val context: Context) :
         val KEY_APP_FONT_SCALE_PERCENT = intPreferencesKey("app_font_scale_percent")
         val KEY_APP_DISPLAY_SCALE_PERCENT = intPreferencesKey("app_display_scale_percent")
         val KEY_APP_LANGUAGE = stringPreferencesKey("app_language")
-        val KEY_APP_ICON_STYLE = stringPreferencesKey("app_icon_style")
         val KEY_WIDGET_SAFE_LAYOUT = booleanPreferencesKey("widget_safe_layout")
         val KEY_LIBRARY_SOURCE = stringPreferencesKey("library_source")
         val KEY_BOTTOM_BAR_GLASS_EFFECT = stringPreferencesKey("bottom_bar_glass_effect")
@@ -567,10 +566,6 @@ class SettingsManager(private val context: Context) :
         const val APP_LANGUAGE_DE = "de"
         const val APP_LANGUAGE_FR = "fr"
         const val APP_LANGUAGE_RU = "ru"
-        const val APP_ICON_STYLE_DEFAULT = "default"
-        const val APP_ICON_STYLE_ANIME = "anime"
-        const val APP_ICON_STYLE_BLACK_HAIR = "black_hair"
-        const val APP_ICON_STYLE_LOLI = "loli"
         const val BOTTOM_DOCK_ITEM_HOME = "home"
         const val BOTTOM_DOCK_ITEM_LIBRARY = "library"
         // Search stays as a fixed action pill outside the configurable dock tabs.

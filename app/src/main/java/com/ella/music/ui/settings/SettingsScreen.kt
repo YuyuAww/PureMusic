@@ -437,7 +437,6 @@ private fun settingsSearchAliases(
     onAbout: () -> Unit
 ): List<SettingsSearchEntry> = listOf(
     entry(stringResource(R.string.settings_app_wallpaper), stringResource(R.string.settings_app_wallpaper_summary), "壁纸 图片 背景 模糊 毛玻璃 透明") { onAppearance("wallpaper") },
-    entry(stringResource(R.string.settings_app_icon), stringResource(R.string.settings_app_icon_summary), "图标 启动器 图标包 anime loli") { onAppearance("app_icon") },
     entry(stringResource(R.string.settings_player_immersive_cover), stringResource(R.string.settings_player_immersive_cover_summary), "沉浸播放页 封面取色 文字 图标 背景 动态背景") { onAppearance("player_immersive") },
     entry(stringResource(R.string.settings_player_page_style), stringResource(R.string.settings_player_page_style_summary), "播放页 Apple Music 封面 歌词 样式") { onAppearance("player_page") },
     entry(stringResource(R.string.settings_system_bars_mode), stringResource(R.string.settings_system_bars_mode_summary, ""), "沉浸模式 全屏 状态栏 导航栏 隐藏 显示 车机") { onAppearance("system_bars") },

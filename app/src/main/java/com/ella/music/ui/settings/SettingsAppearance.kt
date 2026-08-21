@@ -39,7 +39,6 @@ internal fun SettingsAppearanceSection(
     val appDisplayScalePercent by settingsManager.appDisplayScalePercent.collectAsState(
         initial = SettingsManager.DEFAULT_APP_DISPLAY_SCALE_PERCENT
     )
-    val appIconStyle by settingsManager.appIconStyle.collectAsState(initial = SettingsManager.APP_ICON_STYLE_DEFAULT)
     val widgetSafeLayout by settingsManager.widgetSafeLayout.collectAsState(initial = false)
     val bottomBarGlassEffect by settingsManager.bottomBarGlassEffect.collectAsState(initial = BottomBarGlassEffect.LiquidGlass)
     val systemBarsMode by settingsManager.systemBarsMode.collectAsState(
@@ -230,19 +229,6 @@ internal fun SettingsAppearanceSection(
         SettingsManager.APP_LANGUAGE_RU -> stringResource(R.string.settings_language_summary_russian)
         else -> stringResource(R.string.settings_language_summary_system)
     }
-    val appIconOptions = listOf(
-        SettingsManager.APP_ICON_STYLE_DEFAULT to stringResource(R.string.settings_app_icon_default),
-        SettingsManager.APP_ICON_STYLE_ANIME to stringResource(R.string.settings_app_icon_anime),
-        SettingsManager.APP_ICON_STYLE_BLACK_HAIR to stringResource(R.string.settings_app_icon_black_hair),
-        SettingsManager.APP_ICON_STYLE_LOLI to stringResource(R.string.settings_app_icon_loli)
-    )
-    val selectedAppIconIndex = appIconOptions.indexOfFirst { it.first == appIconStyle }
-        .takeIf { it >= 0 }
-        ?: 0
-    val appIconEntries = remember(appIconOptions) {
-        appIconOptions.map { (_, label) -> DropdownItem(title = label) }
-    }
-
     val bottomBarGlassEffects = remember {
         listOf(BottomBarGlassEffect.Blur, BottomBarGlassEffect.LiquidGlass)
     }
@@ -312,7 +298,7 @@ internal fun SettingsAppearanceSection(
     fun isHighlighted(vararg keys: String): Boolean =
         highlightKey == "appearance" || keys.any { it == highlightKey }
 
-    SettingsCardGroup(highlight = isHighlighted("app_icon")) {
+    SettingsCardGroup(highlight = isHighlighted("theme")) {
         Column {
             WindowSpinnerPreference(
                 title = stringResource(R.string.settings_theme_mode),
@@ -383,22 +369,6 @@ internal fun SettingsAppearanceSection(
                     scope.launch { settingsManager.setAppDisplayScalePercent(it) }
                 }
             )
-            SettingsFocusAnchor(active = highlightKey == "app_icon") {
-                WindowSpinnerPreference(
-                    title = stringResource(R.string.settings_app_icon),
-                    summary = stringResource(
-                        R.string.settings_app_icon_summary,
-                        appIconOptions[selectedAppIconIndex].second
-                    ),
-                    items = appIconEntries,
-                    selectedIndex = selectedAppIconIndex,
-                    onSelectedIndexChange = { index ->
-                        appIconOptions.getOrNull(index)?.first?.let { style ->
-                            scope.launch { settingsManager.setAppIconStyle(style) }
-                        }
-                    }
-                )
-            }
             SwitchPreference(
                 title = stringResource(R.string.settings_widget_safe_layout),
                 summary = stringResource(R.string.settings_widget_safe_layout_summary),
