@@ -100,7 +100,6 @@ internal fun CoverPageContent(
     playerShowTotalDuration: Boolean,
     coverSwipeEnabled: Boolean,
     playerTitlePosition: Int,
-    playerPageStyle: Int,
     showPlayerKeepScreenOnAction: Boolean,
     playerKeepScreenOn: Boolean,
     menuExpanded: Boolean,
@@ -147,9 +146,13 @@ internal fun CoverPageContent(
     onShowLyrics: () -> Unit,
     onSwipePrevious: () -> Unit,
     drawBackground: Boolean = true,
+    compactLayout: Boolean = false,
+    actionMenuInitialPage: PlayerActionSheetPage = PlayerActionSheetPage.Main,
     modifier: Modifier = Modifier
 ) {
-    var actionMenuInitialPage by remember { mutableStateOf(PlayerActionSheetPage.Main) }
+    var currentActionMenuInitialPage by remember(actionMenuInitialPage) {
+        mutableStateOf(actionMenuInitialPage)
+    }
     fun openTagEditor(kind: TagEditorOptionKind) {
         val current = song
         when {
@@ -236,7 +239,6 @@ internal fun CoverPageContent(
         playerShowTotalDuration = playerShowTotalDuration,
         coverSwipeEnabled = coverSwipeEnabled,
         playerTitlePosition = playerTitlePosition,
-        playerPageStyle = playerPageStyle,
         showPlayerKeepScreenOnAction = showPlayerKeepScreenOnAction,
         playerKeepScreenOn = playerKeepScreenOn,
         menuExpanded = menuExpanded,
@@ -255,7 +257,7 @@ internal fun CoverPageContent(
             onDynamicCoverSheetSongChange(song)
         },
         onToggleMenu = {
-            actionMenuInitialPage = PlayerActionSheetPage.Main
+            currentActionMenuInitialPage = PlayerActionSheetPage.Main
             onMenuExpandedChange(!menuExpanded)
         },
         onToggleFavorite = { playerViewModel.toggleCurrentSongFavorite() },
@@ -433,7 +435,7 @@ internal fun CoverPageContent(
             }
         },
         onOpenTimer = {
-            actionMenuInitialPage = PlayerActionSheetPage.Timer
+            currentActionMenuInitialPage = PlayerActionSheetPage.Timer
             onMenuExpandedChange(true)
         },
         onOpenMetadataEditor = {
@@ -499,8 +501,9 @@ internal fun CoverPageContent(
         onVisualizerEnabled = onVisualizerEnabled,
         onVisualizerOpacityChange = onVisualizerOpacityChange,
         onPlayerKeepScreenOnChange = onPlayerKeepScreenOnChange,
-        actionMenuInitialPage = actionMenuInitialPage,
+        actionMenuInitialPage = currentActionMenuInitialPage,
         drawBackground = drawBackground,
+        compactLayout = compactLayout,
         modifier = modifier
     )
 }
@@ -558,6 +561,7 @@ internal fun LyricsPageContent(
     pageVisible: Boolean = true,
     immersiveAlbumCover: Boolean,
     drawBackground: Boolean = true,
+    compactLayout: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val playWhenReady by playerViewModel.playWhenReady.collectAsState()
@@ -670,6 +674,7 @@ internal fun LyricsPageContent(
         pageVisible = pageVisible,
         useBlurBackground = false,
         drawBackground = drawBackground,
+        compactLayout = compactLayout,
         modifier = modifier
     )
 }
@@ -705,6 +710,7 @@ internal fun DetailPageContent(
     dynamicCoverCustomFolders: List<String>,
     onOpenMusicVideo: (DynamicCoverSource) -> Unit,
     drawBackground: Boolean = true,
+    compactLayout: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     PlayerDetailPage(
@@ -751,6 +757,7 @@ internal fun DetailPageContent(
         musicVideoCustomFolders = musicVideoCustomFolders,
         dynamicCoverCustomFolders = dynamicCoverCustomFolders,
         onMusicVideo = onOpenMusicVideo,
+        compactLayout = compactLayout,
         modifier = modifier
     )
 }

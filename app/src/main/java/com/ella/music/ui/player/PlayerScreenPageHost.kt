@@ -30,8 +30,7 @@ internal fun PlayerPagerSyncEffects(
     LaunchedEffect(showLyrics, immersiveAlbumCover) {
         if (immersiveAlbumCover || previousShowLyrics == showLyrics) return@LaunchedEffect
         previousShowLyrics = showLyrics
-        // The details page is a real pager destination. A lyrics preference update must not
-        // pull the user out of it and back to the cover/lyrics pair (#443).
+        // Animate to the lyrics page when showLyrics changes, or back to the cover page.
         if (pagerState.currentPage != PLAYER_PAGE_COVER &&
             pagerState.currentPage != PLAYER_PAGE_LYRICS
         ) {
@@ -84,7 +83,6 @@ internal fun PlayerScreenPageHost(
     onDismissPagedLyrics: () -> Unit,
     coverPage: @Composable (onShowLyrics: () -> Unit, Modifier) -> Unit,
     lyricsPage: @Composable (onDismissLyrics: () -> Unit, enableSwipeDismiss: Boolean, backEnabled: Boolean, pageVisible: Boolean, Modifier) -> Unit,
-    detailPage: @Composable (Modifier) -> Unit,
     playerVisible: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -145,16 +143,14 @@ internal fun PlayerScreenPageHost(
                     ),
                     Modifier.fillMaxSize()
                 )
-                PLAYER_PAGE_DETAILS -> detailPage(Modifier.fillMaxSize())
             }
         }
     }
 }
 
-internal const val PLAYER_PAGE_DETAILS = 0
-internal const val PLAYER_PAGE_COVER = 1
-internal const val PLAYER_PAGE_LYRICS = 2
-internal const val PLAYER_PAGE_COUNT = 3
+internal const val PLAYER_PAGE_COVER = 0
+internal const val PLAYER_PAGE_LYRICS = 1
+internal const val PLAYER_PAGE_COUNT = 2
 
 internal fun isPlayerLyricsPageVisible(
     page: Int,
@@ -162,10 +158,5 @@ internal fun isPlayerLyricsPageVisible(
     isScrollInProgress: Boolean
 ): Boolean = page == currentPage && !isScrollInProgress
 
-/**
- * The details page is a real pager destination, not an immersive lyrics surface. Intercepting
- * back there sends the user to the cover page and can make a settled left swipe appear to jump
- * back automatically (#443).
- */
 internal fun shouldInterceptPlayerPagerBack(playerVisible: Boolean, currentPage: Int): Boolean =
     playerVisible && currentPage == PLAYER_PAGE_LYRICS

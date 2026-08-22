@@ -12,6 +12,7 @@ import com.ella.music.ui.components.TagEditorOptionKind
 
 internal class PlayerScreenUiState(
     menuExpanded: Boolean = false,
+    actionMenuInitialPage: PlayerActionSheetPage = PlayerActionSheetPage.Main,
     dynamicCoverSheetSong: Song? = null,
     songInfoExpanded: Boolean = false,
     queueExpanded: Boolean = false,
@@ -31,6 +32,7 @@ internal class PlayerScreenUiState(
     musicVideoVisible: Boolean = false
 ) {
     var menuExpanded by mutableStateOf(menuExpanded)
+    var actionMenuInitialPage by mutableStateOf(actionMenuInitialPage)
     var dynamicCoverSheetSong by mutableStateOf(dynamicCoverSheetSong)
     var songInfoExpanded by mutableStateOf(songInfoExpanded)
     var queueExpanded by mutableStateOf(queueExpanded)

@@ -413,8 +413,6 @@ class SettingsManager(private val context: Context) :
         const val PLAYER_TITLE_POSITION_BELOW_COVER = 0
         const val PLAYER_TITLE_POSITION_ABOVE_COVER = 1
         const val PLAYER_PAGE_STYLE_HALCYON = 0
-        const val PLAYER_PAGE_STYLE_APPLE_MUSIC = 1
-        const val PLAYER_PAGE_STYLE_IMMERSIVE_LYRICS = 2
         const val DEFAULT_PLAYER_PAGE_STYLE = PLAYER_PAGE_STYLE_HALCYON
         const val PLAYER_LANDSCAPE_STYLE_WIDE = 0
         const val PLAYER_LANDSCAPE_STYLE_COVER_FLOW = 2
@@ -428,12 +426,7 @@ class SettingsManager(private val context: Context) :
             else -> DEFAULT_PLAYER_LANDSCAPE_STYLE
         }
 
-        fun normalizePlayerPageStyle(style: Int?): Int = when (style) {
-            PLAYER_PAGE_STYLE_HALCYON,
-            PLAYER_PAGE_STYLE_APPLE_MUSIC,
-            PLAYER_PAGE_STYLE_IMMERSIVE_LYRICS -> style
-            else -> DEFAULT_PLAYER_PAGE_STYLE
-        }
+        fun normalizePlayerPageStyle(style: Int?): Int = DEFAULT_PLAYER_PAGE_STYLE
 
         const val SYSTEM_BARS_MODE_SHOW_BOTH = 0
         const val SYSTEM_BARS_MODE_HIDE_STATUS = 1

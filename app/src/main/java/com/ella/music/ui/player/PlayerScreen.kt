@@ -79,7 +79,6 @@ fun PlayerScreen(
     val coverSwipeEnabled = playerSettings.coverSwipeEnabled
     val lyricParserEngine = playerSettings.lyricParserEngine
     val playerTitlePosition = playerSettings.playerTitlePosition
-    val playerPageStyle = playerSettings.playerPageStyle
     val playerLandscapeStyle = playerSettings.playerLandscapeStyle
     val playerKeepScreenOn = playerSettings.playerKeepScreenOn
     val lyricSourceMode = playerSettings.lyricSourceMode
@@ -162,6 +161,7 @@ fun PlayerScreen(
     val librarySongs by mainViewModel.songs.collectAsState()
     val artistCoverFolderUri by settingsManager.artistCoverFolderUri.collectAsState(initial = "")
     val playlist by playerViewModel.playlist.collectAsState()
+    val queueLocked by playerViewModel.queueLocked.collectAsState()
     val lyrics by playerViewModel.lyrics.collectAsState()
     val lyricsLoading by playerViewModel.lyricsLoading.collectAsState()
     val lyricFormatAvailability by playerViewModel.lyricFormatAvailability.collectAsState()
@@ -185,6 +185,7 @@ fun PlayerScreen(
         ?.takeIf { it.hasMiniLyric() }
         ?: lyrics.firstOrNull { it.hasMiniLyric() }
     val uiState = rememberPlayerScreenUiState()
+    val bluetoothDeviceName = rememberBluetoothOutputName()
     val musicVideoPermissionLauncher = rememberMusicVideoSyncPermissionLauncher(settingsManager)
     val landscapeState = rememberPlayerLandscapeUiState()
     val musicVideoLandscapePermissionLauncher = rememberLauncherForActivityResult(
@@ -443,7 +444,7 @@ fun PlayerScreen(
                 useBlurBackground = false,
                 modifier = Modifier.fillMaxSize()
             )
-            PlayerScreenPageHost(
+            SharedPlayerContent(
                 immersiveAlbumCover = immersiveAlbumCover,
                 showLyrics = showLyrics,
                 pagerState = playerPagerState,
@@ -549,7 +550,6 @@ fun PlayerScreen(
                         playerShowTotalDuration = playerShowTotalDuration,
                         coverSwipeEnabled = coverSwipeEnabled,
                         playerTitlePosition = playerTitlePosition,
-                        playerPageStyle = playerPageStyle,
                         showPlayerKeepScreenOnAction = true,
                         playerKeepScreenOn = playerKeepScreenOn,
                         menuExpanded = uiState.menuExpanded,
@@ -613,6 +613,7 @@ fun PlayerScreen(
                         onShowLyrics = onShowLyrics,
                         onSwipePrevious = { playerViewModel.skipToPreviousTrack() },
                         drawBackground = false,
+                        compactLayout = true,
                         modifier = pageModifier
                     )
                 },
@@ -669,47 +670,66 @@ fun PlayerScreen(
                         pageVisible = pageVisible,
                         immersiveAlbumCover = immersiveAlbumCover,
                         drawBackground = false,
+                        compactLayout = true,
                         modifier = pageModifier
                     )
                 },
-                detailPage = { pageModifier ->
-                    DetailPageContent(
-                        context = context,
+                playerTopBar = {
+                    PlayerTopBar(
                         song = song,
-                        embeddedCover = embeddedCover,
-                        paletteBitmap = paletteBitmap,
-                        tagInfo = tagInfo,
-                        neteaseInfo = neteaseInfo,
-                        librarySongs = librarySongs,
-                        albumArtForAlbum = mainViewModel::getAlbumArtUri,
-                        artistCoverFolderUri = artistCoverFolderUri,
-                        mainViewModel = mainViewModel,
-                        lyricPalette = palette,
+                        annotation = displayAnnotation,
+                        bluetoothDeviceName = bluetoothDeviceName,
+                        isFavorite = isCurrentSongFavorite,
+                        contentColor = LocalPlayerContentColor.current,
+                        fontFamily = null,
+                        onArtist = { navigateToArtistOrChoose(song?.artist.orEmpty()) },
+                        onToggleFavorite = { playerViewModel.toggleCurrentSongFavorite() },
+                        onShowMenu = { uiState.menuExpanded = !uiState.menuExpanded }
+                    )
+                },
+                playerBottomArea = {
+                    PlayerBottomArea(
                         currentPosition = currentPosition,
+                        duration = duration,
+                        audioInfo = audioInfo,
+                        bluetoothDeviceName = bluetoothDeviceName,
+                        musicVideoVisible = uiState.musicVideoVisible,
                         isPlaying = isPlaying,
-                        beautifulLyricsBackground = beautifulLyricsBackground,
-                        playerDynamicFlowEnabled = playerDynamicFlowEnabled,
-                        playerBackgroundUri = playerBackgroundUri,
-                        playerBackgroundOpacity = playerBackgroundOpacity,
-                        playerBackgroundDim = playerBackgroundDim,
-                        immersiveAlbumCover = immersiveAlbumCover,
-                        playerBackgroundEnabled = playerBackgroundEnabled,
-                        onNavigateToAlbum = onNavigateToAlbum,
-                        onNavigateToArtist = onNavigateToArtist,
-                        onNavigateToMetadataCategory = onNavigateToMetadataCategory,
-                        openNetease = ::openNetease,
-                        // Detail-page MVs are an independent, audible player. The sync switch
-                        // only controls the silent MV surface on the main playback page.
-                        musicVideoEnabled = dynamicCoverEnabled,
-                        musicVideoCustomFolders = musicVideoCustomFolders,
-                        dynamicCoverCustomFolders = dynamicCoverCustomFolders,
-                        onOpenMusicVideo = { source ->
-                            uiState.musicVideoVisible = false
-                            playerViewModel.pauseForMusicVideo()
-                            com.ella.music.MusicVideoLauncher.open(context, song, source)
+                        shuffleEnabled = shuffleEnabled,
+                        repeatMode = repeatMode,
+                        palette = palette,
+                        playerTapSeekEnabled = playerTapSeekEnabled,
+                        playerShowTotalDuration = playerShowTotalDuration,
+                        queueExpanded = uiState.queueExpanded,
+                        playlist = playlist,
+                        favoriteSongKeys = favoriteSongKeys,
+                        currentSongKey = currentSongKey,
+                        queueLocked = queueLocked,
+                        loadSongRating = mainViewModel::getSongRating,
+                        ratingRevision = ratingRevision,
+                        onSeek = { fraction -> playerViewModel.seekToProgress(fraction, duration) },
+                        onCyclePlaybackMode = { playerViewModel.cyclePlaybackMode() },
+                        onPrevious = { playerViewModel.skipToPrevious() },
+                        onPlayPause = { playerViewModel.togglePlayPause() },
+                        onNext = { playerViewModel.skipToNext() },
+                        onToggleQueue = { uiState.queueExpanded = !uiState.queueExpanded },
+                        onDismissQueue = { uiState.queueExpanded = false },
+                        onQueueSongClick = { index -> playerViewModel.playQueueIndex(index) },
+                        onRemoveQueueSong = { index -> playerViewModel.removeFromPlaylist(index) },
+                        onMoveQueueSong = { fromIndex, toIndex -> playerViewModel.movePlaylistItem(fromIndex, toIndex) },
+                        onRandomizeQueue = { playerViewModel.randomizePlaylistOrder() },
+                        onAddQueueToPlaylist = {
+                            uiState.queueExpanded = false
+                            uiState.playlistPickerSongs = playlist
                         },
-                        drawBackground = false,
-                        modifier = pageModifier
+                        onClearQueue = {
+                            uiState.queueExpanded = false
+                            playerViewModel.clearPlaylist()
+                        },
+                        onToggleQueueLock = { playerViewModel.toggleQueueLock() },
+                        onTimer = { uiState.menuExpanded = true },
+                        onOpenEqualizer = onNavigateToEqualizer,
+                        onMore = { uiState.menuExpanded = true }
                     )
                 },
                 playerVisible = playerVisible,
@@ -851,6 +871,64 @@ fun PlayerScreen(
                 createPlaylistSongs = uiState.createPlaylistSongs,
                 onCreatePlaylistSongsChange = { uiState.createPlaylistSongs = it }
             )
+        }
+    }
+}
+
+/**
+ * Wraps the pager in a shared Column with PlayerTopBar above and PlayerBottomArea below
+ * for non-immersive (HALCYON) mode. In immersive mode, the pager is used directly.
+ */
+@Composable
+private fun SharedPlayerContent(
+    immersiveAlbumCover: Boolean,
+    showLyrics: Boolean,
+    pagerState: androidx.compose.foundation.pager.PagerState,
+    userScrollEnabled: Boolean,
+    onShowImmersiveLyrics: () -> Unit,
+    onDismissImmersiveLyrics: () -> Unit,
+    onShowPagedLyrics: () -> Unit,
+    onDismissPagedLyrics: () -> Unit,
+    playerTopBar: @Composable () -> Unit,
+    playerBottomArea: @Composable () -> Unit,
+    coverPage: @Composable (onShowLyrics: () -> Unit, Modifier) -> Unit,
+    lyricsPage: @Composable (onDismissLyrics: () -> Unit, enableSwipeDismiss: Boolean, backEnabled: Boolean, pageVisible: Boolean, Modifier) -> Unit,
+    playerVisible: Boolean = true,
+    modifier: Modifier = Modifier
+) {
+    if (immersiveAlbumCover) {
+        PlayerScreenPageHost(
+            immersiveAlbumCover = true,
+            showLyrics = showLyrics,
+            pagerState = pagerState,
+            userScrollEnabled = userScrollEnabled,
+            onShowImmersiveLyrics = onShowImmersiveLyrics,
+            onDismissImmersiveLyrics = onDismissImmersiveLyrics,
+            onShowPagedLyrics = onShowPagedLyrics,
+            onDismissPagedLyrics = onDismissPagedLyrics,
+            coverPage = coverPage,
+            lyricsPage = lyricsPage,
+            playerVisible = playerVisible,
+            modifier = modifier
+        )
+    } else {
+        Column(modifier = modifier.fillMaxSize()) {
+            playerTopBar()
+            PlayerScreenPageHost(
+                immersiveAlbumCover = false,
+                showLyrics = showLyrics,
+                pagerState = pagerState,
+                userScrollEnabled = userScrollEnabled,
+                onShowImmersiveLyrics = onShowImmersiveLyrics,
+                onDismissImmersiveLyrics = onDismissImmersiveLyrics,
+                onShowPagedLyrics = onShowPagedLyrics,
+                onDismissPagedLyrics = onDismissPagedLyrics,
+                coverPage = coverPage,
+                lyricsPage = lyricsPage,
+                playerVisible = playerVisible,
+                modifier = Modifier.weight(1f)
+            )
+            playerBottomArea()
         }
     }
 }

@@ -128,7 +128,6 @@ internal fun CoverPlayerPage(
     playerShowTotalDuration: Boolean,
     coverSwipeEnabled: Boolean,
     playerTitlePosition: Int,
-    playerPageStyle: Int,
     showPlayerKeepScreenOnAction: Boolean,
     playerKeepScreenOn: Boolean,
     menuExpanded: Boolean,
@@ -218,6 +217,7 @@ internal fun CoverPlayerPage(
     onLyricOffset: (Long) -> Unit,
     actionMenuInitialPage: PlayerActionSheetPage,
     drawBackground: Boolean = true,
+    compactLayout: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val playWhenReady by playerViewModel.playWhenReady.collectAsState()
@@ -336,14 +336,10 @@ internal fun CoverPlayerPage(
         // foreground color is not a reliable contrast signal, so use the root safety color
         // consistently for every page component that receives a palette directly.
         val pagePalette = palette.copy(onBackground = LocalPlayerContentColor.current)
-        val selectedPlayerPageStyle =
-            com.ella.music.data.SettingsManager.normalizePlayerPageStyle(playerPageStyle)
-        val usesAlternatePortraitPage =
-            selectedPlayerPageStyle != com.ella.music.data.SettingsManager.DEFAULT_PLAYER_PAGE_STYLE
         val showCustomPlayerBackground =
             playerBackgroundEnabled && playerBackgroundUri.isNotBlank() &&
-                (useWidePlayer || !immersiveAlbumCover || usesAlternatePortraitPage)
-        if (drawBackground && !useWidePlayer && (!immersiveAlbumCover || usesAlternatePortraitPage)) {
+                (useWidePlayer || !immersiveAlbumCover)
+        if (drawBackground && !useWidePlayer && !immersiveAlbumCover) {
             SharedPlayerPageBackground(
                 song = song,
                 embeddedCover = embeddedCover,
@@ -495,287 +491,6 @@ internal fun CoverPlayerPage(
             }
         }
 
-        @Composable
-        fun AppleMusicFooterActions(height: androidx.compose.ui.unit.Dp = 56.dp) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(height),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                PlayerTransportIconButton(onClick = onShowLyrics) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_lyrics),
-                        contentDescription = stringResource(R.string.player_lyrics_display),
-                        tint = pagePalette.onBackground.copy(alpha = 0.90f),
-                        modifier = Modifier.size(27.dp)
-                    )
-                }
-                PlayerTransportIconButton(onClick = onSongInfo) {
-                    QuickActionIcon(
-                        kind = PlayerQuickActionKind.Info,
-                        color = pagePalette.onBackground.copy(alpha = 0.90f),
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-                Box(contentAlignment = Alignment.Center) {
-                    PlayerTransportIconButton(onClick = onToggleQueue) {
-                        PlayerQueueListIcon(
-                            color = pagePalette.onBackground.copy(alpha = 0.90f),
-                            modifier = Modifier.size(31.dp)
-                        )
-                    }
-                    PlayerQueueSheet(
-                        show = queueExpanded,
-                        playlist = playlist,
-                        currentSongKey = song?.playlistIdentityKey(),
-                        shuffleEnabled = shuffleEnabled,
-                        repeatMode = repeatMode,
-                        queueLocked = queueLocked,
-                        favoriteSongKeys = favoriteSongKeys,
-                        loadSongRating = loadSongRating,
-                        ratingRevision = ratingRevision,
-                        onCyclePlaybackMode = onCyclePlaybackMode,
-                        onToggleQueueLock = playerViewModel::toggleQueueLock,
-                        onDismiss = onDismissQueue,
-                        onSongClick = onQueueSongClick,
-                        onRemoveSong = onRemoveQueueSong,
-                        onMoveSong = onMoveQueueSong,
-                        onRandomizeQueue = playerViewModel::randomizePlaylistOrder,
-                        onAddQueueToPlaylist = onAddQueueToPlaylist,
-                        onClearQueue = onClearQueue
-                    )
-                }
-            }
-        }
-
-        @Composable
-        fun AppleMusicPlayerPage() {
-            val coverSize = minOf(
-                (maxWidth - 48.dp).coerceAtLeast(0.dp),
-                maxHeight * if (compactWindow) 0.40f else 0.46f
-            )
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.statusBars)
-                    .padding(horizontal = 28.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(if (compactWindow) 12.dp else 24.dp))
-                StyledPlayerArtwork(
-                    cornerRadius = 24.dp,
-                    modifier = Modifier.size(coverSize)
-                )
-                Spacer(modifier = Modifier.height(18.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    PlayerSongMetaText(
-                        song = song,
-                        annotation = annotation,
-                        titleFontSize = 25.sp,
-                        artistFontSize = 18.sp,
-                        artistAlpha = 0.64f,
-                        showArtistWithAnnotation = true,
-                        contentColor = pagePalette.onBackground,
-                        fontFamily = fontFamily,
-                        onArtistClick = onArtist,
-                        titleMarqueeEnabled = false,
-                        artistMarqueeEnabled = false,
-                        modifier = Modifier
-                            .weight(1f)
-                            .widthIn(min = 0.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    PlayerHeaderAction(
-                        kind = PlayerHeaderActionKind.Favorite,
-                        selected = isFavorite,
-                        onClick = onToggleFavorite
-                    )
-                    PlayerHeaderAction(
-                        kind = PlayerHeaderActionKind.More,
-                        onClick = onToggleMenu
-                    )
-                }
-                Spacer(modifier = Modifier.height(if (compactWindow) 12.dp else 18.dp))
-                PlayerProgressBlock(
-                    currentPosition = currentPosition,
-                    duration = duration,
-                    audioInfo = audioInfo,
-                    bluetoothDeviceName = bluetoothDeviceName,
-                    playbackModeLabel = if (musicVideoVisible) "MV" else null,
-                    palette = pagePalette,
-                    allowTapSeek = playerTapSeekEnabled,
-                    showTotalDuration = playerShowTotalDuration,
-                    onSeek = onSeek
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                LandscapeTransportControls(
-                    isPlaying = isPlaying,
-                    shuffleEnabled = shuffleEnabled,
-                    repeatMode = repeatMode,
-                    palette = pagePalette,
-                    onCyclePlaybackMode = onCyclePlaybackMode,
-                    onPrevious = onPrevious,
-                    onPlayPause = onPlayPause,
-                    onNext = onNext,
-                    controlHeight = if (compactWindow) 70.dp else 96.dp,
-                    sideIconSize = if (compactWindow) 34.dp else 40.dp,
-                    playButtonSize = if (compactWindow) 66.dp else 78.dp,
-                    playIconSize = if (compactWindow) 40.dp else 48.dp
-                )
-                if (compactWindow) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                } else {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-                AppleMusicFooterActions(height = if (compactWindow) 60.dp else 76.dp)
-                Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
-            }
-        }
-
-        @Composable
-        fun ImmersiveLyricsPlayerPage() {
-            val artworkHeight = minOf(maxWidth, maxHeight * if (compactWindow) 0.38f else 0.46f)
-            Column(modifier = Modifier.fillMaxSize()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(artworkHeight)
-                ) {
-                    StyledPlayerArtwork(
-                        cornerRadius = 0.dp,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    0.0f to Color.Transparent,
-                                    0.58f to Color.Black.copy(alpha = 0.08f),
-                                    1.0f to pagePalette.bottom.copy(alpha = 0.92f)
-                                )
-                            )
-                    )
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .padding(horizontal = 28.dp, vertical = 18.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        PlayerSongMetaText(
-                            song = song,
-                            annotation = annotation,
-                            titleFontSize = 21.sp,
-                            artistFontSize = 14.sp,
-                            artistAlpha = 0.66f,
-                            showArtistWithAnnotation = true,
-                            contentColor = pagePalette.onBackground,
-                            fontFamily = fontFamily,
-                            onArtistClick = onArtist,
-                            titleMarqueeEnabled = false,
-                            artistMarqueeEnabled = false,
-                            modifier = Modifier
-                                .weight(1f)
-                                .widthIn(min = 0.dp)
-                        )
-                        Box(
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(RoundedCornerShape(25.dp))
-                                .background(pagePalette.onBackground.copy(alpha = 0.16f))
-                                .playerNoIndicationClick(onPlayPause),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CenteredPlayPauseGlyph(
-                                isPlaying = isPlaying,
-                                tint = pagePalette.onBackground.copy(alpha = 0.96f),
-                                modifier = Modifier.size(27.dp)
-                            )
-                        }
-                        PlayerHeaderAction(
-                            kind = PlayerHeaderActionKind.Favorite,
-                            selected = isFavorite,
-                            onClick = onToggleFavorite
-                        )
-                        PlayerHeaderAction(
-                            kind = PlayerHeaderActionKind.More,
-                            onClick = onToggleMenu
-                        )
-                    }
-                }
-                AppleMusicLyricsView(
-                    lyrics = lyrics,
-                    currentIndex = currentLyricIndex,
-                    currentPositionMs = currentPosition,
-                    isPlaying = isPlaying,
-                    isPaused = isActuallyPaused,
-                    pageVisible = true,
-                    showTranslation = showTranslation,
-                    showPronunciation = showPronunciation,
-                    fontFamily = fontFamily,
-                    translationFontFamily = translationFontFamily,
-                    fontWeight = fontWeight,
-                    fontScale = fontScale,
-                    secondaryFontScale = secondaryFontScale,
-                    primaryTextSizeSp = primaryTextSizeSp,
-                    secondaryTextSizeSp = secondaryTextSizeSp,
-                    lyricTextAlign = lyricTextAlign,
-                    contentColor = pagePalette.onBackground,
-                    wordLiftEnabled = appleMusicWordLiftEnabled,
-                    onLineClick = onLyricLineClick,
-                    onLineDoubleClick = onShowLyrics,
-                    onLineLongClick = onLyricLineLongClick,
-                    topContentPadding = 18.dp,
-                    bottomContentPadding = if (compactWindow) 16.dp else 38.dp,
-                    lineSpacing = if (compactWindow) 14.dp else 20.dp,
-                    focusOffsetRatio = 0.22f,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(horizontal = 28.dp)
-                )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 28.dp)
-                ) {
-                    PlayerProgressBlock(
-                        currentPosition = currentPosition,
-                        duration = duration,
-                        audioInfo = audioInfo,
-                        bluetoothDeviceName = bluetoothDeviceName,
-                        playbackModeLabel = if (musicVideoVisible) "MV" else null,
-                        palette = pagePalette,
-                        allowTapSeek = playerTapSeekEnabled,
-                        showTotalDuration = playerShowTotalDuration,
-                        onSeek = onSeek
-                    )
-                    LandscapeTransportControls(
-                        isPlaying = isPlaying,
-                        shuffleEnabled = shuffleEnabled,
-                        repeatMode = repeatMode,
-                        palette = pagePalette,
-                        onCyclePlaybackMode = onCyclePlaybackMode,
-                        onPrevious = onPrevious,
-                        onPlayPause = onPlayPause,
-                        onNext = onNext,
-                        controlHeight = if (compactWindow) 68.dp else 84.dp,
-                        sideIconSize = if (compactWindow) 32.dp else 36.dp,
-                        playButtonSize = if (compactWindow) 62.dp else 70.dp,
-                        playIconSize = if (compactWindow) 38.dp else 44.dp
-                    )
-                    AppleMusicFooterActions(height = if (compactWindow) 56.dp else 64.dp)
-                    Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
-                }
-            }
-        }
-
         if (useWidePlayer) {
             LandscapeCoverPlayerPage(
                 song = song,
@@ -855,14 +570,7 @@ internal fun CoverPlayerPage(
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            when (selectedPlayerPageStyle) {
-                com.ella.music.data.SettingsManager.PLAYER_PAGE_STYLE_APPLE_MUSIC -> {
-                    AppleMusicPlayerPage()
-                }
-                com.ella.music.data.SettingsManager.PLAYER_PAGE_STYLE_IMMERSIVE_LYRICS -> {
-                    ImmersiveLyricsPlayerPage()
-                }
-                else -> {
+            // Default portrait layout (compactLayout skips top/bottom decorations)
             val immersiveCoverHeight = minOf(
                 maxWidth,
                 maxHeight * if (annotation.isNotBlank()) 0.42f else 0.47f
@@ -1014,33 +722,35 @@ internal fun CoverPlayerPage(
                             .padding(horizontal = 28.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            PlayerSongMetaText(
-                                song = song,
-                                annotation = annotation,
-                                titleFontSize = 22.sp,
-                                artistFontSize = 14.sp,
-                                artistAlpha = 0.54f,
-                                showArtistWithAnnotation = true,
-                                contentColor = pagePalette.onBackground,
-                                fontFamily = fontFamily,
-                                onArtistClick = onArtist,
+                        if (!compactLayout) {
+                            Row(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .widthIn(max = 230.dp)
-                            )
-                            Spacer(modifier = Modifier.width(20.dp))
-                            PlayerHeaderAction(
-                                kind = PlayerHeaderActionKind.Favorite,
-                                selected = isFavorite,
-                                onClick = onToggleFavorite
-                            )
-                            PlayerHeaderAction(kind = PlayerHeaderActionKind.More, onClick = onToggleMenu)
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                PlayerSongMetaText(
+                                    song = song,
+                                    annotation = annotation,
+                                    titleFontSize = 22.sp,
+                                    artistFontSize = 14.sp,
+                                    artistAlpha = 0.54f,
+                                    showArtistWithAnnotation = true,
+                                    contentColor = pagePalette.onBackground,
+                                    fontFamily = fontFamily,
+                                    onArtistClick = onArtist,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .widthIn(max = 230.dp)
+                                )
+                                Spacer(modifier = Modifier.width(20.dp))
+                                PlayerHeaderAction(
+                                    kind = PlayerHeaderActionKind.Favorite,
+                                    selected = isFavorite,
+                                    onClick = onToggleFavorite
+                                )
+                                PlayerHeaderAction(kind = PlayerHeaderActionKind.More, onClick = onToggleMenu)
+                            }
                         }
 
                         if (effectiveMiniLyricLine != null) {
@@ -1090,61 +800,63 @@ internal fun CoverPlayerPage(
                         } else {
                             Spacer(modifier = Modifier.weight(1f))
                         }
-                        PlayerProgressBlock(
-                            currentPosition = currentPosition,
-                            duration = duration,
-                            audioInfo = audioInfo,
-                            bluetoothDeviceName = bluetoothDeviceName,
-                            playbackModeLabel = if (musicVideoVisible) "MV" else null,
-                            palette = pagePalette,
-                            allowTapSeek = playerTapSeekEnabled,
-                            showTotalDuration = playerShowTotalDuration,
-                            onSeek = onSeek
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        PlayerTransportControls(
-                            isPlaying = isPlaying,
-                            shuffleEnabled = shuffleEnabled,
-                            repeatMode = repeatMode,
-                            palette = pagePalette,
-                            queueExpanded = queueExpanded,
-                            playlist = playlist,
-                            favoriteSongKeys = favoriteSongKeys,
-                            loadSongRating = loadSongRating,
-                            ratingRevision = ratingRevision,
-                            currentSongKey = song?.playlistIdentityKey(),
-                            queueLocked = queueLocked,
-                            onCyclePlaybackMode = onCyclePlaybackMode,
-                            onToggleQueueLock = playerViewModel::toggleQueueLock,
-                            onPrevious = onPrevious,
-                            onPlayPause = onPlayPause,
-                            onNext = onNext,
-                            onToggleQueue = onToggleQueue,
-                            onDismissQueue = onDismissQueue,
-                            onQueueSongClick = onQueueSongClick,
-                            onRemoveQueueSong = onRemoveQueueSong,
-                            onMoveQueueSong = onMoveQueueSong,
-                            onRandomizeQueue = playerViewModel::randomizePlaylistOrder,
-                            onAddQueueToPlaylist = onAddQueueToPlaylist,
-                            onClearQueue = onClearQueue,
-                            modifier = Modifier.requiredHeight(76.dp)
-                        )
-                        if (!compactWindow) {
-                            AudioVisualizer(
-                                enabled = visualizerEnabled,
-                                audioSessionId = audioSessionId,
+                        if (!compactLayout) {
+                            PlayerProgressBlock(
+                                currentPosition = currentPosition,
+                                duration = duration,
+                                audioInfo = audioInfo,
+                                bluetoothDeviceName = bluetoothDeviceName,
+                                playbackModeLabel = if (musicVideoVisible) "MV" else null,
+                                palette = pagePalette,
+                                allowTapSeek = playerTapSeekEnabled,
+                                showTotalDuration = playerShowTotalDuration,
+                                onSeek = onSeek
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            PlayerTransportControls(
                                 isPlaying = isPlaying,
-                                positionMs = currentPosition,
-                                opacity = visualizerOpacity,
-                                accent = pagePalette.accent.copy(alpha = 0.88f),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(30.dp)
+                                shuffleEnabled = shuffleEnabled,
+                                repeatMode = repeatMode,
+                                palette = pagePalette,
+                                queueExpanded = queueExpanded,
+                                playlist = playlist,
+                                favoriteSongKeys = favoriteSongKeys,
+                                loadSongRating = loadSongRating,
+                                ratingRevision = ratingRevision,
+                                currentSongKey = song?.playlistIdentityKey(),
+                                queueLocked = queueLocked,
+                                onCyclePlaybackMode = onCyclePlaybackMode,
+                                onToggleQueueLock = playerViewModel::toggleQueueLock,
+                                onPrevious = onPrevious,
+                                onPlayPause = onPlayPause,
+                                onNext = onNext,
+                                onToggleQueue = onToggleQueue,
+                                onDismissQueue = onDismissQueue,
+                                onQueueSongClick = onQueueSongClick,
+                                onRemoveQueueSong = onRemoveQueueSong,
+                                onMoveQueueSong = onMoveQueueSong,
+                                onRandomizeQueue = playerViewModel::randomizePlaylistOrder,
+                                onAddQueueToPlaylist = onAddQueueToPlaylist,
+                                onClearQueue = onClearQueue,
+                                modifier = Modifier.requiredHeight(76.dp)
+                            )
+                            if (!compactWindow) {
+                                AudioVisualizer(
+                                    enabled = visualizerEnabled,
+                                    audioSessionId = audioSessionId,
+                                    isPlaying = isPlaying,
+                                    positionMs = currentPosition,
+                                    opacity = visualizerOpacity,
+                                    accent = pagePalette.accent.copy(alpha = 0.88f),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(30.dp)
+                                )
+                            }
+                            Spacer(
+                                modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)
                             )
                         }
-                        Spacer(
-                            modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)
-                        )
                     }
                 } else {
                     Column(
@@ -1154,21 +866,23 @@ internal fun CoverPlayerPage(
                             .padding(horizontal = 28.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(modifier = Modifier.height(22.dp))
-                        if (titleAboveCover) {
-                            PlayerCoverTitleRow(
-                                song = song,
-                                annotation = annotation,
-                                palette = pagePalette,
-                                fontFamily = fontFamily,
-                                isFavorite = isFavorite,
-                                onArtist = onArtist,
-                                onToggleFavorite = onToggleFavorite,
-                                modifier = Modifier
-                                    .width(nonImmersiveCoverSize)
-                                    .align(Alignment.CenterHorizontally)
-                            )
-                            Spacer(modifier = Modifier.height(14.dp))
+                        if (!compactLayout) {
+                            Spacer(modifier = Modifier.height(22.dp))
+                            if (titleAboveCover) {
+                                PlayerCoverTitleRow(
+                                    song = song,
+                                    annotation = annotation,
+                                    palette = pagePalette,
+                                    fontFamily = fontFamily,
+                                    isFavorite = isFavorite,
+                                    onArtist = onArtist,
+                                    onToggleFavorite = onToggleFavorite,
+                                    modifier = Modifier
+                                        .width(nonImmersiveCoverSize)
+                                        .align(Alignment.CenterHorizontally)
+                                )
+                                Spacer(modifier = Modifier.height(14.dp))
+                            }
                         }
                         val coverShape = RoundedCornerShape(14.dp)
                         Box(
@@ -1296,7 +1010,7 @@ internal fun CoverPlayerPage(
                                 }
                             }
                         }
-                        if (!titleAboveCover) {
+                        if (!compactLayout && !titleAboveCover) {
                             Spacer(modifier = Modifier.height(8.dp))
                             PlayerCoverTitleRow(
                                 song = song,
@@ -1361,62 +1075,62 @@ internal fun CoverPlayerPage(
                         // 1.2.2 composition: the lyric preview hugs the title and the flexible
                         // room sits between it and the fixed action/transport area below, which
                         // therefore can never be compressed by the content above.
-                        Spacer(modifier = Modifier.weight(1f))
-                        PlayerQuickActionRow(
-                            onSongInfo = onSongInfo,
-                            onShareSong = onShareSong,
-                            onTimer = onOpenTimer,
-                            onEditMetadata = onOpenMetadataEditor,
-                            onMore = onToggleMenu,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        PlayerProgressBlock(
-                            currentPosition = currentPosition,
-                            duration = duration,
-                            audioInfo = audioInfo,
-                            bluetoothDeviceName = bluetoothDeviceName,
-                            playbackModeLabel = if (musicVideoVisible) "MV" else null,
-                            palette = pagePalette,
-                            allowTapSeek = playerTapSeekEnabled,
-                            showTotalDuration = playerShowTotalDuration,
-                            onSeek = onSeek
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        PlayerTransportControls(
-                            isPlaying = isPlaying,
-                            shuffleEnabled = shuffleEnabled,
-                            repeatMode = repeatMode,
-                            palette = pagePalette,
-                            queueExpanded = queueExpanded,
-                            playlist = playlist,
-                            favoriteSongKeys = favoriteSongKeys,
-                            loadSongRating = loadSongRating,
-                            ratingRevision = ratingRevision,
-                            currentSongKey = song?.playlistIdentityKey(),
-                            queueLocked = queueLocked,
-                            onCyclePlaybackMode = onCyclePlaybackMode,
-                            onToggleQueueLock = playerViewModel::toggleQueueLock,
-                            onPrevious = onPrevious,
-                            onPlayPause = onPlayPause,
-                            onNext = onNext,
-                            onToggleQueue = onToggleQueue,
-                            onDismissQueue = onDismissQueue,
-                            onQueueSongClick = onQueueSongClick,
-                            onRemoveQueueSong = onRemoveQueueSong,
-                            onMoveQueueSong = onMoveQueueSong,
-                            onRandomizeQueue = playerViewModel::randomizePlaylistOrder,
-                            onAddQueueToPlaylist = onAddQueueToPlaylist,
-                            onClearQueue = onClearQueue,
-                            modifier = Modifier.requiredHeight(92.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Spacer(
-                            modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)
-                        )
+                        if (!compactLayout) {
+                            Spacer(modifier = Modifier.weight(1f))
+                            PlayerQuickActionRow(
+                                onSongInfo = onSongInfo,
+                                onShareSong = onShareSong,
+                                onTimer = onOpenTimer,
+                                onEditMetadata = onOpenMetadataEditor,
+                                onMore = onToggleMenu,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            PlayerProgressBlock(
+                                currentPosition = currentPosition,
+                                duration = duration,
+                                audioInfo = audioInfo,
+                                bluetoothDeviceName = bluetoothDeviceName,
+                                playbackModeLabel = if (musicVideoVisible) "MV" else null,
+                                palette = pagePalette,
+                                allowTapSeek = playerTapSeekEnabled,
+                                showTotalDuration = playerShowTotalDuration,
+                                onSeek = onSeek
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            PlayerTransportControls(
+                                isPlaying = isPlaying,
+                                shuffleEnabled = shuffleEnabled,
+                                repeatMode = repeatMode,
+                                palette = pagePalette,
+                                queueExpanded = queueExpanded,
+                                playlist = playlist,
+                                favoriteSongKeys = favoriteSongKeys,
+                                loadSongRating = loadSongRating,
+                                ratingRevision = ratingRevision,
+                                currentSongKey = song?.playlistIdentityKey(),
+                                queueLocked = queueLocked,
+                                onCyclePlaybackMode = onCyclePlaybackMode,
+                                onToggleQueueLock = playerViewModel::toggleQueueLock,
+                                onPrevious = onPrevious,
+                                onPlayPause = onPlayPause,
+                                onNext = onNext,
+                                onToggleQueue = onToggleQueue,
+                                onDismissQueue = onDismissQueue,
+                                onQueueSongClick = onQueueSongClick,
+                                onRemoveQueueSong = onRemoveQueueSong,
+                                onMoveQueueSong = onMoveQueueSong,
+                                onRandomizeQueue = playerViewModel::randomizePlaylistOrder,
+                                onAddQueueToPlaylist = onAddQueueToPlaylist,
+                                onClearQueue = onClearQueue,
+                                modifier = Modifier.requiredHeight(92.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(
+                                modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)
+                            )
+                        }
                     }
-                }
-            }
                 }
             }
         }

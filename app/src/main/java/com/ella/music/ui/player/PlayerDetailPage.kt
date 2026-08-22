@@ -65,6 +65,7 @@ internal fun PlayerDetailPage(
     customBackgroundDim: Float = 0.26f,
     drawBackground: Boolean = true,
     dynamicFlowEnabled: Boolean = false,
+    compactLayout: Boolean = false,
     onAlbum: () -> Unit,
     onArtist: (String) -> Unit,
     onComposer: (String) -> Unit,
@@ -261,20 +262,22 @@ internal fun PlayerDetailPage(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
-                Text(
-                    text = stringResource(R.string.player_song_details),
-                    color = LocalPlayerContentColor.current,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                Text(
-                    text = stringResource(R.string.player_detail_song),
-                    color = LocalPlayerContentColor.current.copy(alpha = 0.68f),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
+                if (!compactLayout) {
+                    Text(
+                        text = stringResource(R.string.player_song_details),
+                        color = LocalPlayerContentColor.current,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Text(
+                        text = stringResource(R.string.player_detail_song),
+                        color = LocalPlayerContentColor.current.copy(alpha = 0.68f),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
                 ExplicitSongTitle(
                     title = song?.title.orEmpty().ifBlank { stringResource(R.string.player_unknown_song) },
                     color = LocalPlayerContentColor.current.copy(alpha = 0.96f),

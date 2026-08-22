@@ -100,6 +100,7 @@ internal fun LyricsPlayerPage(
     pageVisible: Boolean = true,
     useBlurBackground: Boolean,
     drawBackground: Boolean = true,
+    compactLayout: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var lyricMenuExpanded by remember { mutableStateOf(false) }
@@ -160,19 +161,21 @@ internal fun LyricsPlayerPage(
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(horizontal = 28.dp)
         ) {
-            LyricsPlayerHeader(
-                song = song,
-                embeddedCover = embeddedCover,
-                annotation = annotation,
-                activeSinger = activeAgentLabel,
-                isFavorite = isFavorite,
-                onDismissLyrics = onDismissLyrics,
-                onArtist = onArtist,
-                onToggleFavorite = onToggleFavorite,
-                onShowMenu = { lyricMenuExpanded = true },
-                fontFamily = fontFamily,
-                modifier = Modifier.padding(top = 28.dp)
-            )
+            if (!compactLayout) {
+                LyricsPlayerHeader(
+                    song = song,
+                    embeddedCover = embeddedCover,
+                    annotation = annotation,
+                    activeSinger = activeAgentLabel,
+                    isFavorite = isFavorite,
+                    onDismissLyrics = onDismissLyrics,
+                    onArtist = onArtist,
+                    onToggleFavorite = onToggleFavorite,
+                    onShowMenu = { lyricMenuExpanded = true },
+                    fontFamily = fontFamily,
+                    modifier = Modifier.padding(top = 28.dp)
+                )
+            }
 
             Box(
                 modifier = Modifier
