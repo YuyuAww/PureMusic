@@ -1730,14 +1730,7 @@
     <string name="settings_home_tile_gradient_enabled">타일 반투명 그라데이션</string>
     <string name="settings_home_tile_gradient_enabled_summary">켜면 홈 타일이 반투명 그라데이션을 사용하고, 끄면 단색으로 유지됩니다</string>
     <string name="settings_home_tile_gradient_start_color">그라데이션 시작 색상</string>
-    <string name="settings_player_title_position">비몰입 플레이어 제목 위치</string>
-    <string name="settings_player_title_position_below_cover">커버 아래</string>
-    <string name="settings_player_title_position_above_cover">커버 위</string>
-    <string name="settings_player_page_style">재생 화면</string>
-    <string name="settings_player_page_style_summary">재생 화면 레이아웃 선택</string>
-    <string name="settings_player_page_style_halcyon">Halcyon</string>
-    <string name="settings_player_page_style_apple_music">Apple Music</string>
-    <string name="settings_player_page_style_immersive_lyrics">몰입형 가사</string>
+    
     <string name="settings_player_landscape_style">기본 가로 화면 재생 스타일</string>
     <string name="settings_player_landscape_style_summary">가로 화면 재생을 열 때 사용: %1$s</string>
     <string name="settings_player_landscape_style_wide">태블릿/대화면 적응형 플레이어</string>

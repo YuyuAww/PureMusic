@@ -967,14 +967,7 @@
     <string name="settings_player_immersive_cover_summary">Extend the album cover to the top of the player; disable it to use the compact rounded cover layout</string>
     <string name="settings_player_cover_content_color">Use cover colors for content</string>
     <string name="settings_player_cover_content_color_summary">Tint player text and icons with a cover-derived accent color</string>
-    <string name="settings_player_title_position">Non-immersive player title position</string>
-    <string name="settings_player_title_position_below_cover">Below cover</string>
-    <string name="settings_player_title_position_above_cover">Above cover</string>
-    <string name="settings_player_page_style">Playback page</string>
-    <string name="settings_player_page_style_summary">Choose the playback page layout</string>
-    <string name="settings_player_page_style_halcyon">Halcyon</string>
-    <string name="settings_player_page_style_apple_music">Apple Music</string>
-    <string name="settings_player_page_style_immersive_lyrics">Immersive lyrics</string>
+    
     <string name="settings_player_landscape_style">Default landscape player style</string>
     <string name="settings_player_landscape_style_summary">Used when opening landscape playback: %1$s</string>
     <string name="settings_player_landscape_style_wide">Adaptive tablet / large-screen player</string>

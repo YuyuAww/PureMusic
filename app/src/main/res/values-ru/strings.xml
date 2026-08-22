@@ -1717,14 +1717,7 @@
     <string name="settings_home_tile_gradient_enabled">Полупрозрачный градиент плиток</string>
     <string name="settings_home_tile_gradient_enabled_summary">Когда включено, плитки на главном экране используют полупрозрачный градиент; когда выключено — остаются однотонными</string>
     <string name="settings_home_tile_gradient_start_color">Начальный цвет градиента</string>
-    <string name="settings_player_title_position">Положение заголовка в неиммерсивном плеере</string>
-    <string name="settings_player_title_position_below_cover">Под обложкой</string>
-    <string name="settings_player_title_position_above_cover">Над обложкой</string>
-    <string name="settings_player_page_style">Страница воспроизведения</string>
-    <string name="settings_player_page_style_summary">Выберите макет страницы воспроизведения</string>
-    <string name="settings_player_page_style_halcyon">Halcyon</string>
-    <string name="settings_player_page_style_apple_music">Apple Music</string>
-    <string name="settings_player_page_style_immersive_lyrics">Иммерсивный текст песни</string>
+    
     <string name="settings_player_landscape_style">Стиль плеера по умолчанию в альбомной ориентации</string>
     <string name="settings_player_landscape_style_summary">Используется при открытии альбомного плеера: %1$s</string>
     <string name="settings_player_landscape_style_wide">Адаптивный плеер для планшетов и больших экранов</string>

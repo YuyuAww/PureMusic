@@ -8,8 +8,6 @@ import com.ella.music.data.SettingsManager.Companion.LYRIC_SECONDARY_TRANSLATION
 import com.ella.music.data.SettingsManager.Companion.MINI_PLAYER_RIGHT_NEXT
 import com.ella.music.data.SettingsManager.Companion.MINI_PLAYER_RIGHT_QUEUE
 import com.ella.music.data.SettingsManager.Companion.PLAYER_BG_THEME_DARK
-import com.ella.music.data.SettingsManager.Companion.PLAYER_TITLE_POSITION_ABOVE_COVER
-import com.ella.music.data.SettingsManager.Companion.PLAYER_TITLE_POSITION_BELOW_COVER
 import com.ella.music.data.SettingsManager.Companion.KEY_AUDIO_VISUALIZER_ENABLED
 import com.ella.music.data.SettingsManager.Companion.KEY_AUDIO_VISUALIZER_OPACITY
 import com.ella.music.data.SettingsManager.Companion.KEY_DYNAMIC_COVER_CUSTOM_FOLDERS
@@ -49,7 +47,6 @@ import com.ella.music.data.SettingsManager.Companion.KEY_PLAYER_PROGRESS_INFO_IN
 import com.ella.music.data.SettingsManager.Companion.KEY_PLAYER_SHOW_SONG_ANNOTATION
 import com.ella.music.data.SettingsManager.Companion.KEY_PLAYER_SHOW_TOTAL_DURATION
 import com.ella.music.data.SettingsManager.Companion.KEY_PLAYER_TAP_SEEK_ENABLED
-import com.ella.music.data.SettingsManager.Companion.KEY_PLAYER_TITLE_POSITION
 import com.ella.music.data.SettingsManager.Companion.KEY_TRANSPORT_BUTTON_OUTLINES
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -78,7 +75,6 @@ interface PlayerUiSettingsAccess {
     val playerShowTotalDuration: Flow<Boolean>
     val playerShowSongAnnotation: Flow<Boolean>
     val playerCoverSwipeEnabled: Flow<Boolean>
-    val playerTitlePosition: Flow<Int>
     val playerPageStyle: Flow<Int>
     val playerLandscapeStyle: Flow<Int>
     val playerKeepScreenOn: Flow<Boolean>
@@ -143,7 +139,6 @@ interface PlayerUiSettingsAccess {
     suspend fun setPlayerShowTotalDuration(enabled: Boolean)
     suspend fun setPlayerShowSongAnnotation(enabled: Boolean)
     suspend fun setPlayerCoverSwipeEnabled(enabled: Boolean)
-    suspend fun setPlayerTitlePosition(position: Int)
     suspend fun setPlayerPageStyle(style: Int)
     suspend fun setPlayerLandscapeStyle(style: Int)
     suspend fun setPlayerKeepScreenOn(enabled: Boolean)
@@ -192,11 +187,6 @@ internal class PlayerUiSettingsAccessImpl(private val context: Context) : Player
     override val playerCoverSwipeEnabled: Flow<Boolean> =
         context.dataStore.data.map { it[KEY_PLAYER_COVER_SWIPE_ENABLED] ?: false }
 
-    override val playerTitlePosition: Flow<Int> =
-        context.dataStore.data.map {
-            (it[KEY_PLAYER_TITLE_POSITION] ?: PLAYER_TITLE_POSITION_BELOW_COVER)
-                .coerceIn(PLAYER_TITLE_POSITION_BELOW_COVER, PLAYER_TITLE_POSITION_ABOVE_COVER)
-        }
     override val playerPageStyle: Flow<Int> =
         context.dataStore.data.map { SettingsManager.normalizePlayerPageStyle(it[KEY_PLAYER_PAGE_STYLE]) }
     override val playerLandscapeStyle: Flow<Int> =
@@ -454,15 +444,6 @@ internal class PlayerUiSettingsAccessImpl(private val context: Context) : Player
 
     override suspend fun setPlayerCoverSwipeEnabled(enabled: Boolean) {
         context.dataStore.edit { it[KEY_PLAYER_COVER_SWIPE_ENABLED] = enabled }
-    }
-
-    override suspend fun setPlayerTitlePosition(position: Int) {
-        context.dataStore.edit {
-            it[KEY_PLAYER_TITLE_POSITION] = position.coerceIn(
-                PLAYER_TITLE_POSITION_BELOW_COVER,
-                PLAYER_TITLE_POSITION_ABOVE_COVER
-            )
-        }
     }
 
     override suspend fun setPlayerPageStyle(style: Int) {

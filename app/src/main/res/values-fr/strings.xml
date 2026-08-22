@@ -1730,14 +1730,7 @@
     <string name="settings_home_tile_gradient_enabled">Dégradé semi-transparent des tuiles</string>
     <string name="settings_home_tile_gradient_enabled_summary">Une fois activé, les tuiles de l\'accueil utilisent un dégradé semi-transparent ; désactivé, elles restent unies</string>
     <string name="settings_home_tile_gradient_start_color">Couleur de début du dégradé</string>
-    <string name="settings_player_title_position">Position du titre dans le lecteur non immersif</string>
-    <string name="settings_player_title_position_below_cover">Sous la pochette</string>
-    <string name="settings_player_title_position_above_cover">Au-dessus de la pochette</string>
-    <string name="settings_player_page_style">Page de lecture</string>
-    <string name="settings_player_page_style_summary">Choisir la disposition de la page de lecture</string>
-    <string name="settings_player_page_style_halcyon">Halcyon</string>
-    <string name="settings_player_page_style_apple_music">Apple Music</string>
-    <string name="settings_player_page_style_immersive_lyrics">Paroles immersives</string>
+    
     <string name="settings_player_landscape_style">Style par défaut du lecteur en paysage</string>
     <string name="settings_player_landscape_style_summary">Utilisé à l’ouverture de la lecture en paysage : %1$s</string>
     <string name="settings_player_landscape_style_wide">Lecteur adaptatif tablette/grand écran</string>

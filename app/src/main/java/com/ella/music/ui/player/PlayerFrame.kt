@@ -235,8 +235,6 @@ internal fun PlayerBottomArea(
         Spacer(modifier = Modifier.height(12.dp))
         PlayerTransportControls(
             isPlaying = isPlaying,
-            shuffleEnabled = shuffleEnabled,
-            repeatMode = repeatMode,
             palette = palette,
             queueExpanded = queueExpanded,
             playlist = playlist,
@@ -245,12 +243,13 @@ internal fun PlayerBottomArea(
             favoriteSongKeys = favoriteSongKeys,
             loadSongRating = loadSongRating,
             ratingRevision = ratingRevision,
+            shuffleEnabled = shuffleEnabled,
+            repeatMode = repeatMode,
             onCyclePlaybackMode = onCyclePlaybackMode,
             onToggleQueueLock = onToggleQueueLock,
             onPrevious = onPrevious,
             onPlayPause = onPlayPause,
             onNext = onNext,
-            onToggleQueue = onToggleQueue,
             onDismissQueue = onDismissQueue,
             onQueueSongClick = onQueueSongClick,
             onRemoveQueueSong = onRemoveQueueSong,

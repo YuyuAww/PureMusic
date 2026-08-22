@@ -1730,14 +1730,7 @@
     <string name="settings_home_tile_gradient_enabled">タイルの半透明グラデーション</string>
     <string name="settings_home_tile_gradient_enabled_summary">オンにするとホームのタイルが半透明のグラデーションになり、オフでは単色になります</string>
     <string name="settings_home_tile_gradient_start_color">グラデーションの開始色</string>
-    <string name="settings_player_title_position">非没入プレーヤーのタイトル位置</string>
-    <string name="settings_player_title_position_below_cover">カバーの下</string>
-    <string name="settings_player_title_position_above_cover">カバーの上</string>
-    <string name="settings_player_page_style">再生ページ</string>
-    <string name="settings_player_page_style_summary">再生ページのレイアウトを選択</string>
-    <string name="settings_player_page_style_halcyon">Halcyon</string>
-    <string name="settings_player_page_style_apple_music">Apple Music</string>
-    <string name="settings_player_page_style_immersive_lyrics">没入型歌詞</string>
+    
     <string name="settings_player_landscape_style">デフォルトの横画面再生スタイル</string>
     <string name="settings_player_landscape_style_summary">横画面再生を開くときに使用：%1$s</string>
     <string name="settings_player_landscape_style_wide">タブレット・大画面向け自動調整プレーヤー</string>

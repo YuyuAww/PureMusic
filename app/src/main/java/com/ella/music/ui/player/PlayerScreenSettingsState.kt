@@ -39,7 +39,6 @@ internal data class PlayerScreenSettings(
     val showSongAnnotation: Boolean = true,
     val coverSwipeEnabled: Boolean = true,
     val lyricParserEngine: Int = SettingsManager.LYRIC_PARSER_ENGINE_ELLA,
-    val playerTitlePosition: Int = SettingsManager.PLAYER_TITLE_POSITION_BELOW_COVER,
     val playerPageStyle: Int = SettingsManager.DEFAULT_PLAYER_PAGE_STYLE,
     val playerLandscapeStyle: Int = SettingsManager.DEFAULT_PLAYER_LANDSCAPE_STYLE,
     val playerKeepScreenOn: Boolean = false,
@@ -93,7 +92,6 @@ private data class PlayerSettingsGroupB(
     val showSongAnnotation: Boolean,
     val coverSwipeEnabled: Boolean,
     val lyricParserEngine: Int,
-    val playerTitlePosition: Int,
     val playerPageStyle: Int,
     val playerLandscapeStyle: Int,
     val playerKeepScreenOn: Boolean,
@@ -120,7 +118,6 @@ private data class PlayerSettingsGroupBExtra(
     val showSongAnnotation: Boolean,
     val coverSwipeEnabled: Boolean,
     val lyricParserEngine: Int,
-    val playerTitlePosition: Int,
     val playerPageStyle: Int,
     val playerLandscapeStyle: Int,
     val playerKeepScreenOn: Boolean,
@@ -142,7 +139,6 @@ private data class PlayerSettingsGroupBFlags(
     val showSongAnnotation: Boolean,
     val coverSwipeEnabled: Boolean,
     val lyricParserEngine: Int,
-    val playerTitlePosition: Int,
     val playerPageStyle: Int,
     val playerLandscapeStyle: Int,
     val playerKeepScreenOn: Boolean
@@ -237,18 +233,16 @@ internal fun rememberPlayerScreenSettings(settingsManager: SettingsManager): Pla
         }
         val groupBFlags = combine(
             groupBFlagsPart1,
-            settingsManager.playerTitlePosition,
             settingsManager.playerPageStyle,
             settingsManager.playerLandscapeStyle,
             settingsManager.playerKeepScreenOn
-        ) { part1, titlePosition, pageStyle, landscapeStyle, keepScreenOn ->
+        ) { part1, pageStyle, landscapeStyle, keepScreenOn ->
             PlayerSettingsGroupBFlags(
                 beautifulLyricsBackground = part1.beautifulLyricsBackground,
                 playerDynamicFlowEnabled = part1.playerDynamicFlowEnabled,
                 showSongAnnotation = part1.showSongAnnotation,
                 coverSwipeEnabled = part1.coverSwipeEnabled,
                 lyricParserEngine = part1.lyricParserEngine,
-                playerTitlePosition = titlePosition,
                 playerPageStyle = pageStyle,
                 playerLandscapeStyle = landscapeStyle,
                 playerKeepScreenOn = keepScreenOn
@@ -267,7 +261,6 @@ internal fun rememberPlayerScreenSettings(settingsManager: SettingsManager): Pla
                 showSongAnnotation = flags.showSongAnnotation,
                 coverSwipeEnabled = flags.coverSwipeEnabled,
                 lyricParserEngine = flags.lyricParserEngine,
-                playerTitlePosition = flags.playerTitlePosition,
                 playerPageStyle = flags.playerPageStyle,
                 playerLandscapeStyle = flags.playerLandscapeStyle,
                 playerKeepScreenOn = flags.playerKeepScreenOn,
@@ -288,7 +281,6 @@ internal fun rememberPlayerScreenSettings(settingsManager: SettingsManager): Pla
                 showSongAnnotation = extra.showSongAnnotation,
                 coverSwipeEnabled = extra.coverSwipeEnabled,
                 lyricParserEngine = extra.lyricParserEngine,
-                playerTitlePosition = extra.playerTitlePosition,
                 playerPageStyle = extra.playerPageStyle,
                 playerLandscapeStyle = extra.playerLandscapeStyle,
                 playerKeepScreenOn = extra.playerKeepScreenOn,
@@ -342,7 +334,6 @@ internal fun rememberPlayerScreenSettings(settingsManager: SettingsManager): Pla
                 showSongAnnotation = b.showSongAnnotation,
                 coverSwipeEnabled = b.coverSwipeEnabled,
                 lyricParserEngine = b.lyricParserEngine,
-                playerTitlePosition = b.playerTitlePosition,
                 playerPageStyle = b.playerPageStyle,
                 playerLandscapeStyle = b.playerLandscapeStyle,
                 playerKeepScreenOn = b.playerKeepScreenOn,

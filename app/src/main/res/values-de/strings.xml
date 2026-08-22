@@ -1730,14 +1730,7 @@
     <string name="settings_home_tile_gradient_enabled">Halbtransparenter Farbverlauf für Kacheln</string>
     <string name="settings_home_tile_gradient_enabled_summary">Wenn aktiviert, verwenden die Startbildschirm-Kacheln einen halbtransparenten Farbverlauf; wenn deaktiviert, bleiben sie einfarbig</string>
     <string name="settings_home_tile_gradient_start_color">Startfarbe des Farbverlaufs</string>
-    <string name="settings_player_title_position">Titelposition im nicht-immersiven Player</string>
-    <string name="settings_player_title_position_below_cover">Unter dem Cover</string>
-    <string name="settings_player_title_position_above_cover">Über dem Cover</string>
-    <string name="settings_player_page_style">Wiedergabeseite</string>
-    <string name="settings_player_page_style_summary">Layout der Wiedergabeseite auswählen</string>
-    <string name="settings_player_page_style_halcyon">Halcyon</string>
-    <string name="settings_player_page_style_apple_music">Apple Music</string>
-    <string name="settings_player_page_style_immersive_lyrics">Immersive Liedtexte</string>
+    
     <string name="settings_player_landscape_style">Standardstil für den Querformat-Player</string>
     <string name="settings_player_landscape_style_summary">Beim Öffnen der Querformat-Wiedergabe: %1$s</string>
     <string name="settings_player_landscape_style_wide">Adaptiver Player für Tablets/Großbildschirme</string>

@@ -127,7 +127,6 @@ internal fun CoverPlayerPage(
     playerTapSeekEnabled: Boolean,
     playerShowTotalDuration: Boolean,
     coverSwipeEnabled: Boolean,
-    playerTitlePosition: Int,
     showPlayerKeepScreenOnAction: Boolean,
     playerKeepScreenOn: Boolean,
     menuExpanded: Boolean,
@@ -319,8 +318,7 @@ internal fun CoverPlayerPage(
         val compactWindow = !useWidePlayer && (maxHeight < 720.dp || maxWidth < 340.dp)
         val effectiveMiniLyricLine = miniLyricLine.takeUnless { isSmallWindow }
         val showHiResLogo = hiResLogoEnabled && audioInfo?.isHiResLogoTrack() == true
-        val titleAboveCover = !immersiveAlbumCover &&
-            playerTitlePosition == com.ella.music.data.SettingsManager.PLAYER_TITLE_POSITION_ABOVE_COVER
+        val titleAboveCover = !immersiveAlbumCover
         val constrainedPortraitContent = !immersiveAlbumCover && maxHeight < 620.dp
         // Full-width artwork like the 1.2.2 layout. The height cap is only a guard for short
         // or wide windows, so the fixed transport area near the gesture bar is never squeezed;
@@ -815,22 +813,21 @@ internal fun CoverPlayerPage(
                             Spacer(modifier = Modifier.height(12.dp))
                             PlayerTransportControls(
                                 isPlaying = isPlaying,
-                                shuffleEnabled = shuffleEnabled,
-                                repeatMode = repeatMode,
                                 palette = pagePalette,
                                 queueExpanded = queueExpanded,
                                 playlist = playlist,
+                                currentSongKey = song?.playlistIdentityKey(),
+                                queueLocked = queueLocked,
                                 favoriteSongKeys = favoriteSongKeys,
                                 loadSongRating = loadSongRating,
                                 ratingRevision = ratingRevision,
-                                currentSongKey = song?.playlistIdentityKey(),
-                                queueLocked = queueLocked,
+                                shuffleEnabled = shuffleEnabled,
+                                repeatMode = repeatMode,
                                 onCyclePlaybackMode = onCyclePlaybackMode,
                                 onToggleQueueLock = playerViewModel::toggleQueueLock,
                                 onPrevious = onPrevious,
                                 onPlayPause = onPlayPause,
                                 onNext = onNext,
-                                onToggleQueue = onToggleQueue,
                                 onDismissQueue = onDismissQueue,
                                 onQueueSongClick = onQueueSongClick,
                                 onRemoveQueueSong = onRemoveQueueSong,
@@ -1010,22 +1007,6 @@ internal fun CoverPlayerPage(
                                 }
                             }
                         }
-                        if (!compactLayout && !titleAboveCover) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            PlayerCoverTitleRow(
-                                song = song,
-                                annotation = annotation,
-                                palette = pagePalette,
-                                fontFamily = fontFamily,
-                                isFavorite = isFavorite,
-                                onArtist = onArtist,
-                                onToggleFavorite = onToggleFavorite,
-                                modifier = Modifier
-                                    .width(nonImmersiveCoverSize)
-                                    .align(Alignment.CenterHorizontally)
-                            )
-                        }
-
                         if (effectiveMiniLyricLine != null) {
                             Spacer(modifier = Modifier.height(8.dp))
                             MiniLyricsPreview(
@@ -1100,22 +1081,21 @@ internal fun CoverPlayerPage(
                             Spacer(modifier = Modifier.height(12.dp))
                             PlayerTransportControls(
                                 isPlaying = isPlaying,
-                                shuffleEnabled = shuffleEnabled,
-                                repeatMode = repeatMode,
                                 palette = pagePalette,
                                 queueExpanded = queueExpanded,
                                 playlist = playlist,
+                                currentSongKey = song?.playlistIdentityKey(),
+                                queueLocked = queueLocked,
                                 favoriteSongKeys = favoriteSongKeys,
                                 loadSongRating = loadSongRating,
                                 ratingRevision = ratingRevision,
-                                currentSongKey = song?.playlistIdentityKey(),
-                                queueLocked = queueLocked,
+                                shuffleEnabled = shuffleEnabled,
+                                repeatMode = repeatMode,
                                 onCyclePlaybackMode = onCyclePlaybackMode,
                                 onToggleQueueLock = playerViewModel::toggleQueueLock,
                                 onPrevious = onPrevious,
                                 onPlayPause = onPlayPause,
                                 onNext = onNext,
-                                onToggleQueue = onToggleQueue,
                                 onDismissQueue = onDismissQueue,
                                 onQueueSongClick = onQueueSongClick,
                                 onRemoveQueueSong = onRemoveQueueSong,

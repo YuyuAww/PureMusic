@@ -36,7 +36,6 @@ import com.ella.music.data.SettingsManager
 import com.ella.music.data.audioQualitySummary
 import com.ella.music.data.model.AudioInfo
 import com.ella.music.data.model.Song
-import com.ella.music.ui.components.PlayerQueueListIcon
 import kotlinx.coroutines.launch
 import java.util.Locale
 import top.yukonga.miuix.kmp.basic.Icon
@@ -316,8 +315,6 @@ internal fun PlayerProgressBlock(
 @Composable
 internal fun PlayerTransportControls(
     isPlaying: Boolean,
-    shuffleEnabled: Boolean,
-    repeatMode: Int,
     palette: PlayerPalette,
     queueExpanded: Boolean,
     playlist: List<Song>,
@@ -326,12 +323,13 @@ internal fun PlayerTransportControls(
     favoriteSongKeys: Set<String> = emptySet(),
     loadSongRating: (Song) -> Int = { 0 },
     ratingRevision: Int = 0,
+    shuffleEnabled: Boolean,
+    repeatMode: Int,
     onCyclePlaybackMode: () -> Unit,
     onToggleQueueLock: () -> Unit,
     onPrevious: () -> Unit,
     onPlayPause: () -> Unit,
     onNext: () -> Unit,
-    onToggleQueue: () -> Unit,
     onDismissQueue: () -> Unit,
     onQueueSongClick: (Int) -> Unit,
     onRemoveQueueSong: (Int) -> Unit,
@@ -346,75 +344,62 @@ internal fun PlayerTransportControls(
     val showOutlines by settingsManager.transportButtonOutlines.collectAsState(
         initial = SettingsManager.DEFAULT_TRANSPORT_BUTTON_OUTLINES
     )
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        PlayerTransportIconButton(onClick = onCyclePlaybackMode) {
-            PlaybackModeIcon(
-                shuffleEnabled = shuffleEnabled,
-                repeatMode = repeatMode,
-                color = palette.onBackground.copy(alpha = 0.92f)
-            )
-        }
-        PlayerTransportIconButton(onClick = onPrevious) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_skip_previous),
-                contentDescription = stringResource(R.string.common_previous),
-                tint = palette.onBackground.copy(alpha = 0.92f),
-                modifier = Modifier.size(30.dp)
-            )
-        }
-        Box(
-            modifier = Modifier
-                .size(64.dp)
-                .clip(CircleShape)
-                .then(if (showOutlines) Modifier.background(palette.onBackground.copy(alpha = 0.18f)) else Modifier)
-                .playerNoIndicationClick(onPlayPause),
-            contentAlignment = Alignment.Center
+    Box(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            CenteredPlayPauseGlyph(
-                isPlaying = isPlaying,
-                tint = palette.onBackground.copy(alpha = 0.96f),
-                modifier = Modifier.size(if (isPlaying) 34.dp else 36.dp)
-            )
-        }
-        PlayerTransportIconButton(onClick = onNext) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_skip_next),
-                contentDescription = stringResource(R.string.common_next),
-                tint = palette.onBackground.copy(alpha = 0.92f),
-                modifier = Modifier.size(30.dp)
-            )
-        }
-        Box(contentAlignment = Alignment.Center) {
-            PlayerTransportIconButton(onClick = onToggleQueue) {
-                PlayerQueueListIcon(
-                    color = palette.onBackground.copy(alpha = 0.92f),
-                    modifier = Modifier.size(34.dp)
+            PlayerTransportIconButton(onClick = onPrevious) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_skip_previous),
+                    contentDescription = stringResource(R.string.common_previous),
+                    tint = palette.onBackground.copy(alpha = 0.92f),
+                    modifier = Modifier.size(30.dp)
                 )
             }
-            PlayerQueueSheet(
-                show = queueExpanded,
-                playlist = playlist,
-                currentSongKey = currentSongKey,
-                shuffleEnabled = shuffleEnabled,
-                repeatMode = repeatMode,
-                queueLocked = queueLocked,
-                favoriteSongKeys = favoriteSongKeys,
-                loadSongRating = loadSongRating,
-                ratingRevision = ratingRevision,
-                onCyclePlaybackMode = onCyclePlaybackMode,
-                onToggleQueueLock = onToggleQueueLock,
-                onDismiss = onDismissQueue,
-                onSongClick = onQueueSongClick,
-                onRemoveSong = onRemoveQueueSong,
-                onMoveSong = onMoveQueueSong,
-                onRandomizeQueue = onRandomizeQueue,
-                onAddQueueToPlaylist = onAddQueueToPlaylist,
-                onClearQueue = onClearQueue
-            )
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .then(if (showOutlines) Modifier.background(palette.onBackground.copy(alpha = 0.18f)) else Modifier)
+                    .playerNoIndicationClick(onPlayPause),
+                contentAlignment = Alignment.Center
+            ) {
+                CenteredPlayPauseGlyph(
+                    isPlaying = isPlaying,
+                    tint = palette.onBackground.copy(alpha = 0.96f),
+                    modifier = Modifier.size(if (isPlaying) 34.dp else 36.dp)
+                )
+            }
+            PlayerTransportIconButton(onClick = onNext) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_skip_next),
+                    contentDescription = stringResource(R.string.common_next),
+                    tint = palette.onBackground.copy(alpha = 0.92f),
+                    modifier = Modifier.size(30.dp)
+                )
+            }
         }
+        PlayerQueueSheet(
+            show = queueExpanded,
+            playlist = playlist,
+            currentSongKey = currentSongKey,
+            shuffleEnabled = shuffleEnabled,
+            repeatMode = repeatMode,
+            queueLocked = queueLocked,
+            favoriteSongKeys = favoriteSongKeys,
+            loadSongRating = loadSongRating,
+            ratingRevision = ratingRevision,
+            onCyclePlaybackMode = onCyclePlaybackMode,
+            onToggleQueueLock = onToggleQueueLock,
+            onDismiss = onDismissQueue,
+            onSongClick = onQueueSongClick,
+            onRemoveSong = onRemoveQueueSong,
+            onMoveSong = onMoveQueueSong,
+            onRandomizeQueue = onRandomizeQueue,
+            onAddQueueToPlaylist = onAddQueueToPlaylist,
+            onClearQueue = onClearQueue
+        )
     }
 }

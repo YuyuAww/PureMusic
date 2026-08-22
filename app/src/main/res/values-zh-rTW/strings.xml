@@ -1755,14 +1755,7 @@
     <string name="settings_dynamic_cover_folder_saved">已新增動態封面資料夾</string>
     <string name="settings_beautiful_lyrics_background_static">Apple Music 動態背景</string>
     <string name="settings_beautiful_lyrics_background_dynamic">Beautiful Lyrics 動態背景</string>
-    <string name="settings_player_title_position">非沉浸播放頁標題位置</string>
-    <string name="settings_player_title_position_below_cover">封面下方</string>
-    <string name="settings_player_title_position_above_cover">封面上方</string>
-    <string name="settings_player_page_style">播放頁</string>
-    <string name="settings_player_page_style_summary">選擇播放頁版面配置</string>
-    <string name="settings_player_page_style_halcyon">Halcyon</string>
-    <string name="settings_player_page_style_apple_music">Apple Music</string>
-    <string name="settings_player_page_style_immersive_lyrics">沉浸歌詞</string>
+    
     <string name="settings_player_landscape_style">預設橫屏播放樣式</string>
     <string name="settings_player_landscape_style_summary">點擊「橫屏播放」時使用：%1$s</string>
     <string name="settings_player_landscape_style_wide">平板/大螢幕自適應播放頁</string>

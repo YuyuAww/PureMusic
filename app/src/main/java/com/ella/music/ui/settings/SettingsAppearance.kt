@@ -90,12 +90,6 @@ internal fun SettingsAppearanceSection(
     )
     val playerShowSongAnnotation by settingsManager.playerShowSongAnnotation.collectAsState(initial = true)
     val playerCoverSwipeEnabled by settingsManager.playerCoverSwipeEnabled.collectAsState(initial = true)
-    val playerTitlePosition by settingsManager.playerTitlePosition.collectAsState(
-        initial = SettingsManager.PLAYER_TITLE_POSITION_BELOW_COVER
-    )
-    val playerPageStyle by settingsManager.playerPageStyle.collectAsState(
-        initial = SettingsManager.DEFAULT_PLAYER_PAGE_STYLE
-    )
     val playerLandscapeStyle by settingsManager.playerLandscapeStyle.collectAsState(
         initial = SettingsManager.DEFAULT_PLAYER_LANDSCAPE_STYLE
     )
@@ -115,29 +109,6 @@ internal fun SettingsAppearanceSection(
         beautifulLyricsBackgroundLabels.map { DropdownItem(title = it) }
     }
     val selectedBeautifulLyricsBackground = if (beautifulLyricsBackground) 1 else 0
-    val playerTitlePositionLabels = listOf(
-        stringResource(R.string.settings_player_title_position_below_cover),
-        stringResource(R.string.settings_player_title_position_above_cover)
-    )
-    val selectedPlayerTitlePosition = playerTitlePosition.coerceIn(playerTitlePositionLabels.indices)
-    val playerTitlePositionEntries = remember(playerTitlePositionLabels) {
-        playerTitlePositionLabels.map { DropdownItem(title = it) }
-    }
-    val playerPageStyleOptions = listOf(
-        SettingsManager.PLAYER_PAGE_STYLE_HALCYON to
-            stringResource(R.string.settings_player_page_style_halcyon),
-        SettingsManager.PLAYER_PAGE_STYLE_APPLE_MUSIC to
-            stringResource(R.string.settings_player_page_style_apple_music),
-        SettingsManager.PLAYER_PAGE_STYLE_IMMERSIVE_LYRICS to
-            stringResource(R.string.settings_player_page_style_immersive_lyrics)
-    )
-    val selectedPlayerPageStyle = playerPageStyleOptions
-        .indexOfFirst { (style, _) -> style == playerPageStyle }
-        .takeIf { it >= 0 }
-        ?: 0
-    val playerPageStyleEntries = remember(playerPageStyleOptions) {
-        playerPageStyleOptions.map { (_, label) -> DropdownItem(title = label) }
-    }
     val playerLandscapeStyleOptions = listOf(
         SettingsManager.PLAYER_LANDSCAPE_STYLE_WIDE to
             stringResource(R.string.settings_player_landscape_style_wide),
@@ -803,34 +774,6 @@ internal fun SettingsAppearanceSection(
                     scope.launch { settingsManager.setPlayerCoverContentColor(it) }
                 }
             )
-            WindowSpinnerPreference(
-                title = stringResource(R.string.settings_player_title_position),
-                summary = stringResource(
-                    R.string.settings_current_value,
-                    playerTitlePositionLabels[selectedPlayerTitlePosition]
-                ),
-                items = playerTitlePositionEntries,
-                selectedIndex = selectedPlayerTitlePosition,
-                onSelectedIndexChange = { index ->
-                    scope.launch { settingsManager.setPlayerTitlePosition(index) }
-                }
-            )
-            SettingsFocusAnchor(active = highlightKey == "player_page") {
-                WindowSpinnerPreference(
-                    title = stringResource(R.string.settings_player_page_style),
-                    summary = stringResource(
-                        R.string.settings_current_value,
-                        playerPageStyleOptions[selectedPlayerPageStyle].second
-                    ),
-                    items = playerPageStyleEntries,
-                    selectedIndex = selectedPlayerPageStyle,
-                    onSelectedIndexChange = { index ->
-                        playerPageStyleOptions.getOrNull(index)?.first?.let { style ->
-                            scope.launch { settingsManager.setPlayerPageStyle(style) }
-                        }
-                    }
-                )
-            }
             SettingsFocusAnchor(active = highlightKey == "player_landscape") {
                 WindowSpinnerPreference(
                     title = stringResource(R.string.settings_player_landscape_style),

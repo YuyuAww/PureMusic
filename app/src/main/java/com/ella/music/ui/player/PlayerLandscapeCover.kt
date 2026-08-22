@@ -447,8 +447,6 @@ internal fun LandscapeCoverPlayerPage(
                 Spacer(modifier = Modifier.height(if (ultraWideLandscape) 0.dp else 4.dp))
                 PlayerTransportControls(
                     isPlaying = isPlaying,
-                    shuffleEnabled = shuffleEnabled,
-                    repeatMode = repeatMode,
                     palette = palette,
                     queueExpanded = queueExpanded,
                     playlist = playlist,
@@ -457,12 +455,13 @@ internal fun LandscapeCoverPlayerPage(
                     favoriteSongKeys = favoriteSongKeys,
                     loadSongRating = loadSongRating,
                     ratingRevision = ratingRevision,
+                    shuffleEnabled = shuffleEnabled,
+                    repeatMode = repeatMode,
                     onCyclePlaybackMode = onCyclePlaybackMode,
                     onToggleQueueLock = onToggleQueueLock,
                     onPrevious = onPrevious,
                     onPlayPause = onPlayPause,
                     onNext = onNext,
-                    onToggleQueue = onToggleQueue,
                     onDismissQueue = onDismissQueue,
                     onQueueSongClick = onQueueSongClick,
                     onRemoveQueueSong = onRemoveQueueSong,

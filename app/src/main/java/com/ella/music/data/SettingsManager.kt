@@ -145,7 +145,6 @@ class SettingsManager(private val context: Context) :
         val KEY_PLAYER_SHOW_SONG_ANNOTATION = booleanPreferencesKey("player_show_song_annotation")
         val KEY_PLAYER_COVER_SWIPE_ENABLED = booleanPreferencesKey("player_cover_swipe_enabled")
         val KEY_LYRIC_PARSER_ENGINE = intPreferencesKey("lyric_parser_engine")
-        val KEY_PLAYER_TITLE_POSITION = intPreferencesKey("player_title_position")
         val KEY_PLAYER_PAGE_STYLE = intPreferencesKey("player_page_style")
         val KEY_PLAYER_LANDSCAPE_STYLE = intPreferencesKey("player_landscape_style")
         val KEY_PLAYER_KEEP_SCREEN_ON = booleanPreferencesKey("player_keep_screen_on")
@@ -410,8 +409,6 @@ class SettingsManager(private val context: Context) :
         const val REPLAY_GAIN_TRACK = 1
         const val REPLAY_GAIN_ALBUM = 2
         const val REPLAY_GAIN_AUTO = 3
-        const val PLAYER_TITLE_POSITION_BELOW_COVER = 0
-        const val PLAYER_TITLE_POSITION_ABOVE_COVER = 1
         const val PLAYER_PAGE_STYLE_HALCYON = 0
         const val DEFAULT_PLAYER_PAGE_STYLE = PLAYER_PAGE_STYLE_HALCYON
         const val PLAYER_LANDSCAPE_STYLE_WIDE = 0
@@ -1023,7 +1020,6 @@ class SettingsManager(private val context: Context) :
             setInt(KEY_LIVE_UPDATE_LYRIC_SECONDARY_MODE)
             setInt(KEY_LYRIC_SOURCE_MODE)
             setInt(KEY_LYRIC_PARSER_ENGINE)
-            setInt(KEY_PLAYER_TITLE_POSITION)
             setInt(KEY_PLAYER_PAGE_STYLE)
             setInt(KEY_PLAYER_LANDSCAPE_STYLE)
             setInt(KEY_MUSIC_VIDEO_ORIENTATION)
