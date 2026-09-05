@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.pure.music.data.db.AppDatabase
+import com.pure.music.data.db.FavoriteEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -36,7 +37,7 @@ class FavoritesViewModel(application: Application) : AndroidViewModel(applicatio
             if (isFavorite(songId)) {
                 dao.remove(songId)
             } else {
-                dao.add(songId)
+                dao.add(FavoriteEntity(songId))
             }
         }
     }
