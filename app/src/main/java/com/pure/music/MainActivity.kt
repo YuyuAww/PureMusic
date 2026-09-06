@@ -26,7 +26,7 @@ import com.pure.music.settings.SettingsViewModel
 import com.pure.music.settings.settingsViewModelFactory
 import com.pure.music.ui.library.LibraryScreen
 import com.pure.music.ui.player.MiniPlayerBar
-import com.pure.music.ui.player.NowPlayingScreen
+import com.pure.music.ui.player.PlayerWorkspace
 import com.pure.music.ui.settings.SettingsScreen
 import com.pure.music.ui.theme.PureMusicTheme
 
@@ -53,7 +53,8 @@ private fun MainContent() {
         else -> isSystemInDarkTheme()
     }
 
-    PureMusicTheme(darkTheme = darkTheme) {
+    // 使用应用品牌色，避免设备动态取色导致界面风格不一致
+    PureMusicTheme(darkTheme = darkTheme, dynamicColor = false) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
@@ -99,7 +100,7 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
 
             // 全屏正在播放界面
             if (showNowPlaying) {
-                NowPlayingScreen(
+                PlayerWorkspace(
                     state = state,
                     onDismiss = { showNowPlaying = false },
                     onTogglePlayPause = { playerViewModel.togglePlayPause() },
@@ -108,10 +109,6 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
                     onSeek = { playerViewModel.seekTo(it) },
                     onRepeatMode = { playerViewModel.setRepeatMode(it) },
                     onShuffleMode = { playerViewModel.setShuffleMode(it) },
-                    onPlayFromQueue = { index ->
-                        playerViewModel.playQueue(state.queue, index)
-                    },
-                    onClearError = { playerViewModel.clearError() }
                 )
             }
 

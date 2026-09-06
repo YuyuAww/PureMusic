@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlaylistAdd
@@ -57,14 +59,22 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -84,6 +94,8 @@ import com.pure.music.library.playlistViewModelFactory
 import com.pure.music.ui.album.AlbumDetailScreen
 import com.pure.music.ui.playlist.PlaylistDetailScreen
 import com.pure.music.ui.components.AlbumArt
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /** 媒体库标签页枚举 */
 private enum class LibraryTab(val label: String) {
@@ -136,22 +148,82 @@ fun LibraryScreen(
         if (granted) viewModel.refresh()
     }
 
+    var selectedTab by remember { mutableStateOf(LibraryTab.SONGS) }
+    var showSearchPage by remember { mutableStateOf(false) }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val drawerProgress by animateFloatAsState(
+        targetValue = if (drawerState.targetValue == DrawerValue.Open) 1f else 0f,
+        label = "drawer progress"
+    )
+    val density = LocalDensity.current
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    "PureMusic",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(28.dp, 32.dp, 28.dp, 20.dp)
+                )
+                DrawerItem("歌曲", Icons.Default.MusicNote, selectedTab == LibraryTab.SONGS) {
+                    selectedTab = LibraryTab.SONGS; scope.launch { drawerState.close() }
+                }
+                DrawerItem("专辑", Icons.Default.Album, selectedTab == LibraryTab.ALBUMS) {
+                    selectedTab = LibraryTab.ALBUMS; scope.launch { drawerState.close() }
+                }
+                DrawerItem("艺术家", Icons.Default.Person, selectedTab == LibraryTab.ARTISTS) {
+                    selectedTab = LibraryTab.ARTISTS; scope.launch { drawerState.close() }
+                }
+                DrawerItem("收藏", Icons.Default.Favorite, selectedTab == LibraryTab.FAVORITES) {
+                    selectedTab = LibraryTab.FAVORITES; scope.launch { drawerState.close() }
+                }
+                DrawerItem("歌单", Icons.Default.QueueMusic, selectedTab == LibraryTab.PLAYLISTS) {
+                    selectedTab = LibraryTab.PLAYLISTS; scope.launch { drawerState.close() }
+                }
+                Spacer(Modifier.height(16.dp))
+                HorizontalDivider()
+                DrawerItem("设置", Icons.Default.Settings, false) {
+                    scope.launch { drawerState.close() }; onShowSettings()
+                }
+            }
+        }
+    ) {
     Scaffold(
+        modifier = Modifier.offset {
+            // 主界面与侧滑栏保持同层联动，模拟参考播放器的横向推移效果
+            IntOffset(with(density) { (280.dp.toPx() * drawerProgress).roundToInt() }, 0)
+        },
         topBar = {
             TopAppBar(
-                title = { Text("媒体库") },
-                actions = {
-                    IconButton(onClick = onShowSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "设置")
+                title = { Text(if (showSearchPage) "搜索" else selectedTab.label, style = MaterialTheme.typography.headlineSmall) },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        if (showSearchPage) showSearchPage = false
+                        else scope.launch { drawerState.open() }
+                    }) {
+                        Icon(
+                            if (showSearchPage) Icons.AutoMirrored.Filled.ArrowBack else Icons.Default.Menu,
+                            contentDescription = if (showSearchPage) "返回歌曲列表" else "打开导航菜单"
+                        )
                     }
-                    IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "刷新")
+                },
+                actions = {
+                    IconButton(onClick = { showSearchPage = true }) {
+                        Icon(Icons.Default.Search, contentDescription = "搜索歌曲")
                     }
                 }
             )
         }
     ) { padding ->
-        if (!permissionGranted) {
+        if (showSearchPage && permissionGranted) {
+            SearchScreen(
+                viewModel = viewModel,
+                onPlaySong = onPlaySong,
+                modifier = Modifier.padding(padding)
+            )
+        } else if (!permissionGranted) {
             PermissionRequestCard(
                 message = "需要音频读取权限以扫描您的本地音乐",
                 onGrant = { launcher.launch(permission) },
@@ -167,9 +239,55 @@ fun LibraryScreen(
             LibraryContent(
                 viewModel = viewModel,
                 onPlaySong = onPlaySong,
+                selectedTab = selectedTab,
+                onSelectedTabChange = { selectedTab = it },
                 modifier = Modifier.padding(padding)
             )
         }
+    }
+    }
+}
+
+@Composable
+private fun DrawerItem(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, selected: Boolean, onClick: () -> Unit) {
+    androidx.compose.material3.NavigationDrawerItem(
+        label = { Text(label) },
+        icon = { Icon(icon, contentDescription = null) },
+        selected = selected,
+        onClick = onClick,
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
+    )
+}
+
+/** 独立搜索页面：从顶部搜索入口进入，避免在歌曲列表中挤占空间。 */
+@Composable
+private fun SearchScreen(
+    viewModel: LibraryViewModel,
+    onPlaySong: (Song, List<Song>) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val songs by viewModel.songs.collectAsStateWithLifecycle()
+    var query by remember { mutableStateOf("") }
+    val results = remember(songs, query) {
+        if (query.isBlank()) songs else songs.filter {
+            it.title.contains(query, true) || it.artist.contains(query, true) || it.album.contains(query, true)
+        }
+    }
+    Column(modifier = modifier.fillMaxSize()) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            singleLine = true,
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            placeholder = { Text("搜索歌曲、艺术家或专辑") },
+            shape = RoundedCornerShape(18.dp)
+        )
+        SongsList(
+            songs = results,
+            onPlay = { song -> onPlaySong(song, results) },
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 
@@ -217,13 +335,14 @@ private fun PermissionRequestCard(
 private fun LibraryContent(
     viewModel: LibraryViewModel,
     onPlaySong: (Song, List<Song>) -> Unit = { _, _ -> },
+    selectedTab: LibraryTab = LibraryTab.SONGS,
+    onSelectedTabChange: (LibraryTab) -> Unit = {},
+    showSearch: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val songs by viewModel.songs.collectAsStateWithLifecycle()
     val albums by viewModel.albums.collectAsStateWithLifecycle()
     val artists by viewModel.artists.collectAsStateWithLifecycle()
-    var selectedTab by remember { mutableStateOf(LibraryTab.SONGS) }
-
     val favoritesViewModel: FavoritesViewModel = viewModel(factory = favoritesViewModelFactory)
     val playlistViewModel: PlaylistViewModel = viewModel(factory = playlistViewModelFactory)
     val favoriteIds by favoritesViewModel.favoriteSongIds.collectAsStateWithLifecycle()
@@ -279,14 +398,28 @@ private fun LibraryContent(
     }
 
     Column(modifier = modifier.fillMaxSize()) {
-        // 搜索栏 + 排序菜单
+        // 轻量的品牌头部：让媒体库拥有明确的层次和统计信息
+        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
+            Text(
+                text = "你的音乐",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = if (songs.isEmpty()) "准备好发现你的音乐" else "${songs.size} 首歌曲 · ${albums.size} 张专辑",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        // 搜索入口展开后的搜索栏 + 排序菜单
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
+            if (showSearch) OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
@@ -299,9 +432,14 @@ private fun LibraryContent(
                 },
                 placeholder = { Text("搜索歌曲、艺术家、专辑") },
                 singleLine = true,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(18.dp),
+                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary
+                )
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(if (showSearch) 8.dp else 0.dp))
             Box {
                 IconButton(onClick = { showSortMenu = true }) {
                     Icon(Icons.Default.Sort, contentDescription = "排序")
@@ -330,7 +468,7 @@ private fun LibraryContent(
             LibraryTab.entries.forEach { tab ->
                 Tab(
                     selected = selectedTab == tab,
-                    onClick = { selectedTab = tab },
+                    onClick = { onSelectedTabChange(tab) },
                     text = { Text(tab.label) }
                 )
             }
@@ -451,10 +589,11 @@ private fun SongListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onPlay(song) }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AlbumArt(song, Modifier.size(40.dp))
+        AlbumArt(song, Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)))
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(

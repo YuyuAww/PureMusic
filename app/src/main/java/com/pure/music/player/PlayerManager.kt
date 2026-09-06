@@ -135,9 +135,17 @@ object PlayerManager {
             currentSong = queue[startIndex],
             errorMessage = null
         )
-        val mediaItems = queue.map { songToMediaItem(it) }
-        c.setMediaItems(mediaItems, startIndex, 0)
-        c.play()
+        try {
+            val mediaItems = queue.map { songToMediaItem(it) }
+            c.setMediaItems(mediaItems, startIndex, 0L)
+            c.prepare()
+            c.play()
+        } catch (error: Exception) {
+            _state.value = _state.value.copy(
+                isPlaying = false,
+                errorMessage = error.localizedMessage ?: "无法播放此音频文件"
+            )
+        }
     }
 
     fun playSong(song: Song, queue: List<Song>) {

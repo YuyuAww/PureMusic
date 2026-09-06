@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TextButton
@@ -185,12 +186,20 @@ fun NowPlayingScreen(
                     )
                 }
                 Spacer(Modifier.width(24.dp))
-                IconButton(onClick = onTogglePlayPause) {
-                    Icon(
-                        imageVector = if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = null,
-                        modifier = Modifier.size(56.dp)
-                    )
+                Surface(
+                    onClick = onTogglePlayPause,
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(72.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                            contentDescription = if (state.isPlaying) "暂停" else "播放",
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
                 }
                 Spacer(Modifier.width(24.dp))
                 IconButton(onClick = onNext) {
