@@ -54,7 +54,7 @@ fun MiniPlayerBar(
                 .fillMaxWidth()
                 .clickable { onExpand() }
                 .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterHorizontally
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // 封面占位
             Box(

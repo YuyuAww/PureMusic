@@ -19,9 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -30,6 +28,8 @@ import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Person
@@ -270,7 +270,7 @@ private fun LibraryContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterHorizontally
+            verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
                 value = searchQuery,
@@ -311,8 +311,7 @@ private fun LibraryContent(
 
         // 标签页切换
         TabRow(
-            selectedTabIndex = selectedTab.ordinal,
-            onSelectedChange = { selectedTab = LibraryTab.entries[it] }
+            selectedTabIndex = selectedTab.ordinal
         ) {
             LibraryTab.entries.forEach { tab ->
                 Tab(
@@ -439,7 +438,7 @@ private fun SongListItem(
             .fillMaxWidth()
             .clickable { onPlay(song) }
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterHorizontally
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Default.Album,
@@ -491,25 +490,37 @@ private fun AlbumsGrid(
         EmptyStateView("暂无专辑", modifier)
         return
     }
-    LazyVerticalGrid(
+    LazyColumn(
         modifier = modifier,
-        columns = GridCells.Fixed(3),
         contentPadding = PaddingValues(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(albums, key = { it.albumId }) { album ->
-            AlbumGridItem(album, onAlbumClick)
+        items(albums.chunked(3)) { rowAlbums ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                rowAlbums.forEach { album ->
+                    AlbumGridItem(
+                        album,
+                        onAlbumClick,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
         }
     }
 }
 
 /** 专辑网格项，正方形封面占位 + 专辑名和艺术家 */
 @Composable
-private fun AlbumGridItem(album: Album, onClick: (Album) -> Unit = {}) {
+private fun AlbumGridItem(
+    album: Album,
+    onClick: (Album) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .clickable { onClick(album) },
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -530,16 +541,16 @@ private fun AlbumGridItem(album: Album, onClick: (Album) -> Unit = {}) {
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(
                     text = album.name,
-                    style = MaterialTheme.typography.labelMedium,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.labelMedium
                 )
                 Text(
                     text = album.artist,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -560,7 +571,7 @@ private fun ArtistsList(artists: List<Artist>, modifier: Modifier = Modifier) {
                     .fillMaxWidth()
                     .clickable { }
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterHorizontally
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
@@ -611,7 +622,7 @@ private fun FavoritesList(
                     .fillMaxWidth()
                     .clickable { onPlay(song, songs) }
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterHorizontally
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     imageVector = Icons.Default.Favorite,
@@ -663,7 +674,7 @@ private fun PlaylistsList(
                     .fillMaxWidth()
                     .clickable { onCreatePlaylist() }
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterHorizontally
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     imageVector = Icons.Default.PlaylistAdd,
@@ -697,7 +708,7 @@ private fun PlaylistsList(
                     .fillMaxWidth()
                     .clickable { onPlaylistClick(playlist) }
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterHorizontally
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     imageVector = Icons.Default.QueueMusic,

@@ -86,14 +86,14 @@ fun SettingsScreen(
                 .clickable {
                     try {
                         context.startActivity(
-                            Intent(Settings.ACTION_SOUND_EFFECTS_EQUALIZER)
+                            Intent(Settings.ACTION_SOUND_SETTINGS)
                         )
                     } catch (_: Exception) {
                         // 设备不支持系统均衡器时忽略
                     }
                 }
                 .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterHorizontally
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.Default.Equalizer,
@@ -137,7 +137,7 @@ fun SettingsScreen(
                     // 可后续增加许可对话框
                 }
                 .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterHorizontally
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.Default.Star,
@@ -186,7 +186,7 @@ private fun ThemeOption(
             .fillMaxWidth()
             .clickable { onSelect() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterHorizontally
+        verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(
             selected = currentValue == value,
@@ -207,7 +207,7 @@ private fun InfoRow(label: String, value: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterHorizontally
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
