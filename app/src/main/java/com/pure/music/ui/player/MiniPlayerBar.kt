@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pure.music.player.PlaybackState
+import com.pure.music.ui.components.AlbumArt
 
 /**
  * 底部迷你播放器栏，显示当前播放歌曲信息和快捷控制按钮。
@@ -56,7 +57,7 @@ fun MiniPlayerBar(
                 .padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 封面占位
+            // 当前歌曲专辑封面
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -64,12 +65,7 @@ fun MiniPlayerBar(
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Album,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                AlbumArt(song, Modifier.fillMaxSize())
             }
 
             Spacer(Modifier.width(12.dp))

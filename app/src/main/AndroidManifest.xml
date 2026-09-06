@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".PureMusicApp"
@@ -35,7 +34,7 @@
             android:foregroundServiceType="mediaPlayback" />
 
         <receiver
-            android:name=".widget.NowPlayingWidget"
+            android:name=".widget.NowPlayingWidgetReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -45,8 +44,5 @@
                 android:resource="@xml/now_playing_widget" />
         </receiver>
 
-        <receiver
-            android:name=".widget.NowPlayingWidgetReceiver"
-            android:exported="false" />
     </application>
 </manifest>

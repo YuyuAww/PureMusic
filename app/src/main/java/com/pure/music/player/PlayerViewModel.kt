@@ -12,14 +12,22 @@ import kotlinx.coroutines.flow.StateFlow
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
     val state: StateFlow<PlaybackState> = PlayerManager.state
 
-    fun playQueue(queue: List<Song>, startIndex: Int) = PlayerManager.playQueue(queue, startIndex)
-    fun playSong(song: Song, queue: List<Song>) = PlayerManager.playSong(song, queue)
+    fun playQueue(queue: List<Song>, startIndex: Int) {
+        PlayerManager.init(getApplication())
+        PlayerManager.playQueue(queue, startIndex)
+    }
+
+    fun playSong(song: Song, queue: List<Song>) {
+        PlayerManager.init(getApplication())
+        PlayerManager.playSong(song, queue)
+    }
     fun togglePlayPause() = PlayerManager.togglePlayPause()
     fun next() = PlayerManager.next()
     fun previous() = PlayerManager.previous()
     fun seekTo(position: Long) = PlayerManager.seekTo(position)
     fun setRepeatMode(mode: Int) = PlayerManager.setRepeatMode(mode)
     fun setShuffleMode(enabled: Boolean) = PlayerManager.setShuffleMode(enabled)
+    fun clearError() = PlayerManager.clearError()
 }
 
 val playerViewModelFactory: ViewModelProvider.Factory = viewModelFactory {

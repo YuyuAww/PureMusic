@@ -35,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import com.pure.music.player.PlaybackState
 import com.pure.music.ui.library.formatDuration
+import com.pure.music.ui.components.AlbumArt
 
 /**
  * 全屏正在播放界面。
@@ -67,7 +69,8 @@ fun NowPlayingScreen(
     onSeek: (Long) -> Unit,
     onRepeatMode: (Int) -> Unit,
     onShuffleMode: (Boolean) -> Unit,
-    onPlayFromQueue: (Int) -> Unit
+    onPlayFromQueue: (Int) -> Unit,
+    onClearError: () -> Unit = {}
 ) {
     val song = state.currentSong ?: return
     val duration = state.duration.coerceAtLeast(1L)
@@ -100,7 +103,10 @@ fun NowPlayingScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 封面占位
+            state.errorMessage?.let { message ->
+                TextButton(onClick = onClearError) { Text(message, color = MaterialTheme.colorScheme.error) }
+            }
+            // 当前歌曲专辑封面
             Box(
                 modifier = Modifier
                     .padding(top = 16.dp)
@@ -109,12 +115,7 @@ fun NowPlayingScreen(
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Album,
-                    contentDescription = null,
-                    modifier = Modifier.size(96.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
-                )
+                AlbumArt(song, Modifier.fillMaxSize())
             }
 
             Spacer(Modifier.height(24.dp))

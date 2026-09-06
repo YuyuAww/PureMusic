@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.pure.music.data.Album
 import com.pure.music.data.Song
 import com.pure.music.ui.library.formatDuration
+import com.pure.music.ui.components.AlbumArt
 
 /** 专辑详情界面，显示专辑封面、信息、曲目列表和播放控制 */
 @Composable
@@ -66,7 +67,7 @@ fun AlbumDetailScreen(
 
         Spacer(Modifier.height(16.dp))
 
-        // 专辑封面占位
+        // 专辑封面，加载失败时由 AlbumArt 显示回退图标
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,12 +76,7 @@ fun AlbumDetailScreen(
                 .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Album,
-                contentDescription = null,
-                modifier = Modifier.size(96.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
-            )
+            AlbumArt(album, Modifier.fillMaxSize())
         }
 
         Spacer(Modifier.height(16.dp))

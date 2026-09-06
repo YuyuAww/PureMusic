@@ -41,3 +41,13 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlists WHERE id = :playlistId")
     fun observeById(playlistId: Long): Flow<PlaylistEntity?>
 }
+
+@Dao
+interface PlayHistoryDao {
+    /** 同一首歌只保留最近一次播放时间。 */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun record(history: PlayHistoryEntity)
+
+    @Query("SELECT * FROM play_history ORDER BY played_at DESC LIMIT :limit")
+    fun observeRecent(limit: Int = 20): Flow<List<PlayHistoryEntity>>
+}

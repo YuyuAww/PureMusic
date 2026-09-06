@@ -3,6 +3,8 @@ package com.pure.music.ui.library
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.content.Intent
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -81,6 +83,7 @@ import com.pure.music.library.libraryViewModelFactory
 import com.pure.music.library.playlistViewModelFactory
 import com.pure.music.ui.album.AlbumDetailScreen
 import com.pure.music.ui.playlist.PlaylistDetailScreen
+import com.pure.music.ui.components.AlbumArt
 
 /** 媒体库标签页枚举 */
 private enum class LibraryTab(val label: String) {
@@ -151,7 +154,14 @@ fun LibraryScreen(
         if (!permissionGranted) {
             PermissionRequestCard(
                 message = "需要音频读取权限以扫描您的本地音乐",
-                onGrant = { launcher.launch(permission) }
+                onGrant = { launcher.launch(permission) },
+                onOpenSettings = {
+                    context.startActivity(
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = android.net.Uri.parse("package:${context.packageName}")
+                        }
+                    )
+                }
             )
         } else {
             LibraryContent(
@@ -167,7 +177,8 @@ fun LibraryScreen(
 @Composable
 private fun PermissionRequestCard(
     message: String,
-    onGrant: () -> Unit
+    onGrant: () -> Unit,
+    onOpenSettings: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -191,6 +202,9 @@ private fun PermissionRequestCard(
         Spacer(Modifier.height(24.dp))
         TextButton(onClick = onGrant) {
             Text("授权并扫描")
+        }
+        TextButton(onClick = onOpenSettings) {
+            Text("已拒绝？打开系统设置")
         }
     }
 }
@@ -440,12 +454,7 @@ private fun SongListItem(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = Icons.Default.Album,
-            contentDescription = null,
-            modifier = Modifier.size(40.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
+        AlbumArt(song, Modifier.size(40.dp))
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -512,7 +521,7 @@ private fun AlbumsGrid(
     }
 }
 
-/** 专辑网格项，正方形封面占位 + 专辑名和艺术家 */
+/** 专辑网格项，展示正方形封面、专辑名和艺术家。 */
 @Composable
 private fun AlbumGridItem(
     album: Album,
@@ -531,12 +540,7 @@ private fun AlbumGridItem(
                     .aspectRatio(1f),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Album,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                AlbumArt(album, Modifier.fillMaxSize())
             }
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(

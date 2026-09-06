@@ -28,3 +28,9 @@ class LongListConverter {
     fun toList(value: String): List<Long> =
         value.split(",").filter { it.isNotEmpty() }.mapNotNull { it.toLongOrNull() }
 }
+
+@Entity(tableName = "play_history")
+data class PlayHistoryEntity(
+    @PrimaryKey @ColumnInfo(name = "song_id") val songId: Long,
+    @ColumnInfo(name = "played_at") val playedAt: Long
+)

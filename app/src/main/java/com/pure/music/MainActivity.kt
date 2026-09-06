@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -70,6 +71,10 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
     var showNowPlaying by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
 
+    BackHandler(enabled = showNowPlaying || showSettings) {
+        if (showSettings) showSettings = false else showNowPlaying = false
+    }
+
     Scaffold(
         bottomBar = {
             // 底部迷你播放器，有歌曲时显示
@@ -105,7 +110,8 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
                     onShuffleMode = { playerViewModel.setShuffleMode(it) },
                     onPlayFromQueue = { index ->
                         playerViewModel.playQueue(state.queue, index)
-                    }
+                    },
+                    onClearError = { playerViewModel.clearError() }
                 )
             }
 

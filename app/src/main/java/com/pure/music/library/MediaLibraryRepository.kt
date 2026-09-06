@@ -1,6 +1,7 @@
 package com.pure.music.library
 
 import android.content.Context
+import android.content.ContentUris
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
@@ -16,18 +17,20 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 /**
- * 媒体库仓库，通过 MediaStore 查询本地音频文件。
- * 使用 ContentObserver 监听媒体库变化自动刷新，通过 StateFlow 暴露响应式数据。
- * 使用双检锁单例模式。
+ * 本地媒体库仓库。MediaStore 负责读取歌曲元数据，ContentObserver 负责感知变化；
+ * 刷新请求经过短暂去抖后在 IO 线程查询，再通过 StateFlow 暴露歌曲、专辑和艺术家。
  */
 class MediaLibraryRepository private constructor(context: Context) {
 
     private val appContext = context.applicationContext
     private val resolver = appContext.contentResolver
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var refreshJob: Job? = null
 
     private val _songs = MutableStateFlow<List<Song>>(emptyList())
     val songs: StateFlow<List<Song>> = _songs
@@ -54,9 +57,11 @@ class MediaLibraryRepository private constructor(context: Context) {
         refresh()
     }
 
-    /** 触发媒体库重新扫描 */
+    /** 请求刷新媒体库；连续触发时只保留最后一次查询。 */
     fun refresh() {
-        scope.launch {
+        refreshJob?.cancel()
+        refreshJob = scope.launch {
+            delay(250)
             val songList = withContext(Dispatchers.IO) { querySongs() }
             _songs.value = songList
             _albums.value = buildAlbums(songList)
@@ -138,7 +143,9 @@ class MediaLibraryRepository private constructor(context: Context) {
                 albumId = albumId,
                 name = group.first().album,
                 artist = group.first().artist,
-                coverArtUri = null,
+                coverArtUri = ContentUris.withAppendedId(
+                    Uri.parse("content://media/external/audio/albumart"), albumId
+                ),
                 songCount = group.size,
                 songIds = group.map { it.id }
             )
