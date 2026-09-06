@@ -14,13 +14,12 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
-import androidx.glance.layout.defaultWeight
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.text.Text
-import androidx.glance.unit.dp
+import androidx.compose.ui.unit.dp
 import com.pure.music.player.PlayerManager
 import com.pure.music.MainActivity
 
@@ -40,7 +39,7 @@ class NowPlayingWidget : GlanceAppWidget() {
                 ) {
                     Text("♫", modifier = GlanceModifier.size(48.dp).padding(12.dp))
                     Spacer(GlanceModifier.width(8.dp))
-                    Column(modifier = GlanceModifier.defaultWeight()) {
+                    Column {
                         Text(song.title, maxLines = 1)
                         Text(song.artist, maxLines = 1)
                     }

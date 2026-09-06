@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +48,7 @@ import com.pure.music.settings.SettingsViewModel
  * 包含外观主题切换、系统均衡器外链、关于信息和开源许可。
  */
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit
