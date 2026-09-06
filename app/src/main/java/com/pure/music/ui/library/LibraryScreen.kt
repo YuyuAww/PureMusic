@@ -8,6 +8,7 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.LibraryMusic
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Lock
@@ -36,6 +46,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlaylistAdd
@@ -61,8 +73,6 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,6 +83,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -160,38 +171,41 @@ fun LibraryScreen(
     )
     val density = LocalDensity.current
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet {
-                Text(
-                    "PureMusic",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(28.dp, 32.dp, 28.dp, 20.dp)
-                )
-                DrawerItem("歌曲", Icons.Default.MusicNote, selectedTab == LibraryTab.SONGS) {
-                    selectedTab = LibraryTab.SONGS; scope.launch { drawerState.close() }
-                }
-                DrawerItem("专辑", Icons.Default.Album, selectedTab == LibraryTab.ALBUMS) {
-                    selectedTab = LibraryTab.ALBUMS; scope.launch { drawerState.close() }
-                }
-                DrawerItem("艺术家", Icons.Default.Person, selectedTab == LibraryTab.ARTISTS) {
-                    selectedTab = LibraryTab.ARTISTS; scope.launch { drawerState.close() }
-                }
-                DrawerItem("收藏", Icons.Default.Favorite, selectedTab == LibraryTab.FAVORITES) {
-                    selectedTab = LibraryTab.FAVORITES; scope.launch { drawerState.close() }
-                }
-                DrawerItem("歌单", Icons.Default.QueueMusic, selectedTab == LibraryTab.PLAYLISTS) {
-                    selectedTab = LibraryTab.PLAYLISTS; scope.launch { drawerState.close() }
-                }
-                Spacer(Modifier.height(16.dp))
-                HorizontalDivider()
-                DrawerItem("设置", Icons.Default.Settings, false) {
-                    scope.launch { drawerState.close() }; onShowSettings()
-                }
+    Box(Modifier.fillMaxSize()) {
+        if (drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open) {
+            Column(
+                Modifier.width(280.dp).fillMaxHeight().background(MaterialTheme.colorScheme.background).padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                    DrawerCard {
+                        DrawerAction("退出", Icons.Default.ExitToApp, MaterialTheme.colorScheme.error) { }
+                        DrawerAction("主题", Icons.Default.LightMode, Color(0xFFFFB300)) { }
+                        DrawerAction("音效", Icons.Default.GraphicEq, Color(0xFF8D5A16)) { }
+                    }
+                    DrawerCard {
+                        DrawerItem("歌曲", Icons.Default.MusicNote, selectedTab == LibraryTab.SONGS) {
+                            selectedTab = LibraryTab.SONGS; scope.launch { drawerState.close() }
+                        }
+                        DrawerItem("专辑", Icons.Default.Album, selectedTab == LibraryTab.ALBUMS) {
+                            selectedTab = LibraryTab.ALBUMS; scope.launch { drawerState.close() }
+                        }
+                        DrawerItem("艺术家", Icons.Default.Mic, selectedTab == LibraryTab.ARTISTS) {
+                            selectedTab = LibraryTab.ARTISTS; scope.launch { drawerState.close() }
+                        }
+                        DrawerItem("文件夹", Icons.Default.Folder, false) { }
+                        DrawerItem("歌单", Icons.Default.QueueMusic, selectedTab == LibraryTab.PLAYLISTS) {
+                            selectedTab = LibraryTab.PLAYLISTS; scope.launch { drawerState.close() }
+                        }
+                    }
+                    DrawerCard {
+                        DrawerItem("扫描音乐", Icons.Default.LibraryMusic, false) { viewModel.refresh(); scope.launch { drawerState.close() } }
+                        DrawerItem("音乐库", Icons.Default.Album, false) { selectedTab = LibraryTab.ALBUMS; scope.launch { drawerState.close() } }
+                        DrawerItem("统计", Icons.Default.BarChart, false) { }
+                        DrawerItem("设置", Icons.Default.Settings, false) { scope.launch { drawerState.close() }; onShowSettings() }
+                        DrawerItem("关于", Icons.Default.Info, false) { }
+                    }
             }
         }
-    ) {
     Scaffold(
         modifier = Modifier.offset {
             // 主界面与侧滑栏保持同层联动，模拟参考播放器的横向推移效果
@@ -248,6 +262,7 @@ fun LibraryScreen(
         }
     }
     }
+    }
 }
 
 @Composable
@@ -259,6 +274,28 @@ private fun DrawerItem(label: String, icon: androidx.compose.ui.graphics.vector.
         onClick = onClick,
         modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
     )
+}
+
+@Composable
+private fun DrawerCard(content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
+    ) {
+        Column(Modifier.padding(vertical = 12.dp), content = content)
+    }
+}
+
+@Composable
+private fun DrawerAction(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, tint: Color, onClick: () -> Unit) {
+    IconButton(onClick = onClick, modifier = Modifier.fillMaxWidth().height(64.dp)) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 22.dp), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(30.dp))
+        }
+    }
 }
 
 /** 独立搜索页面：从顶部搜索入口进入，避免在歌曲列表中挤占空间。 */
@@ -400,28 +437,11 @@ private fun LibraryContent(
     }
 
     Column(modifier = modifier.fillMaxSize()) {
-        // 轻量的品牌头部：让媒体库拥有明确的层次和统计信息
-        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
-            Text(
-                text = "你的音乐",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = if (songs.isEmpty()) "准备好发现你的音乐" else "${songs.size} 首歌曲 · ${albums.size} 张专辑",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        // 搜索入口展开后的搜索栏 + 排序菜单
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+        if (showSearch) Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (showSearch) OutlinedTextField(
+            OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
@@ -441,7 +461,7 @@ private fun LibraryContent(
                     focusedBorderColor = MaterialTheme.colorScheme.primary
                 )
             )
-            Spacer(Modifier.width(if (showSearch) 8.dp else 0.dp))
+            Spacer(Modifier.width(8.dp))
             Box {
                 IconButton(onClick = { showSortMenu = true }) {
                     Icon(Icons.Default.Sort, contentDescription = "排序")
@@ -463,16 +483,21 @@ private fun LibraryContent(
             }
         }
 
-        // 标签页切换
-        TabRow(
-            selectedTabIndex = selectedTab.ordinal
-        ) {
-            LibraryTab.entries.forEach { tab ->
-                Tab(
-                    selected = selectedTab == tab,
-                    onClick = { onSelectedTabChange(tab) },
-                    text = { Text(tab.label) }
-                )
+        if (selectedTab == LibraryTab.SONGS && !showSearch) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.Shuffle, contentDescription = "随机播放", tint = MaterialTheme.colorScheme.onSurface)
+                Spacer(Modifier.width(18.dp))
+                Text("${sortedSongs.size}", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.weight(1f))
+                IconButton(onClick = { showSortMenu = true }) {
+                    Icon(Icons.Default.Sort, contentDescription = "排序")
+                }
+                IconButton(onClick = {}) {
+                    Icon(Icons.Default.ViewList, contentDescription = "列表视图")
+                }
             }
         }
 
@@ -573,9 +598,24 @@ private fun SongsList(
         EmptyStateView("暂无歌曲", modifier)
         return
     }
-    LazyColumn(modifier = modifier) {
-        items(songs, key = { it.id }) { song ->
-            SongListItem(song, onPlay, onShowMenu)
+    Box(modifier = modifier) {
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(end = 22.dp)) {
+            items(songs, key = { it.id }) { song ->
+                SongListItem(song, onPlay, onShowMenu)
+            }
+        }
+        Column(
+            modifier = Modifier.align(Alignment.CenterEnd).padding(end = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            "0ABCDEFGHIJKLMNOPQRSTUVWXYZ#".forEach { letter ->
+                Text(
+                    text = letter.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 1.dp)
+                )
+            }
         }
     }
 }
@@ -612,16 +652,15 @@ private fun SongListItem(
                 overflow = TextOverflow.Ellipsis
             )
         }
-        Spacer(Modifier.width(8.dp))
-        Text(
-            text = formatDuration(song.duration),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(Modifier.width(4.dp))
-        IconButton(onClick = { onPlay(song) }) {
-            Icon(Icons.Default.PlayArrow, contentDescription = "播放")
+        Surface(
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shape = RoundedCornerShape(5.dp),
+            modifier = Modifier.padding(horizontal = 6.dp)
+        ) {
+            Text("SQ", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp))
         }
+        Spacer(Modifier.width(8.dp))
+        IconButton(onClick = { }) { Icon(Icons.Default.Add, contentDescription = "添加到播放队列") }
         IconButton(onClick = { onShowMenu(song) }) {
             Icon(Icons.Default.MoreVert, contentDescription = "更多")
         }

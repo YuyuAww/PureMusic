@@ -79,7 +79,7 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
     Scaffold(
         bottomBar = {
             // 底部迷你播放器，有歌曲时显示
-            if (state.currentSong != null) {
+            if (state.currentSong != null && !showNowPlaying && !showSettings) {
                 MiniPlayerBar(
                     state = state,
                     onTogglePlayPause = { playerViewModel.togglePlayPause() },
@@ -90,34 +90,33 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            LibraryScreen(
-                onPlaySong = { song: Song, queue: List<Song> ->
-                    playerViewModel.playSong(song, queue)
-                    showNowPlaying = true
-                },
-                onShowSettings = { showSettings = true }
-            )
-
-            // 全屏正在播放界面
-            if (showNowPlaying) {
-                PlayerWorkspace(
-                    state = state,
-                    onDismiss = { showNowPlaying = false },
-                    onTogglePlayPause = { playerViewModel.togglePlayPause() },
-                    onNext = { playerViewModel.next() },
-                    onPrevious = { playerViewModel.previous() },
-                    onSeek = { playerViewModel.seekTo(it) },
-                    onRepeatMode = { playerViewModel.setRepeatMode(it) },
-                    onShuffleMode = { playerViewModel.setShuffleMode(it) },
-                )
-            }
-
-            // 设置界面
             if (showSettings) {
                 SettingsScreen(
                     viewModel = settingsViewModel,
                     onBack = { showSettings = false }
                 )
+            } else {
+                LibraryScreen(
+                    onPlaySong = { song: Song, queue: List<Song> ->
+                        playerViewModel.playSong(song, queue)
+                        showNowPlaying = true
+                    },
+                    onShowSettings = { showSettings = true }
+                )
+
+                // 全屏正在播放界面
+                if (showNowPlaying) {
+                    PlayerWorkspace(
+                        state = state,
+                        onDismiss = { showNowPlaying = false },
+                        onTogglePlayPause = { playerViewModel.togglePlayPause() },
+                        onNext = { playerViewModel.next() },
+                        onPrevious = { playerViewModel.previous() },
+                        onSeek = { playerViewModel.seekTo(it) },
+                        onRepeatMode = { playerViewModel.setRepeatMode(it) },
+                        onShuffleMode = { playerViewModel.setShuffleMode(it) },
+                    )
+                }
             }
         }
     }
