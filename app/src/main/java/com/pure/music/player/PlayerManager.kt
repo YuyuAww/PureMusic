@@ -1,8 +1,9 @@
 package com.pure.music.player
 
 import android.content.Context
-import android.content.Intent
+import android.content.ComponentName
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -40,7 +41,7 @@ object PlayerManager {
             notifyWidgetUpdate()
         }
 
-        override fun onCurrentMediaItemChanged(mediaItem: MediaItem?) {
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             val index = controller?.currentMediaItemIndex ?: -1
             val queue = _state.value.queue
             val song = if (index in queue.indices) queue[index] else null
@@ -71,9 +72,11 @@ object PlayerManager {
         }
 
         override fun onPositionDiscontinuity(
-            oldPosition: Long, newPosition: Long, reason: Int
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int
         ) {
-            _state.value = _state.value.copy(position = newPosition)
+            _state.value = _state.value.copy(position = newPosition.positionMs)
         }
 
         override fun onPlayerError(error: PlaybackException) {
@@ -86,14 +89,14 @@ object PlayerManager {
     }
 
     /** 按需连接后台播放服务；连接完成前的播放请求会暂存。 */
-    fun init(context: Context) {
+    fun init(appContext: Context) {
         if (this.context != null) return
-        this.context = context.applicationContext
+        this.context = appContext.applicationContext
         _state.value = _state.value.copy(isConnecting = true, errorMessage = null)
 
         val token = SessionToken(
             this.context!!,
-            Intent(this.context, PlaybackService::class.java)
+            ComponentName(this.context!!, PlaybackService::class.java)
         )
         val future: ListenableFuture<MediaController> =
             MediaController.Builder(this.context!!, token).buildAsync()
@@ -201,16 +204,20 @@ object PlayerManager {
         MediaItem.Builder()
             .setUri(song.uri)
             .setMediaId(song.id.toString())
-            .setTitle(song.title)
-            .setArtist(song.artist)
-            .setAlbumTitle(song.album)
+            .setMediaMetadata(
+                MediaMetadata.Builder()
+                    .setTitle(song.title)
+                    .setArtist(song.artist)
+                    .setAlbumTitle(song.album)
+                    .build()
+            )
             .build()
 
     /** 通知桌面小部件刷新 UI */
     private fun notifyWidgetUpdate() {
         context?.let { ctx ->
             try {
-                val widgetManager = androidx.appwidget.AppWidgetManager.getInstance(ctx)
+                val widgetManager = android.appwidget.AppWidgetManager.getInstance(ctx)
                 val component = android.content.ComponentName(
                     ctx, com.pure.music.widget.NowPlayingWidgetReceiver::class.java
                 )
