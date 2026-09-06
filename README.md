@@ -94,7 +94,7 @@ gradle assembleRelease
 
 ### GitHub Actions
 
-工作流位于 `.github/workflows/build.yml`，在推送到 `main` 或手动触发时安装 JDK 17、Gradle 9.6.0 和 Android SDK 37，执行 Release 构建并上传 APK Artifact。
+工作流位于 `.github/workflows/build.yml`，在推送到 `main` 或手动触发时通过 SDK preview channel 安装 JDK 17、Gradle 9.6.0 和 Android SDK 37，执行 Release 构建并上传 APK Artifact。
 
 Release 当前启用 R8，但没有配置正式签名密钥；产物适合 CI 验证，不适合作为正式商店发布包。
 
