@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.pure.music"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.pure.music"

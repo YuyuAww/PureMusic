@@ -40,7 +40,7 @@ PureMusic 是一款基于 Jetpack Compose 的 Android 本地音乐播放器。�
 | ABI | `arm64-v8a` |
 | minSdk | 28（Android 9） |
 | targetSdk | 35（Android 15） |
-| compileSdk | 36 |
+| compileSdk | 37 |
 | versionName | `0.1.0` |
 
 ## 目录结构
@@ -94,7 +94,7 @@ gradle assembleRelease
 
 ### GitHub Actions
 
-工作流位于 `.github/workflows/build.yml`，在推送到 `main` 或手动触发时安装 JDK 17、Gradle 9.6.0 和 Android SDK 36，执行 Release 构建并上传 APK Artifact。
+工作流位于 `.github/workflows/build.yml`，在推送到 `main` 或手动触发时安装 JDK 17、Gradle 9.6.0 和 Android SDK 37，执行 Release 构建并上传 APK Artifact。
 
 Release 当前启用 R8，但没有配置正式签名密钥；产物适合 CI 验证，不适合作为正式商店发布包。
 
