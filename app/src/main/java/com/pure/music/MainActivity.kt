@@ -115,6 +115,9 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
                         onSeek = { playerViewModel.seekTo(it) },
                         onRepeatMode = { playerViewModel.setRepeatMode(it) },
                         onShuffleMode = { playerViewModel.setShuffleMode(it) },
+                        isFavorite = playerViewModel.isFavorite(state.currentSong?.id ?: -1L),
+                        onToggleFavorite = { playerViewModel.toggleFavorite(state.currentSong?.id ?: -1L) },
+                        onPlayFromQueue = { playerViewModel.playQueue(state.queue, it) },
                     )
                 }
             }

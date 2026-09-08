@@ -7,10 +7,19 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.pure.music.data.Song
 import kotlinx.coroutines.flow.StateFlow
+import androidx.lifecycle.viewModelScope
+import com.pure.music.data.db.AppDatabase
+import com.pure.music.data.db.FavoriteEntity
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /** 播放器 ViewModel，将 PlayerManager 的播放控制暴露给 UI 层 */
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
     val state: StateFlow<PlaybackState> = PlayerManager.state
+    private val favoriteDao = AppDatabase.get(application).favoritesDao()
+    val favoriteSongIds = favoriteDao.observeAll().map { it.toSet() }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
     fun playQueue(queue: List<Song>, startIndex: Int) {
         PlayerManager.init(getApplication())
@@ -28,6 +37,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun setRepeatMode(mode: Int) = PlayerManager.setRepeatMode(mode)
     fun setShuffleMode(enabled: Boolean) = PlayerManager.setShuffleMode(enabled)
     fun clearError() = PlayerManager.clearError()
+    fun isFavorite(songId: Long): Boolean = songId in favoriteSongIds.value
+    fun toggleFavorite(songId: Long) {
+        if (songId < 0) return
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            if (favoriteDao.isFavorite(songId)) favoriteDao.remove(songId) else favoriteDao.add(FavoriteEntity(songId))
+        }
+    }
 }
 
 val playerViewModelFactory: ViewModelProvider.Factory = viewModelFactory {
