@@ -1,225 +1,56 @@
 package com.pure.music.ui.settings
 
-import android.content.Intent
-import android.content.pm.PackageInfo
-import android.os.Build
-import android.provider.Settings
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Equalizer
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pure.music.settings.SettingsViewModel
 
-/**
- * 设置界面。
- * 包含外观主题切换、系统均衡器外链、关于信息和开源许可。
- */
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
-fun SettingsScreen(
-    viewModel: SettingsViewModel,
-    onBack: () -> Unit
-) {
+fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
     val theme by viewModel.theme.collectAsStateWithLifecycle()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-        TopAppBar(
-            title = { Text("设置") },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-                }
-            }
-        )
-
-        // 外观设置：主题切换
-        SectionTitle("外观")
-        HorizontalDivider()
-
-        ThemeOption("跟随系统", "system", theme, { viewModel.setTheme("system") })
-        ThemeOption("亮色", "light", theme, { viewModel.setTheme("light") })
-        ThemeOption("暗色", "dark", theme, { viewModel.setTheme("dark") })
-
-        HorizontalDivider()
-
-        // 系统均衡器外链（Android 10+ 原生 EQ API 已弃用，采用深链方案）
-        Spacer(Modifier.height(8.dp))
-        val context = LocalContext.current
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    try {
-                        context.startActivity(
-                            Intent(Settings.ACTION_SOUND_SETTINGS)
-                        )
-                    } catch (_: Exception) {
-                        // 设备不支持系统均衡器时忽略
-                    }
-                }
-                .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Equalizer,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(Modifier.width(12.dp))
-            Text(
-                text = "系统均衡器",
-                style = MaterialTheme.typography.bodyLarge
-            )
+    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState())) {
+        Row(Modifier.fillMaxWidth().padding(start = 20.dp, top = 24.dp, bottom = 18.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "返回") }
+            Text("设置", style = MaterialTheme.typography.headlineMedium)
         }
-
-        HorizontalDivider()
-
-        // 关于信息
-        Spacer(Modifier.height(16.dp))
-        SectionTitle("关于")
-
-        // 获取应用版本号
-        val version = try {
-            val info: PackageInfo = context.packageManager.getPackageInfo(
-                context.packageName, 0
-            )
-            "${info.versionName} (v${info.versionCode})"
-        } catch (e: Exception) {
-            "未知"
+        ProCard("Salt Player Pro", "包含 Salt Player 均衡器及 10+ 项高级功能", Icons.Default.WorkspacePremium)
+        ProCard("Audiophile Pack", "USB 独占输出、DAC 控制与 Morvanium", Icons.Default.GraphicEq)
+        SettingsCard {
+            SettingRow("Morvanium", Icons.Default.AutoAwesome)
         }
-
-        InfoRow("版本", version)
-        InfoRow("ABI", Build.SUPPORTED_ABIS.joinToString())
-        InfoRow("Android", Build.VERSION.RELEASE)
-
+        SettingsCard {
+            SettingRow("用户界面", Icons.Default.Palette)
+            SettingRow("无障碍", Icons.Default.Accessibility)
+            SettingRow("歌词", Icons.Default.FormatQuote)
+            SettingRow("车载", Icons.Default.DirectionsCar)
+            SettingRow("音频输出", Icons.Default.VolumeUp)
+            SettingRow("USB 独占模式", Icons.Default.Usb)
+            SettingRow("通知", Icons.Default.Notifications)
+            SettingRow("启动与后台", Icons.Default.RocketLaunch)
+        }
+        SettingsCard {
+            SettingRow("主题：${themeLabel(theme)}", Icons.Default.LightMode) { viewModel.setTheme(if (theme == "dark") "light" else "dark") }
+            SettingRow("系统均衡器", Icons.Default.Equalizer)
+            SettingRow("关于", Icons.Default.Info)
+        }
         Spacer(Modifier.height(24.dp))
-
-        // 开源许可
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    // 可后续增加许可对话框
-                }
-                .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(Modifier.width(12.dp))
-            Text(
-                text = "开源许可",
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        Text(
-            text = "PureMusic 是一个本地音乐播放器，使用 Media3 ExoPlayer、Jetpack Compose 和 Material Design 构建。",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
     }
 }
 
-/** 设置分区标题 */
-@Composable
-private fun SectionTitle(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(16.dp)
-    )
-}
-
-/** 主题选项行，使用 RadioButton 选择 */
-@Composable
-private fun ThemeOption(
-    label: String,
-    value: String,
-    currentValue: String,
-    onSelect: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onSelect() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(
-            selected = currentValue == value,
-            onClick = { onSelect() }
-        )
-        Spacer(Modifier.width(12.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge
-        )
-    }
-}
-
-/** 信息行，显示标签和值（如版本号、ABI 等） */
-@Composable
-private fun InfoRow(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(100.dp)
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium
-        )
-    }
-}
+@Composable private fun ProCard(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector) { Surface(Modifier.padding(horizontal = 16.dp, vertical = 6.dp).fillMaxWidth(), shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceVariant) { Row(Modifier.padding(22.dp), verticalAlignment = Alignment.CenterVertically) { Icon(icon, null, Modifier.size(34.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.width(18.dp)); Column(Modifier.weight(1f)) { Text(title, style = MaterialTheme.typography.titleLarge); Text(subtitle, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant) }; Icon(Icons.Default.ChevronRight, null) } } }
+@Composable private fun SettingsCard(content: @Composable ColumnScope.() -> Unit) { Surface(Modifier.padding(horizontal = 16.dp, vertical = 6.dp).fillMaxWidth(), shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceVariant, content = { Column(Modifier.padding(vertical = 8.dp), content = content) }) }
+@Composable private fun SettingRow(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit = {}) { Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 22.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(icon, null, Modifier.size(28.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.width(20.dp)); Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f)); Icon(Icons.Default.ChevronRight, null) } }
+private fun themeLabel(theme: String) = when (theme) { "dark" -> "深色"; "light" -> "浅色"; else -> "跟随系统" }

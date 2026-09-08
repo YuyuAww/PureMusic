@@ -10,6 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -37,7 +38,7 @@ private val LightColorScheme = lightColorScheme(
     tertiary = BrandAccent,
     surface = BrandSurface,
     onSurface = BrandOnSurface,
-    background = BrandSurface,
+    background = Color(0xFFFFF9FD),
     surfaceVariant = BrandSurfaceVariant,
     onSurfaceVariant = BrandOnSurfaceVariant
 )

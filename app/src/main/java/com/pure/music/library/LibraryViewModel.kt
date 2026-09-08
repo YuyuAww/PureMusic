@@ -9,6 +9,11 @@ import com.pure.music.data.Album
 import com.pure.music.data.Artist
 import com.pure.music.data.Song
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.SharingStarted
+import com.pure.music.data.Song
 
 /** 媒体库 ViewModel，桥接仓库与 UI，暴露歌曲/专辑/艺术家列表 */
 class LibraryViewModel(application: Application) : AndroidViewModel(application) {
@@ -17,6 +22,15 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
     val songs: StateFlow<List<Song>> = repository.songs
     val albums: StateFlow<List<Album>> = repository.albums
     val artists: StateFlow<List<Artist>> = repository.artists
+
+    val folders: StateFlow<List<MusicFolder>> = songs.map { list ->
+        list.mapNotNull { song ->
+            val path = song.path
+            if (path.isBlank()) null else MusicFolder(path.substringBeforeLast('/', "未知文件夹"), path.substringAfterLast('/'))
+        }.groupBy { it.path }.map { (path, items) -> MusicFolder(path, items.first().name, items.size) }.sortedBy { it.path }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun songsInFolder(path: String): List<Song> = songs.value.filter { it.path.substringBeforeLast('/', "") == path }
 
     fun refresh() = repository.refresh()
 }

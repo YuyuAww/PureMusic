@@ -88,6 +88,7 @@ class MediaLibraryRepository private constructor(context: Context) {
             MediaStore.Audio.Media.DATE_ADDED,
             MediaStore.Audio.Media.DATE_MODIFIED,
             MediaStore.Audio.Media.TRACK
+            ,MediaStore.Audio.Media.DATA
         )
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
 
@@ -109,6 +110,7 @@ class MediaLibraryRepository private constructor(context: Context) {
             val dateAddedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
             val dateModifiedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
             val trackCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK)
+            val pathCol = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idCol)
@@ -129,6 +131,7 @@ class MediaLibraryRepository private constructor(context: Context) {
                         dateAdded = cursor.getLong(dateAddedCol) * 1000L,
                         dateModified = cursor.getLong(dateModifiedCol) * 1000L,
                         trackNumber = cursor.getInt(trackCol)
+                        ,path = if (pathCol >= 0 && !cursor.isNull(pathCol)) cursor.getString(pathCol) else ""
                     )
                 )
             }

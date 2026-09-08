@@ -24,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,13 +52,12 @@ fun MiniPlayerBar(
         color = MaterialTheme.colorScheme.surfaceContainer,
         tonalElevation = 4.dp
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onExpand() }
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Column(Modifier.fillMaxWidth().clickable { onExpand() }) {
+            LinearProgressIndicator(
+                progress = (state.position.toFloat() / state.duration.coerceAtLeast(1)).coerceIn(0f, 1f),
+                modifier = Modifier.fillMaxWidth().height(2.dp)
+            )
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             // 当前歌曲专辑封面
             Box(
                 modifier = Modifier
@@ -104,6 +104,7 @@ fun MiniPlayerBar(
                     imageVector = Icons.Default.SkipNext,
                     contentDescription = null
                 )
+            }
             }
         }
     }

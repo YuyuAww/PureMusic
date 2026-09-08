@@ -79,7 +79,7 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
     Scaffold(
         bottomBar = {
             // 底部迷你播放器，有歌曲时显示
-            if (state.currentSong != null && !showNowPlaying && !showSettings) {
+            if (state.currentSong != null && !showNowPlaying) {
                 MiniPlayerBar(
                     state = state,
                     onTogglePlayPause = { playerViewModel.togglePlayPause() },

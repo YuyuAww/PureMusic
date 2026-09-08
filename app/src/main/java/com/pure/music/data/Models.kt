@@ -14,7 +14,8 @@ data class Song(
     val size: Long,
     val dateAdded: Long,
     val dateModified: Long,
-    val trackNumber: Int
+    val trackNumber: Int,
+    val path: String = ""
 )
 
 /** 专辑数据模型，由歌曲聚合生成 */
@@ -31,5 +32,11 @@ data class Album(
 data class Artist(
     val name: String,
     val albumCount: Int,
+    val songCount: Int
+)
+
+data class MusicFolder(
+    val path: String,
+    val name: String,
     val songCount: Int
 )
