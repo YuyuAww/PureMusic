@@ -42,14 +42,16 @@ fun PlayerWorkspace(state: PlaybackState, onDismiss: () -> Unit, onTogglePlayPau
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
     var showQueue by remember { mutableStateOf(false) }
     val background = Brush.verticalGradient(listOf(Color(0xFFE5F0E4), PageBackground, Color.White))
-    Scaffold(containerColor = Color.Transparent, topBar = {
-        Row(Modifier.fillMaxWidth().padding(start = 28.dp, end = 20.dp, top = 20.dp), verticalAlignment = Alignment.Top) {
-            Column(Modifier.weight(1f)) { Text(song.title, color = Olive, fontSize = 30.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(song.artist, color = OliveMuted, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis) }
-            IconButton(onClick = {}) { Icon(Icons.Default.Cast, "切换播放设备", tint = Olive, modifier = Modifier.size(30.dp)) }
+    Box(Modifier.fillMaxSize().background(background)) {
+        Scaffold(containerColor = Color.Transparent, topBar = {
+            Row(Modifier.fillMaxWidth().padding(start = 28.dp, end = 20.dp, top = 20.dp), verticalAlignment = Alignment.Top) {
+                Column(Modifier.weight(1f)) { Text(song.title, color = Olive, fontSize = 30.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(song.artist, color = OliveMuted, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                IconButton(onClick = {}) { Icon(Icons.Default.Cast, "切换播放设备", tint = Olive, modifier = Modifier.size(30.dp)) }
+            }
+        }, bottomBar = { PlayerControlsLayered(state, onTogglePlayPause, onNext, onPrevious, onSeek, onRepeatMode, onShuffleMode) { showQueue = true } }) { padding ->
+            if (showQueue) Box(Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp)) { QueuePage(state, onPlayFromQueue) }
+            else HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp)) { page -> when (page) { 0 -> DetailPage(song); 1 -> CoverPage(song); else -> LyricsPage(song) } }
         }
-    }, bottomBar = { PlayerControlsLayered(state, onTogglePlayPause, onNext, onPrevious, onSeek, onRepeatMode, onShuffleMode) { showQueue = true } }) { padding ->
-        if (showQueue) Box(Modifier.fillMaxSize().background(background).padding(padding).padding(horizontal = 24.dp)) { QueuePage(state, onPlayFromQueue) }
-        else HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize().background(background).padding(padding).padding(horizontal = 24.dp)) { page -> when (page) { 0 -> DetailPage(song); 1 -> CoverPage(song); else -> LyricsPage(song) } }
     }
 }
 
@@ -61,7 +63,6 @@ fun PlayerWorkspace(state: PlaybackState, onDismiss: () -> Unit, onTogglePlayPau
 @Composable private fun DetailCard(icon: String, text: String) { Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(CardBackground).padding(22.dp), verticalAlignment = Alignment.CenterVertically) { Text(icon, color = Olive, fontSize = 28.sp); Spacer(Modifier.width(20.dp)); Text(text, color = Olive, fontSize = 20.sp, fontWeight = FontWeight.Bold) } }
 @Composable private fun InfoCard(title: String, values: List<String>) { Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(CardBackground).padding(24.dp)) { Text(title, color = Olive, fontSize = 24.sp, fontWeight = FontWeight.Bold); values.forEach { Text(it, color = OliveMuted, fontSize = 19.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 14.dp)) } } }
 @Composable private fun QueuePage(state: PlaybackState, onPlayFromQueue: (Int) -> Unit) { LazyColumn(contentPadding = PaddingValues(vertical = 16.dp)) { itemsIndexed(state.queue, key = { _, it -> it.id }) { index, song -> Row(Modifier.fillMaxWidth().clickable { onPlayFromQueue(index) }.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) { Icon(if (index == state.queueIndex) Icons.Default.GraphicEq else Icons.Default.MusicNote, null, tint = Olive); Spacer(Modifier.width(12.dp)); Column(Modifier.weight(1f)) { Text(song.title, color = Olive, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(song.artist, color = OliveMuted, fontSize = 13.sp) }; Text(formatDuration(song.duration), color = OliveMuted, fontSize = 12.sp) } } } }
-@Composable private fun PlayerControls(state: PlaybackState, onTogglePlayPause: () -> Unit, onNext: () -> Unit, onPrevious: () -> Unit, onSeek: (Long) -> Unit, onRepeatMode: (Int) -> Unit, onShuffleMode: (Boolean) -> Unit, onShowQueue: () -> Unit) { var sliderPosition by remember(state.currentSong?.id) { mutableFloatStateOf(0f) }; var dragging by remember { mutableStateOf(false) }; LaunchedEffect(state.position, dragging) { if (!dragging) sliderPosition = state.position.toFloat() }; Column(Modifier.fillMaxWidth().background(Color.White.copy(alpha = .72f)).padding(horizontal = 24.dp, vertical = 8.dp)) { Slider(value = sliderPosition.coerceIn(0f, state.duration.coerceAtLeast(1).toFloat()), valueRange = 0f..state.duration.coerceAtLeast(1).toFloat(), onValueChange = { sliderPosition = it; dragging = true }, onValueChangeFinished = { dragging = false; onSeek(sliderPosition.toLong()) }, colors = SliderDefaults.colors(thumbColor = Olive, activeTrackColor = Olive, inactiveTrackColor = OliveMuted.copy(alpha = .35f))); Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text(formatDuration(if (dragging) sliderPosition.toLong() else state.position), color = Olive, fontWeight = FontWeight.Bold, fontSize = 16.sp); Text(formatDuration(state.duration), color = Olive, fontWeight = FontWeight.Bold, fontSize = 16.sp) }; Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) { IconButton(onClick = onPrevious) { Icon(Icons.Default.SkipPrevious, "上一首", tint = Olive, modifier = Modifier.size(42.dp)) }; IconButton(onClick = onTogglePlayPause, modifier = Modifier.size(74.dp).clip(CircleShape).background(Olive)) { Icon(if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, "播放", tint = Color.White, modifier = Modifier.size(42.dp)) }; IconButton(onClick = onNext) { Icon(Icons.Default.SkipNext, "下一首", tint = Olive, modifier = Modifier.size(42.dp)) } }; Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { IconButton(onClick = { onShuffleMode(!state.shuffleModeEnabled) }) { Icon(Icons.Default.Repeat, "随机/循环", tint = Olive) }; IconButton(onClick = {}) { Icon(Icons.Default.Alarm, "定时", tint = Olive) }; IconButton(onClick = {}) { Icon(Icons.Default.GraphicEq, "音效", tint = Olive) }; IconButton(onClick = onShowQueue) { Icon(Icons.Default.QueueMusic, "队列", tint = Olive) }; IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = Olive) } } } }
 
 @Composable private fun PlayerControlsLayered(state: PlaybackState, onTogglePlayPause: () -> Unit, onNext: () -> Unit, onPrevious: () -> Unit, onSeek: (Long) -> Unit, onRepeatMode: (Int) -> Unit, onShuffleMode: (Boolean) -> Unit, onShowQueue: () -> Unit) {
     var sliderPosition by remember(state.currentSong?.id) { mutableFloatStateOf(0f) }
@@ -106,6 +107,6 @@ fun PlayerWorkspace(state: PlaybackState, onDismiss: () -> Unit, onTogglePlayPau
             IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = Olive) }
         }
         // 第五层：navigationBarsPadding() 提供系统手势条安全距离。
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(16.dp))
     }
 }
