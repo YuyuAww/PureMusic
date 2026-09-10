@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.jumpTo
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -41,6 +42,8 @@ fun PlayerWorkspace(state: PlaybackState, onDismiss: () -> Unit, onTogglePlayPau
     val song = state.currentSong ?: return
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
     var showQueue by remember { mutableStateOf(false) }
+    var lyricsJump by remember { mutableIntStateOf(0) }
+    LaunchedEffect(lyricsJump) { if (lyricsJump > 0) pagerState.jumpTo(2) }
     val background = Brush.verticalGradient(listOf(Color(0xFFE5F0E4), PageBackground, Color.White))
     Box(Modifier.fillMaxSize().background(background)) {
         Scaffold(containerColor = Color.Transparent, topBar = {
@@ -52,7 +55,7 @@ fun PlayerWorkspace(state: PlaybackState, onDismiss: () -> Unit, onTogglePlayPau
             if (showQueue) Box(Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp)) { QueuePage(state, onPlayFromQueue) }
             else HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp)) { page -> when (page) {
                 0 -> DetailPage(song)
-                1 -> CoverPage(song) { pagerState.currentPage = 2 }
+                1 -> CoverPage(song) { lyricsJump++ }
                 else -> LyricsPage(song)
             } }
         }
