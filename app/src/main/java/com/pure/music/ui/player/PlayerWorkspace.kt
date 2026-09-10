@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -63,8 +63,25 @@ fun PlayerWorkspace(state: PlaybackState, onDismiss: () -> Unit, onTogglePlayPau
     }
 }
 
-@Composable private fun CoverPage(song: Song, onOpenLyrics: () -> Unit) { val lines = placeholderLyrics(song); Column(Modifier.fillMaxSize()) { AlbumArt(song, Modifier.weight(1f).fillMaxWidth()); MiniLyricsWindow(lines[1], lines[2], lines[3], onOpenLyrics) } }
-@Composable private fun MiniLyricsWindow(previous: String, current: String, next: String, onCurrentClick: () -> Unit) { Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = .72f)).padding(horizontal = 20.dp, vertical = 14.dp)) { Text(previous, color = OliveMuted.copy(alpha = .32f), fontSize = 18.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis); Spacer(Modifier.height(8.dp)); Text(current, color = Olive, fontSize = 23.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() }); Spacer(Modifier.height(8.dp)); Text(next, color = OliveMuted.copy(alpha = .32f), fontSize = 18.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis) } }
+@Composable private fun CoverPage(song: Song, onOpenLyrics: () -> Unit) {
+    val lines = placeholderLyrics(song)
+    Column(Modifier.fillMaxSize().padding(top = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(Modifier.fillMaxWidth().aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)).clip(RoundedCornerShape(12.dp)).background(Color.White)) {
+            AlbumArt(song, Modifier.fillMaxSize())
+        }
+        Spacer(Modifier.height(24.dp))
+        MiniLyricsWindow(lines[1], lines[2], lines[3], onOpenLyrics)
+    }
+}
+@Composable private fun MiniLyricsWindow(current: String, next1: String, next2: String, onCurrentClick: () -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(start = 4.dp), horizontalAlignment = Alignment.Start) {
+        Text(current, color = Color(0xFF333333), fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() })
+        Spacer(Modifier.height(8.dp))
+        Text(next1, color = Color(0xFF8C8C8C), fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Spacer(Modifier.height(8.dp))
+        Text(next2, color = Color(0xFF8C8C8C), fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
 private fun placeholderLyrics(song: Song) = listOf("听见山林深处的风", "唱一曲少年的梦", song.title, "英雄不怕虎豹", "我娘说四宝你瞧瞧", "田野间群山相望")
 
 @Composable private fun LyricsPage(song: Song) { val lines = placeholderLyrics(song); Column(Modifier.fillMaxSize().padding(top = 120.dp), horizontalAlignment = Alignment.CenterHorizontally) { Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { lines.forEachIndexed { index, line -> Text(line, color = if (index == 2) Olive else OliveMuted.copy(alpha = .32f), fontSize = if (index == 2) 29.sp else 23.sp, fontWeight = if (index == 2) FontWeight.Bold else FontWeight.Medium, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 14.dp)) } }; Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) { Text("词", color = Olive, modifier = Modifier.clip(RoundedCornerShape(5.dp)).background(Color.White.copy(alpha = .7f)).padding(horizontal = 7.dp, vertical = 4.dp)); Spacer(Modifier.width(10.dp)); Text("EMBEDDED", color = OliveMuted, fontWeight = FontWeight.Bold, fontSize = 16.sp) } } }
@@ -86,37 +103,35 @@ private fun placeholderLyrics(song: Song) = listOf("听见山林深处的风", "
             .navigationBarsPadding()
             .padding(start = 24.dp, end = 24.dp, top = 8.dp)
     ) {
-        // 第一层：进度条，滑块在轨道上，时间位于轨道下方两端。
+        // 细线进度条 + 时间
         Slider(
             value = sliderPosition.coerceIn(0f, state.duration.coerceAtLeast(1).toFloat()),
             valueRange = 0f..state.duration.coerceAtLeast(1).toFloat(),
             onValueChange = { sliderPosition = it; dragging = true },
             onValueChangeFinished = { dragging = false; onSeek(sliderPosition.toLong()) },
-            modifier = Modifier.fillMaxWidth().height(24.dp),
+            modifier = Modifier.fillMaxWidth().height(8.dp),
             colors = SliderDefaults.colors(thumbColor = Olive, activeTrackColor = Olive, inactiveTrackColor = OliveMuted.copy(alpha = .35f))
         )
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(formatDuration(displayedPosition), color = Olive, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text(formatDuration(state.duration), color = Olive, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        Row(Modifier.fillMaxWidth().padding(top = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(formatDuration(displayedPosition), color = Olive, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            Text(formatDuration(state.duration), color = Olive, fontWeight = FontWeight.Bold, fontSize = 12.sp)
         }
-        // 第二层：进度与核心操作之间的明确留白。
-        Spacer(Modifier.height(28.dp))
-        // 第三层：上一首、播放/暂停、下一首，主按钮绝对居中且更大。
+        Spacer(Modifier.height(24.dp))
+        // 主控制：上一首 / 播放暂停 / 下一首，无填充背景
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onPrevious, modifier = Modifier.padding(horizontal = 28.dp)) { Icon(Icons.Default.SkipPrevious, "上一首", tint = Olive, modifier = Modifier.size(42.dp)) }
-            IconButton(onClick = onTogglePlayPause, modifier = Modifier.size(76.dp).clip(CircleShape).background(Olive)) { Icon(if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, "播放", tint = Color.White, modifier = Modifier.size(44.dp)) }
-            IconButton(onClick = onNext, modifier = Modifier.padding(horizontal = 28.dp)) { Icon(Icons.Default.SkipNext, "下一首", tint = Olive, modifier = Modifier.size(42.dp)) }
+            IconButton(onClick = onPrevious, modifier = Modifier.padding(end = 40.dp)) { Icon(Icons.Default.SkipPrevious, "上一首", tint = Olive, modifier = Modifier.size(22.dp)) }
+            IconButton(onClick = onTogglePlayPause, modifier = Modifier.size(46.dp)) { Icon(if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, "播放", tint = Olive, modifier = Modifier.size(32.dp)) }
+            IconButton(onClick = onNext, modifier = Modifier.padding(start = 40.dp)) { Icon(Icons.Default.SkipNext, "下一首", tint = Olive, modifier = Modifier.size(22.dp)) }
         }
-        Spacer(Modifier.height(26.dp))
-        // 第四层：五项边缘功能均分排列。
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { onShuffleMode(!state.shuffleModeEnabled) }) { Icon(Icons.Default.Repeat, "播放模式", tint = Olive) }
-            IconButton(onClick = {}) { Icon(Icons.Default.Alarm, "定时", tint = Olive) }
-            IconButton(onClick = {}) { Icon(Icons.Default.GraphicEq, "音效", tint = Olive) }
-            IconButton(onClick = onShowQueue) { Icon(Icons.Default.QueueMusic, "播放列表", tint = Olive) }
-            IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = Olive) }
+        Spacer(Modifier.height(30.dp))
+        // 底部五项功能键
+        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = { onShuffleMode(!state.shuffleModeEnabled) }) { Icon(Icons.Default.Repeat, "播放模式", tint = Olive, modifier = Modifier.size(18.dp)) }
+            IconButton(onClick = {}) { Icon(Icons.Default.Alarm, "定时", tint = Olive, modifier = Modifier.size(18.dp)) }
+            IconButton(onClick = {}) { Icon(Icons.Default.GraphicEq, "音效", tint = Olive, modifier = Modifier.size(18.dp)) }
+            IconButton(onClick = onShowQueue) { Icon(Icons.Default.QueueMusic, "播放列表", tint = Olive, modifier = Modifier.size(18.dp)) }
+            IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = Olive, modifier = Modifier.size(18.dp)) }
         }
-        // 第五层：navigationBarsPadding() 提供系统手势条安全距离。
         Spacer(Modifier.height(16.dp))
     }
 }
