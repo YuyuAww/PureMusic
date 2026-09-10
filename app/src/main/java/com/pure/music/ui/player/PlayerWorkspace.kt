@@ -48,8 +48,9 @@ fun PlayerWorkspace(state: PlaybackState, onDismiss: () -> Unit, onTogglePlayPau
     }
     var showQueue by remember { mutableStateOf(false) }
     val fallback = CoverColors(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.background, MaterialTheme.colorScheme.surface)
+    val context = LocalContext.current
     var colors by remember(song.albumId) { mutableStateOf(fallback) }
-    LaunchedEffect(song.albumId) { colors = loadCoverColors(LocalContext.current, song.albumId, fallback) }
+    LaunchedEffect(song.albumId) { colors = loadCoverColors(context, song.albumId, fallback) }
     val background = Brush.verticalGradient(listOf(colors.background, colors.surface, MaterialTheme.colorScheme.surface))
     Box(Modifier.fillMaxSize().background(background)) {
         Scaffold(containerColor = Color.Transparent, topBar = {
