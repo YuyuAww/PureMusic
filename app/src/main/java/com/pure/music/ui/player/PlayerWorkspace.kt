@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,10 +30,11 @@ import com.pure.music.data.Song
 import com.pure.music.player.PlaybackState
 import com.pure.music.ui.components.AlbumArt
 import com.pure.music.ui.library.formatDuration
+import com.pure.music.ui.utils.CoverColors
+import com.pure.music.ui.utils.loadCoverColors
 
 private val Olive = Color(0xFF607D1B)
 private val OliveMuted = Color(0xFF94A66A)
-private val PageBackground = Color(0xFFF8FAF0)
 private val CardBackground = Color(0xFFEFF3E2)
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,53 +47,56 @@ fun PlayerWorkspace(state: PlaybackState, onDismiss: () -> Unit, onTogglePlayPau
         if (lyricsJumpNonce > 0) pagerState.animateScrollToPage(2)
     }
     var showQueue by remember { mutableStateOf(false) }
-    val background = Brush.verticalGradient(listOf(Color(0xFFE5F0E4), PageBackground, Color.White))
+    val fallback = CoverColors(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.background, MaterialTheme.colorScheme.surface)
+    var colors by remember(song.albumId) { mutableStateOf(fallback) }
+    LaunchedEffect(song.albumId) { colors = loadCoverColors(LocalContext.current, song.albumId, fallback) }
+    val background = Brush.verticalGradient(listOf(colors.background, colors.surface, MaterialTheme.colorScheme.surface))
     Box(Modifier.fillMaxSize().background(background)) {
         Scaffold(containerColor = Color.Transparent, topBar = {
-            Row(Modifier.fillMaxWidth().padding(start = 28.dp, end = 20.dp, top = 20.dp), verticalAlignment = Alignment.Top) {
-                Column(Modifier.weight(1f)) { Text(song.title, color = Olive, fontSize = 30.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(song.artist, color = OliveMuted, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis) }
-                IconButton(onClick = {}) { Icon(Icons.Default.Cast, "切换播放设备", tint = Olive, modifier = Modifier.size(30.dp)) }
+            Row(Modifier.fillMaxWidth().padding(start = 28.dp, end = 20.dp), verticalAlignment = Alignment.Top) {
+                Column(Modifier.weight(1f)) { Text(song.title, color = colors.accent, fontSize = 30.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(song.artist, color = colors.muted, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                IconButton(onClick = {}) { Icon(Icons.Default.Cast, "切换播放设备", tint = colors.muted, modifier = Modifier.size(30.dp)) }
             }
-        }, bottomBar = { PlayerControlsLayered(state, onTogglePlayPause, onNext, onPrevious, onSeek, onRepeatMode, onShuffleMode) { showQueue = true } }) { padding ->
+        }, bottomBar = { PlayerControlsLayered(state, colors, onTogglePlayPause, onNext, onPrevious, onSeek, onRepeatMode, onShuffleMode) { showQueue = true } }) { padding ->
             if (showQueue) Box(Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp)) { QueuePage(state, onPlayFromQueue) }
             else HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp)) { page -> when (page) {
                 0 -> DetailPage(song)
-                1 -> CoverPage(song) { lyricsJumpNonce++ }
-                else -> LyricsPage(song)
+                1 -> CoverPage(song, colors) { lyricsJumpNonce++ }
+                else -> LyricsPage(song, colors)
             } }
         }
     }
 }
 
-@Composable private fun CoverPage(song: Song, onOpenLyrics: () -> Unit) {
+@Composable private fun CoverPage(song: Song, colors: CoverColors, onOpenLyrics: () -> Unit) {
     val lines = placeholderLyrics(song)
-    Column(Modifier.fillMaxSize().padding(top = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(Modifier.fillMaxWidth().aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)).clip(RoundedCornerShape(12.dp)).background(Color.White)) {
             AlbumArt(song, Modifier.fillMaxSize())
         }
         Spacer(Modifier.height(24.dp))
-        MiniLyricsWindow(lines[1], lines[2], lines[3], onOpenLyrics)
+        MiniLyricsWindow(lines[1], lines[2], lines[3], colors, onOpenLyrics)
     }
 }
-@Composable private fun MiniLyricsWindow(current: String, next1: String, next2: String, onCurrentClick: () -> Unit) {
+@Composable private fun MiniLyricsWindow(current: String, next1: String, next2: String, colors: CoverColors, onCurrentClick: () -> Unit) {
     Column(Modifier.fillMaxWidth().padding(start = 4.dp), horizontalAlignment = Alignment.Start) {
-        Text(current, color = Color(0xFF333333), fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() })
+        Text(current, color = colors.accent, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() })
         Spacer(Modifier.height(8.dp))
-        Text(next1, color = Color(0xFF8C8C8C), fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(next1, color = colors.muted, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(8.dp))
-        Text(next2, color = Color(0xFF8C8C8C), fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(next2, color = colors.muted, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 private fun placeholderLyrics(song: Song) = listOf("听见山林深处的风", "唱一曲少年的梦", song.title, "英雄不怕虎豹", "我娘说四宝你瞧瞧", "田野间群山相望")
 
-@Composable private fun LyricsPage(song: Song) { val lines = placeholderLyrics(song); Column(Modifier.fillMaxSize().padding(top = 120.dp), horizontalAlignment = Alignment.CenterHorizontally) { Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { lines.forEachIndexed { index, line -> Text(line, color = if (index == 2) Olive else OliveMuted.copy(alpha = .32f), fontSize = if (index == 2) 29.sp else 23.sp, fontWeight = if (index == 2) FontWeight.Bold else FontWeight.Medium, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 14.dp)) } }; Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) { Text("词", color = Olive, modifier = Modifier.clip(RoundedCornerShape(5.dp)).background(Color.White.copy(alpha = .7f)).padding(horizontal = 7.dp, vertical = 4.dp)); Spacer(Modifier.width(10.dp)); Text("EMBEDDED", color = OliveMuted, fontWeight = FontWeight.Bold, fontSize = 16.sp) } } }
+@Composable private fun LyricsPage(song: Song, colors: CoverColors) { val lines = placeholderLyrics(song); Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) { Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { lines.forEachIndexed { index, line -> Text(line, color = if (index == 2) colors.accent else colors.muted.copy(alpha = .32f), fontSize = if (index == 2) 29.sp else 23.sp, fontWeight = if (index == 2) FontWeight.Bold else FontWeight.Medium, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 14.dp)) } }; Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) { Text("词", color = colors.accent, modifier = Modifier.clip(RoundedCornerShape(5.dp)).background(colors.surface.copy(alpha = .7f)).padding(horizontal = 7.dp, vertical = 4.dp)); Spacer(Modifier.width(10.dp)); Text("EMBEDDED", color = colors.muted, fontWeight = FontWeight.Bold, fontSize = 16.sp) } } }
 
-@Composable private fun DetailPage(song: Song) { Column(Modifier.fillMaxSize().padding(top = 92.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) { Box(Modifier.weight(1f)) { DetailCard("☀", "播放界面保持屏幕") }; Box(Modifier.weight(1f)) { DetailCard("☊", "沉浸模式") } }; Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) { Box(Modifier.weight(1f)) { DetailCard("▦", "Original Sound") }; Box(Modifier.weight(1f)) { DetailCard("◉", "DLNA (beta)") } }; InfoCard("音频信息", listOf("FLAC format stream", "2 Channels    44100 Hz    828 kbps")); InfoCard("出自专辑", listOf(song.album.ifBlank { "原创歌曲合集" }, "未知专辑艺术家")); InfoCard("参与创作的艺术家", listOf(song.artist, "9 首")) } }
+@Composable private fun DetailPage(song: Song) { Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) { Box(Modifier.weight(1f)) { DetailCard("☀", "播放界面保持屏幕") }; Box(Modifier.weight(1f)) { DetailCard("☊", "沉浸模式") } }; Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) { Box(Modifier.weight(1f)) { DetailCard("▦", "Original Sound") }; Box(Modifier.weight(1f)) { DetailCard("◉", "DLNA (beta)") } }; InfoCard("音频信息", listOf("FLAC format stream", "2 Channels    44100 Hz    828 kbps")); InfoCard("出自专辑", listOf(song.album.ifBlank { "原创歌曲合集" }, "未知专辑艺术家")); InfoCard("参与创作的艺术家", listOf(song.artist, "9 首")) } }
 @Composable private fun DetailCard(icon: String, text: String) { Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(CardBackground).padding(22.dp), verticalAlignment = Alignment.CenterVertically) { Text(icon, color = Olive, fontSize = 28.sp); Spacer(Modifier.width(20.dp)); Text(text, color = Olive, fontSize = 20.sp, fontWeight = FontWeight.Bold) } }
 @Composable private fun InfoCard(title: String, values: List<String>) { Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(CardBackground).padding(24.dp)) { Text(title, color = Olive, fontSize = 24.sp, fontWeight = FontWeight.Bold); values.forEach { Text(it, color = OliveMuted, fontSize = 19.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 14.dp)) } } }
 @Composable private fun QueuePage(state: PlaybackState, onPlayFromQueue: (Int) -> Unit) { LazyColumn(contentPadding = PaddingValues(vertical = 16.dp)) { itemsIndexed(state.queue, key = { _, it -> it.id }) { index, song -> Row(Modifier.fillMaxWidth().clickable { onPlayFromQueue(index) }.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) { Icon(if (index == state.queueIndex) Icons.Default.GraphicEq else Icons.Default.MusicNote, null, tint = Olive); Spacer(Modifier.width(12.dp)); Column(Modifier.weight(1f)) { Text(song.title, color = Olive, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(song.artist, color = OliveMuted, fontSize = 13.sp) }; Text(formatDuration(song.duration), color = OliveMuted, fontSize = 12.sp) } } } }
 
-@Composable private fun PlayerControlsLayered(state: PlaybackState, onTogglePlayPause: () -> Unit, onNext: () -> Unit, onPrevious: () -> Unit, onSeek: (Long) -> Unit, onRepeatMode: (Int) -> Unit, onShuffleMode: (Boolean) -> Unit, onShowQueue: () -> Unit) {
+@Composable private fun PlayerControlsLayered(state: PlaybackState, colors: CoverColors, onTogglePlayPause: () -> Unit, onNext: () -> Unit, onPrevious: () -> Unit, onSeek: (Long) -> Unit, onRepeatMode: (Int) -> Unit, onShuffleMode: (Boolean) -> Unit, onShowQueue: () -> Unit) {
     var sliderPosition by remember(state.currentSong?.id) { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
     LaunchedEffect(state.position, dragging) { if (!dragging) sliderPosition = state.position.toFloat() }
@@ -110,7 +115,7 @@ private fun placeholderLyrics(song: Song) = listOf("听见山林深处的风", "
             onValueChange = { sliderPosition = it; dragging = true },
             onValueChangeFinished = { dragging = false; onSeek(sliderPosition.toLong()) },
             modifier = Modifier.fillMaxWidth().height(8.dp),
-            colors = SliderDefaults.colors(thumbColor = Olive, activeTrackColor = Olive, inactiveTrackColor = OliveMuted.copy(alpha = .35f))
+            colors = SliderDefaults.colors(thumbColor = colors.accent, activeTrackColor = colors.accent, inactiveTrackColor = colors.muted.copy(alpha = .35f))
         )
         Row(Modifier.fillMaxWidth().padding(top = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(formatDuration(displayedPosition), color = Olive, fontWeight = FontWeight.Bold, fontSize = 12.sp)
