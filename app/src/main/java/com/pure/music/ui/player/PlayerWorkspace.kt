@@ -40,7 +40,10 @@ private val CardBackground = Color(0xFFEFF3E2)
 fun PlayerWorkspace(state: PlaybackState, onDismiss: () -> Unit, onTogglePlayPause: () -> Unit, onNext: () -> Unit, onPrevious: () -> Unit, onSeek: (Long) -> Unit, onRepeatMode: (Int) -> Unit, onShuffleMode: (Boolean) -> Unit, isFavorite: Boolean = false, onToggleFavorite: () -> Unit = {}, onPlayFromQueue: (Int) -> Unit = {}) {
     val song = state.currentSong ?: return
     var lyricsJumpNonce by remember { mutableIntStateOf(0) }
-    val pagerState = remember(lyricsJumpNonce) { rememberPagerState(initialPage = if (lyricsJumpNonce > 0) 2 else 1, pageCount = { 3 }) }
+    val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
+    LaunchedEffect(lyricsJumpNonce) {
+        if (lyricsJumpNonce > 0) pagerState.animateScrollToPage(2)
+    }
     var showQueue by remember { mutableStateOf(false) }
     val background = Brush.verticalGradient(listOf(Color(0xFFE5F0E4), PageBackground, Color.White))
     Box(Modifier.fillMaxSize().background(background)) {
