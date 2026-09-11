@@ -18,7 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.FormatListBulleted
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -61,7 +61,7 @@ fun MiniPlayerBar(
             // 当前歌曲专辑封面
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(50.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
@@ -98,11 +98,11 @@ fun MiniPlayerBar(
                 )
             }
 
-            // 下一首
-            IconButton(onClick = onNext) {
+            // 播放队列
+            IconButton(onClick = onExpand) {
                 Icon(
-                    imageVector = Icons.Default.SkipNext,
-                    contentDescription = null
+                    imageVector = Icons.Default.FormatListBulleted,
+                    contentDescription = "播放队列"
                 )
             }
             }

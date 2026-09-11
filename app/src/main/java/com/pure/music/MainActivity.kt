@@ -130,6 +130,7 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
                     onShuffleMode = { playerViewModel.setShuffleMode(it) },
                     isFavorite = playerViewModel.isFavorite(state.currentSong?.id ?: -1L),
                     onToggleFavorite = { playerViewModel.toggleFavorite(state.currentSong?.id ?: -1L) },
+                    onPlayQueueSong = { song, queue -> playerViewModel.playQueue(queue, queue.indexOf(song)) },
                 )
             }
         }

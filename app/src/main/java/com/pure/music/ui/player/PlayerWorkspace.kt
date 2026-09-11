@@ -8,6 +8,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -41,10 +43,12 @@ fun PlayerWorkspace(
     onRepeatMode: (Int) -> Unit,
     onShuffleMode: (Boolean) -> Unit,
     isFavorite: Boolean = false,
-    onToggleFavorite: () -> Unit = {}
+    onToggleFavorite: () -> Unit = {},
+    onPlayQueueSong: (Song, List<Song>) -> Unit = { _, _ -> }
 ) {
     val song = state.currentSong ?: return
     var lyricsJumpNonce by remember { mutableIntStateOf(0) }
+    var showQueue by remember { mutableStateOf(false) }
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
     LaunchedEffect(lyricsJumpNonce) {
         if (lyricsJumpNonce > 0) pagerState.animateScrollToPage(2)
@@ -85,7 +89,8 @@ fun PlayerWorkspace(
                 onPrevious = onPrevious,
                 onSeek = onSeek,
                 onRepeatMode = onRepeatMode,
-                onShuffleMode = onShuffleMode
+                onShuffleMode = onShuffleMode,
+                onQueueClick = { showQueue = true }
             ) 
         }
     ) { paddingValues ->
@@ -100,6 +105,23 @@ fun PlayerWorkspace(
                 0 -> DetailPage(song, colors)
                 1 -> CoverAndLyricsPage(song, colors) { lyricsJumpNonce++ }
                 else -> LyricsPage(song, colors)
+            }
+        }
+    }
+    if (showQueue) {
+        ModalBottomSheet(onDismissRequest = { showQueue = false }) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+                Text("播放队列", style = MaterialTheme.typography.headlineSmall)
+                Text("${state.queue.size} 首歌曲", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(12.dp))
+                LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
+                    itemsIndexed(state.queue, key = { _, item -> item.id }) { index, item ->
+                        QueueSongRow(item, index == state.queueIndex) {
+                            onPlayQueueSong(item, state.queue)
+                            showQueue = false
+                        }
+                    }
+                }
             }
         }
     }
@@ -193,7 +215,8 @@ private fun PlayerBottomBar(
     onPrevious: () -> Unit,
     onSeek: (Long) -> Unit,
     onRepeatMode: (Int) -> Unit,
-    onShuffleMode: (Boolean) -> Unit
+    onShuffleMode: (Boolean) -> Unit,
+    onQueueClick: () -> Unit
 ) {
     var sliderPosition by remember(state.currentSong?.id) { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
@@ -273,7 +296,7 @@ private fun PlayerBottomBar(
             IconButton(onClick = { onShuffleMode(!state.shuffleModeEnabled) }) { Icon(Icons.Default.Repeat, "播放模式", tint = colors.accent, modifier = Modifier.size(24.dp)) }
             IconButton(onClick = {}) { Icon(Icons.Default.Alarm, "定时", tint = colors.accent, modifier = Modifier.size(24.dp)) }
             IconButton(onClick = {}) { Icon(Icons.Default.GraphicEq, "音效", tint = colors.accent, modifier = Modifier.size(24.dp)) }
-            IconButton(onClick = {}) { Icon(Icons.Default.QueueMusic, "播放列表", tint = colors.accent, modifier = Modifier.size(24.dp)) }
+            IconButton(onClick = onQueueClick) { Icon(Icons.Default.QueueMusic, "播放列表", tint = colors.accent, modifier = Modifier.size(24.dp)) }
             IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = colors.accent, modifier = Modifier.size(24.dp)) }
         }
     }
@@ -339,5 +362,24 @@ private fun InfoCard(title: String, values: List<String>, colors: CoverColors) {
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.surface.copy(alpha = .7f)).padding(24.dp)) {
         Text(title, color = colors.accent, fontSize = 24.sp, fontWeight = FontWeight.Bold)
         values.forEach { Text(it, color = colors.muted, fontSize = 19.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 14.dp)) }
+    }
+}
+
+@Composable
+private fun QueueSongRow(song: Song, isCurrent: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+            .background(if (isCurrent) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClick).padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AlbumArt(song, Modifier.size(50.dp).clip(RoundedCornerShape(8.dp)))
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(song.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
+            Text(song.artist, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (isCurrent) Icon(Icons.Default.GraphicEq, "正在播放", tint = MaterialTheme.colorScheme.primary)
+        Icon(Icons.Default.MoreVert, "更多操作")
     }
 }

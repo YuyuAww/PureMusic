@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -57,7 +58,13 @@ fun LibraryScreen(onPlaySong: (Song, List<Song>) -> Unit, onShowSettings: () -> 
                 Icon(Icons.Default.SortByAlpha, null, tint = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.width(22.dp)); Icon(Icons.Default.FormatListBulleted, null)
             }
-            LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(vertical = 8.dp)) { items(filtered, key = { it.id }) { SongRow(it, it.id in favoriteIds, onToggleFavorite) { onPlaySong(it, filtered) } } }
+            Box(Modifier.weight(1f)) {
+                val listState = rememberLazyListState()
+                LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 8.dp)) {
+                    items(filtered, key = { it.id }) { SongRow(it, it.id in favoriteIds, onToggleFavorite) { onPlaySong(it, filtered) } }
+                }
+                AlphabetIndex(filtered, listState, Modifier.align(Alignment.CenterEnd).padding(end = 4.dp))
+            }
         }
         LibrarySection.ALBUMS -> LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) { items(albums, key = { it.albumId }) { album -> Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainerLow).padding(12.dp), verticalAlignment = Alignment.CenterVertically) { AlbumArt(album, Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))); Spacer(Modifier.width(14.dp)); Column { Text(album.name, style = MaterialTheme.typography.titleMedium); Text("${album.artist} · ${album.songCount} 首", color = MaterialTheme.colorScheme.onSurfaceVariant) } } } }
         LibrarySection.ARTISTS -> LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(12.dp)) { items(artists, key = { it.name }) { artist -> Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Person, null, Modifier.size(32.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.width(16.dp)); Column { Text(artist.name, style = MaterialTheme.typography.titleMedium); Text("${artist.albumCount} 张专辑 · ${artist.songCount} 首歌曲", color = MaterialTheme.colorScheme.onSurfaceVariant) } } } }
@@ -81,6 +88,41 @@ fun LibraryScreen(onPlaySong: (Song, List<Song>) -> Unit, onShowSettings: () -> 
     }
 }
 
-@Composable private fun SongRow(song: Song, isFavorite: Boolean = false, onToggleFavorite: (Long) -> Unit = {}, onClick: () -> Unit) { Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) { AlbumArt(song, Modifier.size(72.dp).clip(RoundedCornerShape(10.dp))); Spacer(Modifier.width(14.dp)); Column(Modifier.weight(1f)) { Text(song.title, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium); Row(verticalAlignment = Alignment.CenterVertically) { Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(3.dp)) { Text("SQ", Modifier.padding(horizontal = 5.dp, vertical = 1.dp), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall) }; Spacer(Modifier.width(7.dp)); Text("${song.artist} · ${song.album}", maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium) } }; IconButton(onClick = { onToggleFavorite(song.id) }) { Icon(if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder, "收藏", tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant) }; Icon(Icons.Default.MoreVert, null) } }
+@Composable private fun SongRow(song: Song, isFavorite: Boolean = false, onToggleFavorite: (Long) -> Unit = {}, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        AlbumArt(song, Modifier.size(50.dp).clip(RoundedCornerShape(8.dp)))
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(song.title, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(3.dp)) { Text("SQ", Modifier.padding(horizontal = 5.dp, vertical = 1.dp), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall) }
+                Spacer(Modifier.width(7.dp)); Text("${song.artist} · ${song.album}", maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+        IconButton(onClick = { onToggleFavorite(song.id) }) { Icon(Icons.Default.Add, "添加到歌单", tint = MaterialTheme.colorScheme.onSurfaceVariant) }
+        Icon(Icons.Default.MoreVert, "更多操作")
+    }
+}
+
+@Composable
+private fun AlphabetIndex(songs: List<Song>, listState: androidx.compose.foundation.lazy.LazyListState, modifier: Modifier = Modifier) {
+    val scope = rememberCoroutineScope()
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        (('A'..'Z').toList() + '#').forEach { letter ->
+            Text(
+                letter.toString(),
+                modifier = Modifier.clickable {
+                    val index = songs.indexOfFirst { song ->
+                        val first = song.title.trim().firstOrNull()?.uppercaseChar()
+                        if (letter == '#') first == null || first !in 'A'..'Z' else first == letter
+                    }
+                    if (index >= 0) scope.launch { listState.animateScrollToItem(index) }
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
 
 fun formatDuration(durationMs: Long): String { val seconds = durationMs / 1000; return "%d:%02d".format(seconds / 60, seconds % 60) }
