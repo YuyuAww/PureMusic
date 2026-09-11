@@ -95,7 +95,6 @@ fun PlayerWorkspace(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 22.dp)
         ) { page ->
             when (page) {
                 0 -> DetailPage(song, colors)
@@ -155,7 +154,7 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
 @Composable
 private fun CoverAndLyricsPage(song: Song, colors: CoverColors, onOpenLyrics: () -> Unit) {
     val lines = placeholderLyrics(song)
-    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         // 歌曲封面
         Box(
             Modifier
@@ -288,7 +287,7 @@ private fun placeholderLyrics(song: Song) = listOf("听见山林深处的风", "
 @Composable
 private fun LyricsPage(song: Song, colors: CoverColors) {
     val lines = placeholderLyrics(song)
-    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             lines.forEachIndexed { index, line ->
                 Text(
@@ -311,7 +310,7 @@ private fun LyricsPage(song: Song, colors: CoverColors) {
 
 @Composable
 private fun DetailPage(song: Song, colors: CoverColors) {
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(Modifier.weight(1f)) { DetailCard("☀", "播放界面保持屏幕", colors) }
             Box(Modifier.weight(1f)) { DetailCard("☊", "沉浸模式", colors) }
