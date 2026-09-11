@@ -83,6 +83,7 @@ fun PlayerWorkspace(
     // 使用 Scaffold 划分三大组件区域
     Scaffold(
         containerColor = colors.background, // 整体背景：由封面背景色决定
+        contentWindowInsets = WindowInsets(0, 0, 0, 0), // 移除默认 Insets，交给子组件自行处理
         topBar = { 
             // 1. TopBar 组件
             PlayerTopBar(song = song, colors = colors) 
@@ -126,6 +127,8 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
     Row(
         Modifier
             .fillMaxWidth()
+            .background(colors.background) // 背景延伸到状态栏区域
+            .statusBarsPadding() // 内容避开状态栏
             .padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 15.dp),
         verticalAlignment = Alignment.Top
     ) {
@@ -215,6 +218,7 @@ private fun PlayerBottomBar(
         Modifier
             .fillMaxWidth()
             .background(colors.surface.copy(alpha = .78f)) // 底部背景：封面表面色 + 半透明
+            .navigationBarsPadding() // 内容避开底部导航栏
             .padding(start = 22.dp, end = 22.dp, top = 8.dp, bottom = 42.dp)
     ) {
         // 极细进度条

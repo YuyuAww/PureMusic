@@ -19,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -39,6 +38,10 @@ import com.pure.music.ui.theme.PureMusicTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 开启 Edge-to-Edge：内容绘制到系统栏后方，系统栏透明
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContent {
             MainContent()
         }
@@ -78,18 +81,10 @@ private fun MainUI(settingsViewModel: SettingsViewModel, darkTheme: Boolean) {
     var showSettings by remember { mutableStateOf(false) }
     val view = LocalView.current
 
-    // 播放界面打开时窗口进入 edge-to-edge：内容绘制到状态栏区域，顶部栏背景延伸至状态栏之后；关闭时恢复主题色系统栏
-    val surfaceColor = MaterialTheme.colorScheme.surface
-    LaunchedEffect(showNowPlaying) {
-        val window = (view.context as Activity).window
-        if (showNowPlaying) {
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-            window.statusBarColor = android.graphics.Color.TRANSPARENT
-            window.navigationBarColor = android.graphics.Color.TRANSPARENT
-        } else {
-            WindowCompat.setDecorFitsSystemWindows(window, true)
-            window.statusBarColor = surfaceColor.toArgb()
-            window.navigationBarColor = surfaceColor.toArgb()
+    // 播放器关闭时恢复主题色状态栏外观；开启时由 PlayerWorkspace 根据封面色决定
+    LaunchedEffect(showNowPlaying, darkTheme) {
+        if (!showNowPlaying) {
+            val window = (view.context as Activity).window
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
