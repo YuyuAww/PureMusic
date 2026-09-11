@@ -98,36 +98,39 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
             }
         }
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            if (showSettings) {
-                SettingsScreen(
-                    viewModel = settingsViewModel,
-                    onBack = { showSettings = false }
-                )
-            } else {
-                LibraryScreen(
-                    onPlaySong = { song: Song, queue: List<Song> ->
-                        playerViewModel.playSong(song, queue)
-                        showNowPlaying = true
-                    },
-                    onShowSettings = { showSettings = true }
-                )
-
-                // 全屏正在播放界面
-                if (showNowPlaying) {
-                    PlayerWorkspace(
-                        state = state,
-                        onDismiss = { showNowPlaying = false },
-                        onTogglePlayPause = { playerViewModel.togglePlayPause() },
-                        onNext = { playerViewModel.next() },
-                        onPrevious = { playerViewModel.previous() },
-                        onSeek = { playerViewModel.seekTo(it) },
-                        onRepeatMode = { playerViewModel.setRepeatMode(it) },
-                        onShuffleMode = { playerViewModel.setShuffleMode(it) },
-                        isFavorite = playerViewModel.isFavorite(state.currentSong?.id ?: -1L),
-                        onToggleFavorite = { playerViewModel.toggleFavorite(state.currentSong?.id ?: -1L) },
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 正常内容区，带系统栏 padding
+            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+                if (showSettings) {
+                    SettingsScreen(
+                        viewModel = settingsViewModel,
+                        onBack = { showSettings = false }
+                    )
+                } else {
+                    LibraryScreen(
+                        onPlaySong = { song: Song, queue: List<Song> ->
+                            playerViewModel.playSong(song, queue)
+                            showNowPlaying = true
+                        },
+                        onShowSettings = { showSettings = true }
                     )
                 }
+            }
+
+            // 全屏播放器，不经过 padding，延伸至系统栏后方
+            if (showNowPlaying) {
+                PlayerWorkspace(
+                    state = state,
+                    onDismiss = { showNowPlaying = false },
+                    onTogglePlayPause = { playerViewModel.togglePlayPause() },
+                    onNext = { playerViewModel.next() },
+                    onPrevious = { playerViewModel.previous() },
+                    onSeek = { playerViewModel.seekTo(it) },
+                    onRepeatMode = { playerViewModel.setRepeatMode(it) },
+                    onShuffleMode = { playerViewModel.setShuffleMode(it) },
+                    isFavorite = playerViewModel.isFavorite(state.currentSong?.id ?: -1L),
+                    onToggleFavorite = { playerViewModel.toggleFavorite(state.currentSong?.id ?: -1L) },
+                )
             }
         }
     }
