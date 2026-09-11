@@ -53,9 +53,6 @@ fun PlayerWorkspace(
     val song = state.currentSong ?: return
     var lyricsJumpNonce by remember { mutableIntStateOf(0) }
     var showQueue by remember { mutableStateOf(false) }
-    var showSleepTimer by remember { mutableStateOf(false) }
-    var sleepMinutes by remember { mutableIntStateOf(0) }
-    var sleepSelection by remember { mutableFloatStateOf(5f) }
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
     LaunchedEffect(lyricsJumpNonce) {
         if (lyricsJumpNonce > 0) pagerState.animateScrollToPage(2)
@@ -97,7 +94,8 @@ fun PlayerWorkspace(
                 onSeek = onSeek,
                 onRepeatMode = onRepeatMode,
                 onShuffleMode = onShuffleMode,
-                onQueueClick = { showQueue = true }
+                onQueueClick = { showQueue = true },
+                onSleepTimerFinished = onSleepTimerFinished
             ) 
         }
     ) { paddingValues ->
@@ -113,13 +111,6 @@ fun PlayerWorkspace(
                 1 -> CoverAndLyricsPage(song, colors) { lyricsJumpNonce++ }
                 else -> LyricsPage(song, colors)
             }
-        }
-    }
-    LaunchedEffect(sleepMinutes) {
-        if (sleepMinutes > 0) {
-            delay(60_000L)
-            sleepMinutes = (sleepMinutes - 1).coerceAtLeast(0)
-            if (sleepMinutes == 0) onSleepTimerFinished()
         }
     }
     if (showQueue) {
@@ -230,10 +221,21 @@ private fun PlayerBottomBar(
     onSeek: (Long) -> Unit,
     onRepeatMode: (Int) -> Unit,
     onShuffleMode: (Boolean) -> Unit,
-    onQueueClick: () -> Unit
+    onQueueClick: () -> Unit,
+    onSleepTimerFinished: () -> Unit
 ) {
     var sliderPosition by remember(state.currentSong?.id) { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
+    var showSleepTimer by remember { mutableStateOf(false) }
+    var sleepMinutes by remember { mutableIntStateOf(0) }
+    var sleepSelection by remember { mutableFloatStateOf(5f) }
+    LaunchedEffect(sleepMinutes) {
+        if (sleepMinutes > 0) {
+            delay(60_000L)
+            sleepMinutes = (sleepMinutes - 1).coerceAtLeast(0)
+            if (sleepMinutes == 0) onSleepTimerFinished()
+        }
+    }
     LaunchedEffect(state.position, dragging) { if (!dragging) sliderPosition = state.position.toFloat() }
     val displayedPosition = if (dragging) sliderPosition.toLong() else state.position
 
