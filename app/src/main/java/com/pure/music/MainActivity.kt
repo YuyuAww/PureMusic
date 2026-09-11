@@ -1,5 +1,6 @@
 package com.pure.music
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,12 +12,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pure.music.data.Song
@@ -59,18 +64,34 @@ private fun MainContent() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            MainUI(settingsViewModel)
+            MainUI(settingsViewModel, darkTheme)
         }
     }
 }
 
 /** 主 UI 层，组装媒体库、播放器、设置等界面 */
 @Composable
-private fun MainUI(settingsViewModel: SettingsViewModel) {
+private fun MainUI(settingsViewModel: SettingsViewModel, darkTheme: Boolean) {
     val playerViewModel: PlayerViewModel = viewModel(factory = playerViewModelFactory)
     val state by playerViewModel.state.collectAsStateWithLifecycle()
     var showNowPlaying by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    val view = LocalView.current
+
+    // 播放界面打开时窗口进入 edge-to-edge：内容绘制到状态栏区域，顶部栏背景延伸至状态栏之后；关闭时恢复主题色系统栏
+    LaunchedEffect(showNowPlaying) {
+        val window = (view.context as Activity).window
+        if (showNowPlaying) {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        } else {
+            WindowCompat.setDecorFitsSystemWindows(window, true)
+            window.statusBarColor = MaterialTheme.colorScheme.surface.toArgb()
+            window.navigationBarColor = MaterialTheme.colorScheme.surface.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        }
+    }
 
     BackHandler(enabled = showNowPlaying || showSettings) {
         if (showSettings) showSettings = false else showNowPlaying = false
@@ -117,7 +138,6 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
                         onShuffleMode = { playerViewModel.setShuffleMode(it) },
                         isFavorite = playerViewModel.isFavorite(state.currentSong?.id ?: -1L),
                         onToggleFavorite = { playerViewModel.toggleFavorite(state.currentSong?.id ?: -1L) },
-                        onPlayFromQueue = { playerViewModel.playQueue(state.queue, it) },
                     )
                 }
             }
