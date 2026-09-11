@@ -204,9 +204,9 @@ private fun PlayerBottomBar(
     Column(
         Modifier
             .fillMaxWidth()
-            .background(colors.surface.copy(alpha = .78f)) // 底部背景：封面表面色 + 半透明
+            .background(colors.background) // 底部背景：与 TopBar 保持一致
             .navigationBarsPadding() // 内容避开底部导航栏
-            .padding(start = 22.dp, end = 22.dp, top = 8.dp, bottom = 42.dp)
+            .padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 20.dp)
     ) {
         // 极细进度条
         Box(
