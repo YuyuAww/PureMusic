@@ -79,6 +79,7 @@ private fun MainUI(settingsViewModel: SettingsViewModel, darkTheme: Boolean) {
     val view = LocalView.current
 
     // 播放界面打开时窗口进入 edge-to-edge：内容绘制到状态栏区域，顶部栏背景延伸至状态栏之后；关闭时恢复主题色系统栏
+    val surfaceColor = MaterialTheme.colorScheme.surface
     LaunchedEffect(showNowPlaying) {
         val window = (view.context as Activity).window
         if (showNowPlaying) {
@@ -87,8 +88,8 @@ private fun MainUI(settingsViewModel: SettingsViewModel, darkTheme: Boolean) {
             window.navigationBarColor = android.graphics.Color.TRANSPARENT
         } else {
             WindowCompat.setDecorFitsSystemWindows(window, true)
-            window.statusBarColor = MaterialTheme.colorScheme.surface.toArgb()
-            window.navigationBarColor = MaterialTheme.colorScheme.surface.toArgb()
+            window.statusBarColor = surfaceColor.toArgb()
+            window.navigationBarColor = surfaceColor.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
