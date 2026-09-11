@@ -9,7 +9,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.calculateBottomPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -107,7 +106,7 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
                     start = padding.calculateLeftPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
                     top = 0.dp,
                     end = padding.calculateRightPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
-                    bottom = padding.calculateBottomPadding()
+                    bottom = 0.dp
                 )
             ) {
                 if (showSettings) {

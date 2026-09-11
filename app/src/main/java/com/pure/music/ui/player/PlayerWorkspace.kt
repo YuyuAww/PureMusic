@@ -326,6 +326,24 @@ private fun PlayerBottomBar(
             IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = colors.accent, modifier = Modifier.size(24.dp)) }
         }
     }
+    if (showSleepTimer) {
+        AlertDialog(
+            onDismissRequest = { showSleepTimer = false },
+            title = { Text("睡眠定时") },
+            text = {
+                Column {
+                    Text(if (sleepMinutes > 0) "剩余 ${sleepMinutes} 分钟" else "设置自动暂停时间")
+                    Spacer(Modifier.height(12.dp))
+                    Slider(value = sleepSelection, onValueChange = { sleepSelection = (it / 5f).roundToInt() * 5f }, valueRange = 5f..60f, steps = 10)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("5 分钟"); Text("${sleepSelection.toInt()} 分钟"); Text("60 分钟")
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { sleepMinutes = sleepSelection.toInt().coerceIn(5, 60); showSleepTimer = false }) { Text("开始") } },
+            dismissButton = { TextButton(onClick = { sleepMinutes = 0; showSleepTimer = false }) { Text(if (sleepMinutes > 0) "取消定时" else "关闭") } }
+        )
+    }
 }
 
 // ---------------------------------------------------------
@@ -423,22 +441,4 @@ private fun QueueSongRow(song: Song, isCurrent: Boolean, onClick: () -> Unit) {
         Icon(Icons.Default.MoreVert, "更多操作")
     }
 
-    if (showSleepTimer) {
-        AlertDialog(
-            onDismissRequest = { showSleepTimer = false },
-            title = { Text("睡眠定时") },
-            text = {
-                Column {
-                    Text(if (sleepMinutes > 0) "剩余 ${sleepMinutes} 分钟" else "设置自动暂停时间")
-                    Spacer(Modifier.height(12.dp))
-                    Slider(value = sleepSelection, onValueChange = { sleepSelection = (it / 5f).roundToInt() * 5f }, valueRange = 5f..60f, steps = 10)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("5 分钟"); Text("${sleepSelection.toInt()} 分钟"); Text("60 分钟")
-                    }
-                }
-            },
-            confirmButton = { TextButton(onClick = { sleepMinutes = sleepSelection.toInt().coerceIn(5, 60); showSleepTimer = false }) { Text("开始") } },
-            dismissButton = { TextButton(onClick = { sleepMinutes = 0; showSleepTimer = false }) { Text(if (sleepMinutes > 0) "取消定时" else "关闭") } }
-        )
-    }
 }
