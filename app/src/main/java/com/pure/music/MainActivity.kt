@@ -1,6 +1,6 @@
 package com.pure.music
 
-import android.app.Activity
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,15 +12,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pure.music.data.Song
@@ -38,10 +35,13 @@ import com.pure.music.ui.theme.PureMusicTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 开启 Edge-to-Edge：内容绘制到系统栏后方，系统栏透明
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-        window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        // 全面屏 Edge-to-Edge：状态栏透明，内容绘制到系统栏后方，
+        // 同时设置 BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE 实现向后兼容
+        enableEdgeToEdge()
+        // 移除导航栏半透明遮罩，让底部栏背景色完全延伸至屏幕底部
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
         setContent {
             MainContent()
         }
@@ -67,27 +67,18 @@ private fun MainContent() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            MainUI(settingsViewModel, darkTheme)
+            MainUI(settingsViewModel)
         }
     }
 }
 
 /** 主 UI 层，组装媒体库、播放器、设置等界面 */
 @Composable
-private fun MainUI(settingsViewModel: SettingsViewModel, darkTheme: Boolean) {
+private fun MainUI(settingsViewModel: SettingsViewModel) {
     val playerViewModel: PlayerViewModel = viewModel(factory = playerViewModelFactory)
     val state by playerViewModel.state.collectAsStateWithLifecycle()
     var showNowPlaying by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
-    val view = LocalView.current
-
-    // 播放器关闭时恢复主题色状态栏外观；开启时由 PlayerWorkspace 根据封面色决定
-    LaunchedEffect(showNowPlaying, darkTheme) {
-        if (!showNowPlaying) {
-            val window = (view.context as Activity).window
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
-        }
-    }
 
     BackHandler(enabled = showNowPlaying || showSettings) {
         if (showSettings) showSettings = false else showNowPlaying = false

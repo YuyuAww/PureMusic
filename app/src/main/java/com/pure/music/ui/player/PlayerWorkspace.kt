@@ -1,6 +1,5 @@
 package com.pure.music.ui.player
 
-import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,20 +13,15 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.ColorUtils
-import androidx.core.view.WindowCompat
 import com.pure.music.data.Song
 import com.pure.music.player.PlaybackState
 import com.pure.music.ui.components.AlbumArt
@@ -66,18 +60,11 @@ fun PlayerWorkspace(
     )
 
     val context = LocalContext.current
-    val view = LocalView.current
     var colors by remember(song.albumId) { mutableStateOf(fallback) }
     
     // 异步加载封面提取的颜色
     LaunchedEffect(song.albumId) { 
         colors = loadCoverColors(context, song.albumId, fallback) 
-    }
-
-    // 状态栏图标明暗跟随封面背景色亮度，做到沉浸式
-    LaunchedEffect(colors) {
-        WindowCompat.getInsetsController((view.context as Activity).window, view)
-            .isAppearanceLightStatusBars = ColorUtils.calculateLuminance(colors.background.toArgb()) < 0.5f
     }
 
     // 使用 Scaffold 划分三大组件区域
