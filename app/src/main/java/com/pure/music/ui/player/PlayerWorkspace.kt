@@ -24,6 +24,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.Player
+import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 import com.pure.music.data.Song
 import com.pure.music.player.PlaybackState
 import com.pure.music.ui.components.AlbumArt
@@ -44,11 +47,15 @@ fun PlayerWorkspace(
     onShuffleMode: (Boolean) -> Unit,
     isFavorite: Boolean = false,
     onToggleFavorite: () -> Unit = {},
-    onPlayQueueSong: (Song, List<Song>) -> Unit = { _, _ -> }
+    onPlayQueueSong: (Song, List<Song>) -> Unit = { _, _ -> },
+    onSleepTimerFinished: () -> Unit = {}
 ) {
     val song = state.currentSong ?: return
     var lyricsJumpNonce by remember { mutableIntStateOf(0) }
     var showQueue by remember { mutableStateOf(false) }
+    var showSleepTimer by remember { mutableStateOf(false) }
+    var sleepMinutes by remember { mutableIntStateOf(0) }
+    var sleepSelection by remember { mutableFloatStateOf(5f) }
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
     LaunchedEffect(lyricsJumpNonce) {
         if (lyricsJumpNonce > 0) pagerState.animateScrollToPage(2)
@@ -108,13 +115,20 @@ fun PlayerWorkspace(
             }
         }
     }
+    LaunchedEffect(sleepMinutes) {
+        if (sleepMinutes > 0) {
+            delay(60_000L)
+            sleepMinutes = (sleepMinutes - 1).coerceAtLeast(0)
+            if (sleepMinutes == 0) onSleepTimerFinished()
+        }
+    }
     if (showQueue) {
         ModalBottomSheet(onDismissRequest = { showQueue = false }) {
-            Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+            Column(Modifier.fillMaxWidth().heightIn(max = 520.dp).padding(horizontal = 20.dp)) {
                 Text("播放队列", style = MaterialTheme.typography.headlineSmall)
                 Text("${state.queue.size} 首歌曲", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(12.dp))
-                LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
+                LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 24.dp)) {
                     itemsIndexed(state.queue, key = { _, item -> item.id }) { index, item ->
                         QueueSongRow(item, index == state.queueIndex) {
                             onPlayQueueSong(item, state.queue)
@@ -293,8 +307,18 @@ private fun PlayerBottomBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { onShuffleMode(!state.shuffleModeEnabled) }) { Icon(Icons.Default.Repeat, "播放模式", tint = colors.accent, modifier = Modifier.size(24.dp)) }
-            IconButton(onClick = {}) { Icon(Icons.Default.Alarm, "定时", tint = colors.accent, modifier = Modifier.size(24.dp)) }
+            val mode = playbackMode(state)
+            IconButton(onClick = {
+                when (mode) {
+                    PlaybackMode.SHUFFLE -> { onShuffleMode(false); onRepeatMode(Player.REPEAT_MODE_OFF) }
+                    PlaybackMode.SEQUENTIAL -> onRepeatMode(Player.REPEAT_MODE_ALL)
+                    PlaybackMode.LIST_LOOP -> onRepeatMode(Player.REPEAT_MODE_ONE)
+                    PlaybackMode.SINGLE_LOOP -> { onRepeatMode(Player.REPEAT_MODE_OFF); onShuffleMode(true) }
+                }
+            }) {
+                Icon(mode.icon, mode.label, tint = colors.accent, modifier = Modifier.size(24.dp))
+            }
+            IconButton(onClick = { sleepSelection = sleepMinutes.takeIf { it > 0 }?.toFloat() ?: 5f; showSleepTimer = true }) { Icon(Icons.Default.Alarm, "睡眠定时", tint = if (sleepMinutes > 0) MaterialTheme.colorScheme.primary else colors.accent, modifier = Modifier.size(24.dp)) }
             IconButton(onClick = {}) { Icon(Icons.Default.GraphicEq, "音效", tint = colors.accent, modifier = Modifier.size(24.dp)) }
             IconButton(onClick = onQueueClick) { Icon(Icons.Default.QueueMusic, "播放列表", tint = colors.accent, modifier = Modifier.size(24.dp)) }
             IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = colors.accent, modifier = Modifier.size(24.dp)) }
@@ -365,6 +389,20 @@ private fun InfoCard(title: String, values: List<String>, colors: CoverColors) {
     }
 }
 
+private enum class PlaybackMode(val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    SHUFFLE("随机播放", Icons.Default.Shuffle),
+    SEQUENTIAL("顺序播放", Icons.Default.FormatListNumbered),
+    LIST_LOOP("列表循环", Icons.Default.Repeat),
+    SINGLE_LOOP("单曲循环", Icons.Default.RepeatOne)
+}
+
+private fun playbackMode(state: PlaybackState): PlaybackMode = when {
+    state.shuffleModeEnabled -> PlaybackMode.SHUFFLE
+    state.repeatMode == Player.REPEAT_MODE_ONE -> PlaybackMode.SINGLE_LOOP
+    state.repeatMode == Player.REPEAT_MODE_ALL -> PlaybackMode.LIST_LOOP
+    else -> PlaybackMode.SEQUENTIAL
+}
+
 @Composable
 private fun QueueSongRow(song: Song, isCurrent: Boolean, onClick: () -> Unit) {
     Row(
@@ -381,5 +419,24 @@ private fun QueueSongRow(song: Song, isCurrent: Boolean, onClick: () -> Unit) {
         }
         if (isCurrent) Icon(Icons.Default.GraphicEq, "正在播放", tint = MaterialTheme.colorScheme.primary)
         Icon(Icons.Default.MoreVert, "更多操作")
+    }
+
+    if (showSleepTimer) {
+        AlertDialog(
+            onDismissRequest = { showSleepTimer = false },
+            title = { Text("睡眠定时") },
+            text = {
+                Column {
+                    Text(if (sleepMinutes > 0) "剩余 ${sleepMinutes} 分钟" else "设置自动暂停时间")
+                    Spacer(Modifier.height(12.dp))
+                    Slider(value = sleepSelection, onValueChange = { sleepSelection = (it / 5f).roundToInt() * 5f }, valueRange = 5f..60f, steps = 10)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("5 分钟"); Text("${sleepSelection.toInt()} 分钟"); Text("60 分钟")
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { sleepMinutes = sleepSelection.toInt().coerceIn(5, 60); showSleepTimer = false }) { Text("开始") } },
+            dismissButton = { TextButton(onClick = { sleepMinutes = 0; showSleepTimer = false }) { Text(if (sleepMinutes > 0) "取消定时" else "关闭") } }
+        )
     }
 }

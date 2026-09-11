@@ -9,6 +9,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.calculateBottomPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -19,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pure.music.data.Song
@@ -100,7 +102,14 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize()) {
             // 正常内容区，带系统栏 padding
-            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(
+                    start = padding.calculateLeftPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+                    top = 0.dp,
+                    end = padding.calculateRightPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+                    bottom = padding.calculateBottomPadding()
+                )
+            ) {
                 if (showSettings) {
                     SettingsScreen(
                         viewModel = settingsViewModel,
@@ -109,8 +118,9 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
                 } else {
                     LibraryScreen(
                         onPlaySong = { song: Song, queue: List<Song> ->
+                            val isCurrentSong = state.currentSong?.id == song.id
                             playerViewModel.playSong(song, queue)
-                            showNowPlaying = true
+                            if (isCurrentSong) showNowPlaying = true
                         },
                         onShowSettings = { showSettings = true }
                     )
@@ -131,6 +141,7 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
                     isFavorite = playerViewModel.isFavorite(state.currentSong?.id ?: -1L),
                     onToggleFavorite = { playerViewModel.toggleFavorite(state.currentSong?.id ?: -1L) },
                     onPlayQueueSong = { song, queue -> playerViewModel.playQueue(queue, queue.indexOf(song)) },
+                    onSleepTimerFinished = { if (state.isPlaying) playerViewModel.togglePlayPause() },
                 )
             }
         }
