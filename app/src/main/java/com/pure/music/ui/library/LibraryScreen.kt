@@ -49,7 +49,9 @@ fun LibraryScreen(onPlaySong: (Song, List<Song>) -> Unit, onShowSettings: () -> 
 @Composable private fun PermissionPanel(padding: PaddingValues, onGrant: () -> Unit) { Column(Modifier.fillMaxSize().padding(padding).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Icon(Icons.Default.MusicNote, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.height(16.dp)); Text("允许访问本地音乐后开始扫描", style = MaterialTheme.typography.titleMedium); Spacer(Modifier.height(16.dp)); Button(onClick = onGrant) { Text("授予权限") } } }
 
 @Composable private fun LibraryContent(section: LibrarySection, songs: List<Song>, albums: List<Album>, artists: List<Artist>, folders: List<MusicFolder>, favoriteIds: Set<Long>, recentIds: List<Long>, folderPath: String?, query: String, padding: PaddingValues, onPlaySong: (Song, List<Song>) -> Unit, onToggleFavorite: (Long) -> Unit, onOpenFolder: (String) -> Unit) {
-    val filtered = songs.filter { query.isBlank() || it.title.contains(query, true) || it.artist.contains(query, true) || it.album.contains(query, true) }
+    val filtered = songs
+        .filter { query.isBlank() || it.title.contains(query, true) || it.artist.contains(query, true) || it.album.contains(query, true) }
+        .sortedBy { it.title.trim().lowercase() }
     when (section) {
         LibrarySection.SONGS -> Column(Modifier.fillMaxSize().padding(padding)) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -108,13 +110,13 @@ fun LibraryScreen(onPlaySong: (Song, List<Song>) -> Unit, onShowSettings: () -> 
 private fun AlphabetIndex(songs: List<Song>, listState: androidx.compose.foundation.lazy.LazyListState, modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        (('A'..'Z').toList() + '#').forEach { letter ->
+        ('A'..'Z').forEach { letter ->
             Text(
                 letter.toString(),
                 modifier = Modifier.clickable {
                     val index = songs.indexOfFirst { song ->
                         val first = song.title.trim().firstOrNull()?.uppercaseChar()
-                        if (letter == '#') first == null || first !in 'A'..'Z' else first == letter
+                        first == letter
                     }
                     if (index >= 0) scope.launch { listState.animateScrollToItem(index) }
                 },
