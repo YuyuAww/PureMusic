@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.pure.music.ui.utils.CoverColors
+import com.pure.music.ui.utils.loadCoverColors
 
 /** 暗色主题配色方案 */
 private val DarkColorScheme = darkColorScheme(
@@ -51,14 +53,34 @@ private val LightColorScheme = lightColorScheme(
 fun PureMusicTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
+    colorSource: String = "monet",
+    coverAlbumId: Long? = null,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
+    val fallback = CoverColors(BrandPrimary, BrandOnSurfaceVariant, BrandSurface, BrandSurface)
+    var coverColors by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(fallback) }
+    androidx.compose.runtime.LaunchedEffect(colorSource, coverAlbumId) {
+        coverColors = if (colorSource == "cover" && coverAlbumId != null) loadCoverColors(context, coverAlbumId, fallback) else fallback
+    }
     val colorScheme = when {
         // Android 12+ 使用系统动态取色
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
+        dynamicColor && colorSource == "monet" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+        colorSource == "cover" -> if (darkTheme) darkColorScheme(
+            primary = coverColors.accent,
+            secondary = coverColors.muted,
+            background = coverColors.background,
+            surface = coverColors.surface,
+            onSurface = Color.White
+        ) else lightColorScheme(
+            primary = coverColors.accent,
+            secondary = coverColors.muted,
+            background = coverColors.background,
+            surface = coverColors.surface,
+            onSurface = Color.Black
+        )
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

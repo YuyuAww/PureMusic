@@ -16,6 +16,7 @@ class SettingsRepository(private val context: Context) {
 
     private object Keys {
         val THEME = stringPreferencesKey("theme")
+        val COLOR_SOURCE = stringPreferencesKey("color_source")
     }
 
     /** 主题偏好流，值为 "system" / "light" / "dark" */
@@ -23,9 +24,17 @@ class SettingsRepository(private val context: Context) {
         prefs[Keys.THEME] ?: "system"
     }
 
+    val colorSource: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[Keys.COLOR_SOURCE] ?: "monet"
+    }
+
     suspend fun setTheme(theme: String) {
         context.dataStore.edit { prefs ->
             prefs[Keys.THEME] = theme
         }
+    }
+
+    suspend fun setColorSource(source: String) {
+        context.dataStore.edit { prefs -> prefs[Keys.COLOR_SOURCE] = source }
     }
 }

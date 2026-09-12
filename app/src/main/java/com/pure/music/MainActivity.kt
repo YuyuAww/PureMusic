@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,6 +29,7 @@ import com.pure.music.player.playerViewModelFactory
 import com.pure.music.settings.SettingsViewModel
 import com.pure.music.settings.settingsViewModelFactory
 import com.pure.music.ui.library.LibraryScreen
+import com.pure.music.ui.library.SearchScreen
 import com.pure.music.ui.player.MiniPlayerBar
 import com.pure.music.ui.player.PlayerWorkspace
 import com.pure.music.ui.settings.SettingsScreen
@@ -55,6 +57,9 @@ class MainActivity : ComponentActivity() {
 private fun MainContent() {
     val settingsViewModel: SettingsViewModel = viewModel(factory = settingsViewModelFactory)
     val theme by settingsViewModel.theme.collectAsStateWithLifecycle()
+    val colorSource by settingsViewModel.colorSource.collectAsStateWithLifecycle()
+    val playerViewModel: PlayerViewModel = viewModel(factory = playerViewModelFactory)
+    val playerState by playerViewModel.state.collectAsStateWithLifecycle()
 
     // 根据主题设置决定明暗模式
     val darkTheme = when (theme) {
@@ -64,26 +69,32 @@ private fun MainContent() {
     }
 
     // 使用应用品牌色，避免设备动态取色导致界面风格不一致
-    PureMusicTheme(darkTheme = darkTheme, dynamicColor = false) {
+        PureMusicTheme(darkTheme = darkTheme, dynamicColor = true, colorSource = colorSource, coverAlbumId = playerState.currentSong?.albumId) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            MainUI(settingsViewModel)
+            MainUI(settingsViewModel, playerViewModel)
         }
     }
 }
 
 /** 主 UI 层，组装媒体库、播放器、设置等界面 */
 @Composable
-private fun MainUI(settingsViewModel: SettingsViewModel) {
-    val playerViewModel: PlayerViewModel = viewModel(factory = playerViewModelFactory)
+private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: PlayerViewModel) {
     val state by playerViewModel.state.collectAsStateWithLifecycle()
+    val theme by settingsViewModel.theme.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     var showNowPlaying by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var showSearch by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = showNowPlaying || showSettings) {
-        if (showSettings) showSettings = false else showNowPlaying = false
+    BackHandler(enabled = showNowPlaying || showSettings || showSearch) {
+        when {
+            showSettings -> showSettings = false
+            showSearch -> showSearch = false
+            else -> showNowPlaying = false
+        }
     }
 
     Scaffold(
@@ -114,6 +125,15 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
                         viewModel = settingsViewModel,
                         onBack = { showSettings = false }
                     )
+                } else if (showSearch) {
+                    SearchScreen(
+                        onBack = { showSearch = false },
+                        onPlaySong = { song: Song, queue: List<Song> ->
+                            val isCurrentSong = state.currentSong?.id == song.id
+                            playerViewModel.playSong(song, queue)
+                            if (isCurrentSong) showNowPlaying = true
+                        }
+                    )
                 } else {
                     LibraryScreen(
                         onPlaySong = { song: Song, queue: List<Song> ->
@@ -121,7 +141,12 @@ private fun MainUI(settingsViewModel: SettingsViewModel) {
                             playerViewModel.playSong(song, queue)
                             if (isCurrentSong) showNowPlaying = true
                         },
-                        onShowSettings = { showSettings = true }
+                        onShowSettings = { showSettings = true },
+                        onShowSearch = { showSearch = true },
+                        onExit = { (context as? ComponentActivity)?.finish() },
+                        isDarkTheme = theme == "dark" || (theme == "system" && isSystemInDarkTheme()),
+                        onToggleTheme = { settingsViewModel.setTheme(if (theme == "dark") "light" else "dark") },
+                        onShowEqualizer = { showSettings = true }
                     )
                 }
             }

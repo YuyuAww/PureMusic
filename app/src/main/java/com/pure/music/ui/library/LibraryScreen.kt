@@ -31,53 +31,61 @@ import kotlinx.coroutines.launch
 
 private enum class LibrarySection(val title: String) { SONGS("歌曲"), ALBUMS("专辑"), ARTISTS("艺术家"), FOLDERS("文件夹"), FAVORITES("收藏"), RECENT("最近播放") }
 
-/** 侧边栏宽度，取 Material 3 侧边抽屉容器宽度的下限，保证与主界面并列时仍有可用内容 */
-private val SidebarWidth = 240.dp
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LibraryScreen(onPlaySong: (Song, List<Song>) -> Unit, onShowSettings: () -> Unit, viewModel: LibraryViewModel = viewModel(factory = libraryViewModelFactory)) {
+fun LibraryScreen(
+    onPlaySong: (Song, List<Song>) -> Unit,
+    onShowSettings: () -> Unit,
+    onShowSearch: () -> Unit,
+    onExit: () -> Unit,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+    onShowEqualizer: () -> Unit,
+    viewModel: LibraryViewModel = viewModel(factory = libraryViewModelFactory)
+) {
     val songs by viewModel.songs.collectAsStateWithLifecycle(); val albums by viewModel.albums.collectAsStateWithLifecycle(); val artists by viewModel.artists.collectAsStateWithLifecycle(); val folders by viewModel.folders.collectAsStateWithLifecycle(); val favoriteIds by viewModel.favoriteSongIds.collectAsStateWithLifecycle(); val recentIds by viewModel.recentSongIds.collectAsStateWithLifecycle()
-    val drawer = rememberDrawerState(DrawerValue.Closed); val scope = rememberCoroutineScope(); var section by remember { mutableStateOf(LibrarySection.SONGS) }; var query by remember { mutableStateOf("") }; var searching by remember { mutableStateOf(false) }; var folderPath by remember { mutableStateOf<String?>(null) }
+    val drawer = rememberDrawerState(DrawerValue.Closed); val scope = rememberCoroutineScope(); var section by remember { mutableStateOf(LibrarySection.SONGS) }; var folderPath by remember { mutableStateOf<String?>(null) }
     val context = androidx.compose.ui.platform.LocalContext.current; val permission = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE; var granted by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it; if (it) viewModel.refresh() }
-    DismissibleNavigationDrawer(drawerState = drawer, drawerContent = { DismissibleDrawerSheet(drawerState = drawer, modifier = Modifier.width(SidebarWidth)) { Text("PureMusic", Modifier.padding(24.dp), style = MaterialTheme.typography.headlineSmall); HorizontalDivider(); LibrarySection.entries.forEach { item -> NavigationDrawerItem(label = { Text(item.title) }, selected = section == item, onClick = { section = item; folderPath = null; scope.launch { drawer.close() } }, icon = { Icon(if (item == LibrarySection.ALBUMS) Icons.Default.Album else if (item == LibrarySection.ARTISTS) Icons.Default.Person else if (item == LibrarySection.FOLDERS) Icons.Default.Folder else if (item == LibrarySection.FAVORITES) Icons.Default.Favorite else if (item == LibrarySection.RECENT) Icons.Default.History else Icons.Default.MusicNote, null) }) }; HorizontalDivider(Modifier.padding(vertical = 12.dp)); NavigationDrawerItem(label = { Text("扫描音乐") }, selected = false, onClick = { viewModel.refresh(); scope.launch { drawer.close() } }, icon = { Icon(Icons.Default.Refresh, null) }); NavigationDrawerItem(label = { Text("设置") }, selected = false, onClick = { scope.launch { drawer.close() }; onShowSettings() }, icon = { Icon(Icons.Default.Settings, null) }) } }) {
-        Scaffold(topBar = { TopAppBar(
-            title = { Text(if (searching) "搜索" else if (folderPath == null) section.title else folders.firstOrNull { it.path == folderPath }?.name ?: "文件夹") },
-            navigationIcon = { IconButton(onClick = { if (searching) { searching = false; query = "" } else if (folderPath != null) folderPath = null else scope.launch { if (drawer.isOpen) drawer.close() else drawer.open() } }) { Icon(if (searching || folderPath != null) Icons.Default.ArrowBack else Icons.Default.Menu, "导航") } },
-            actions = { if (!searching) IconButton(onClick = { searching = true; query = "" }) { Icon(Icons.Default.Search, "搜索") } }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val isExpanded = maxWidth >= 600.dp
+        val compactDrawerWidth = maxWidth * 0.5f
+        val drawerItems: @Composable ColumnScope.() -> Unit = {
+            Text("PureMusic", Modifier.padding(horizontal = 24.dp, vertical = 20.dp), style = MaterialTheme.typography.headlineSmall)
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onExit) { Icon(Icons.Default.ExitToApp, "退出应用") }
+                IconButton(onClick = onToggleTheme) { Icon(if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode, if (isDarkTheme) "切换浅色模式" else "切换深色模式") }
+                IconButton(onClick = { scope.launch { drawer.close() }; onShowEqualizer() }) { Icon(Icons.Default.Equalizer, "均衡器") }
+            }
+            HorizontalDivider(Modifier.padding(top = 8.dp))
+            LibrarySection.entries.forEach { item -> NavigationDrawerItem(label = { Text(item.title) }, selected = section == item, onClick = { section = item; folderPath = null; scope.launch { drawer.close() } }, icon = { Icon(if (item == LibrarySection.ALBUMS) Icons.Default.Album else if (item == LibrarySection.ARTISTS) Icons.Default.Person else if (item == LibrarySection.FOLDERS) Icons.Default.Folder else if (item == LibrarySection.FAVORITES) Icons.Default.Favorite else if (item == LibrarySection.RECENT) Icons.Default.History else Icons.Default.MusicNote, null) }) }
+            HorizontalDivider(Modifier.padding(vertical = 12.dp))
+            NavigationDrawerItem(label = { Text("扫描音乐") }, selected = false, onClick = { viewModel.refresh(); scope.launch { drawer.close() } }, icon = { Icon(Icons.Default.Refresh, null) })
+            NavigationDrawerItem(label = { Text("设置") }, selected = false, onClick = { scope.launch { drawer.close() }; onShowSettings() }, icon = { Icon(Icons.Default.Settings, null) })
+        }
+        val content: @Composable () -> Unit = { Scaffold(topBar = { TopAppBar(
+            title = { Text(if (folderPath == null) section.title else folders.firstOrNull { it.path == folderPath }?.name ?: "文件夹") },
+            navigationIcon = {
+                if (folderPath != null) IconButton(onClick = { folderPath = null }) { Icon(Icons.Default.ArrowBack, "返回") }
+                else if (!isExpanded) IconButton(onClick = { scope.launch { if (drawer.isOpen) drawer.close() else drawer.open() } }) { Icon(Icons.Default.Menu, "导航") }
+            },
+            actions = { IconButton(onClick = onShowSearch) { Icon(Icons.Default.Search, "搜索") } }
         ) }) { padding ->
             Box(Modifier.fillMaxSize().imePadding()) {
                 if (!granted) PermissionPanel(padding) { launcher.launch(permission) }
-                else if (searching) SearchContent(songs, query, { query = it }, favoriteIds, viewModel::toggleFavorite, onPlaySong, padding)
                 else LibraryContent(section, songs, albums, artists, folders, favoriteIds, recentIds, folderPath, "", padding, onPlaySong, viewModel::toggleFavorite) { folderPath = it }
             }
         }
-    }
-}
-
-@Composable
-private fun SearchContent(
-    songs: List<Song>, query: String, onQueryChange: (String) -> Unit,
-    favoriteIds: Set<Long>, onToggleFavorite: (Long) -> Unit,
-    onPlaySong: (Song, List<Song>) -> Unit, padding: PaddingValues
-) {
-    val results = songs.filter { query.isBlank() || it.title.contains(query, true) || it.artist.contains(query, true) || it.album.contains(query, true) }
-        .sortedBy { it.title.trim().lowercase() }
-    Column(Modifier.fillMaxSize().padding(padding)) {
-        OutlinedTextField(
-            value = query, onValueChange = onQueryChange, singleLine = true,
-            placeholder = { Text("搜索歌曲、专辑或艺术家") }, leadingIcon = { Icon(Icons.Default.Search, null) },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)
-        )
-        if (query.isNotBlank()) Text("${results.size} 首结果", modifier = Modifier.padding(horizontal = 18.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 8.dp)) {
-            items(results, key = { it.id }) { song -> SongRow(song, song.id in favoriteIds, onToggleFavorite) { onPlaySong(song, results) } }
+        } }
+        if (isExpanded) {
+            PermanentNavigationDrawer(drawerContent = { PermanentDrawerSheet(content = drawerItems) }, content = content)
+        } else {
+            ModalNavigationDrawer(drawerState = drawer, drawerContent = { ModalDrawerSheet(modifier = Modifier.width(compactDrawerWidth), content = drawerItems) }, content = content)
         }
     }
 }
 
-@Composable private fun PermissionPanel(padding: PaddingValues, onGrant: () -> Unit) { Column(Modifier.fillMaxSize().padding(padding).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Icon(Icons.Default.MusicNote, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.height(16.dp)); Text("允许访问本地音乐后开始扫描", style = MaterialTheme.typography.titleMedium); Spacer(Modifier.height(16.dp)); Button(onClick = onGrant) { Text("授予权限") } } }
+@Composable fun PermissionPanel(padding: PaddingValues, onGrant: () -> Unit) { Column(Modifier.fillMaxSize().padding(padding).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Icon(Icons.Default.MusicNote, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.height(16.dp)); Text("允许访问本地音乐后开始扫描", style = MaterialTheme.typography.titleMedium); Spacer(Modifier.height(16.dp)); Button(onClick = onGrant) { Text("授予权限") } } }
 
 @Composable private fun LibraryContent(section: LibrarySection, songs: List<Song>, albums: List<Album>, artists: List<Artist>, folders: List<MusicFolder>, favoriteIds: Set<Long>, recentIds: List<Long>, folderPath: String?, query: String, padding: PaddingValues, onPlaySong: (Song, List<Song>) -> Unit, onToggleFavorite: (Long) -> Unit, onOpenFolder: (String) -> Unit) {
     val filtered = songs
@@ -121,7 +129,7 @@ private fun SearchContent(
     }
 }
 
-@Composable private fun SongRow(song: Song, isFavorite: Boolean = false, onToggleFavorite: (Long) -> Unit = {}, onClick: () -> Unit) {
+@Composable fun SongRow(song: Song, isFavorite: Boolean = false, onToggleFavorite: (Long) -> Unit = {}, onClick: () -> Unit) {
     Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         AlbumArt(song, Modifier.size(50.dp).clip(RoundedCornerShape(8.dp)))
         Spacer(Modifier.width(14.dp))

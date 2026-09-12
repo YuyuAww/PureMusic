@@ -21,9 +21,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             started = SharingStarted.Eagerly,
             initialValue = "system"
         )
+    val colorSource: StateFlow<String> = repository.colorSource
+        .stateIn(viewModelScope, SharingStarted.Eagerly, "monet")
 
     fun setTheme(value: String) {
         viewModelScope.launch { repository.setTheme(value) }
+    }
+
+    fun setColorSource(value: String) {
+        viewModelScope.launch { repository.setColorSource(value) }
     }
 }
 

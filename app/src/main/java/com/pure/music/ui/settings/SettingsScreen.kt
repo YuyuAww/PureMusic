@@ -21,6 +21,9 @@ import com.pure.music.settings.SettingsViewModel
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
     val theme by viewModel.theme.collectAsStateWithLifecycle()
+    val colorSource by viewModel.colorSource.collectAsStateWithLifecycle()
+    var showThemeDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var showColorDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState())) {
         Row(Modifier.fillMaxWidth().padding(start = 20.dp, top = 24.dp, bottom = 18.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "返回") }
@@ -42,15 +45,26 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
             SettingRow("启动与后台", Icons.Default.RocketLaunch)
         }
         SettingsCard {
-            SettingRow("主题：${themeLabel(theme)}", Icons.Default.LightMode) { viewModel.setTheme(if (theme == "dark") "light" else "dark") }
+            SettingRow("主题：${themeLabel(theme)}", Icons.Default.LightMode) { showThemeDialog = true }
+            SettingRow("主题颜色：${colorSourceLabel(colorSource)}", Icons.Default.Palette) { showColorDialog = true }
             SettingRow("系统均衡器", Icons.Default.Equalizer)
             SettingRow("关于", Icons.Default.Info)
         }
         Spacer(Modifier.height(24.dp))
     }
+    if (showThemeDialog) ChoiceDialog("主题", listOf("system" to "跟随系统", "light" to "浅色", "dark" to "深色"), theme, { viewModel.setTheme(it); showThemeDialog = false }) { showThemeDialog = false }
+    if (showColorDialog) ChoiceDialog("主题颜色", listOf("monet" to "Monet 取色", "cover" to "根据封面取色"), colorSource, { viewModel.setColorSource(it); showColorDialog = false }) { showColorDialog = false }
+}
+
+@Composable
+private fun ChoiceDialog(title: String, options: List<Pair<String, String>>, selected: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(onDismissRequest = onDismiss, title = { Text(title) }, text = {
+        Column { options.forEach { (value, label) -> ListItem(headlineContent = { Text(label) }, leadingContent = { RadioButton(selected = value == selected, onClick = { onSelect(value) }) }, modifier = Modifier.clickable { onSelect(value) }) } }
+    }, confirmButton = { TextButton(onClick = onDismiss) { Text("完成") } })
 }
 
 @Composable private fun ProCard(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector) { Surface(Modifier.padding(horizontal = 16.dp, vertical = 6.dp).fillMaxWidth(), shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceVariant) { Row(Modifier.padding(22.dp), verticalAlignment = Alignment.CenterVertically) { Icon(icon, null, Modifier.size(34.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.width(18.dp)); Column(Modifier.weight(1f)) { Text(title, style = MaterialTheme.typography.titleLarge); Text(subtitle, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant) }; Icon(Icons.Default.ChevronRight, null) } } }
 @Composable private fun SettingsCard(content: @Composable ColumnScope.() -> Unit) { Surface(Modifier.padding(horizontal = 16.dp, vertical = 6.dp).fillMaxWidth(), shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceVariant, content = { Column(Modifier.padding(vertical = 8.dp), content = content) }) }
 @Composable private fun SettingRow(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit = {}) { Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 22.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(icon, null, Modifier.size(28.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.width(20.dp)); Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f)); Icon(Icons.Default.ChevronRight, null) } }
 private fun themeLabel(theme: String) = when (theme) { "dark" -> "深色"; "light" -> "浅色"; else -> "跟随系统" }
+private fun colorSourceLabel(source: String) = if (source == "cover") "根据封面取色" else "Monet 取色"
