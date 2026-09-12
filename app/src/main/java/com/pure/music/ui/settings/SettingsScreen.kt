@@ -30,20 +30,13 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
             IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "返回") }
             Text("设置", style = MaterialTheme.typography.headlineMedium)
         }
-        ProCard("Salt Player Pro", "包含 Salt Player 均衡器及 10+ 项高级功能", Icons.Default.WorkspacePremium)
-        ProCard("Audiophile Pack", "USB 独占输出、DAC 控制与 Morvanium", Icons.Default.GraphicEq)
-        SettingsCard {
-            SettingRow("Morvanium", Icons.Default.AutoAwesome)
-        }
         SettingsCard {
             SettingRow("用户界面", Icons.Default.Palette)
-            SettingRow("无障碍", Icons.Default.Accessibility)
             SettingRow("歌词", Icons.Default.FormatQuote)
             SettingRow("车载", Icons.Default.DirectionsCar)
             SettingRow("音频输出", Icons.Default.VolumeUp)
             SettingRow("USB 独占模式", Icons.Default.Usb)
             SettingRow("通知", Icons.Default.Notifications)
-            SettingRow("启动与后台", Icons.Default.RocketLaunch)
         }
         SettingsCard {
             SettingRow("主题：${themeLabel(theme)}", Icons.Default.LightMode) { showThemeDialog = true }
@@ -64,7 +57,6 @@ private fun ChoiceDialog(title: String, options: List<Pair<String, String>>, sel
     }, confirmButton = { TextButton(onClick = onDismiss) { Text("完成") } })
 }
 
-@Composable private fun ProCard(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector) { Surface(Modifier.padding(horizontal = 16.dp, vertical = 6.dp).fillMaxWidth(), shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceVariant) { Row(Modifier.padding(22.dp), verticalAlignment = Alignment.CenterVertically) { Icon(icon, null, Modifier.size(34.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.width(18.dp)); Column(Modifier.weight(1f)) { Text(title, style = MaterialTheme.typography.titleLarge); Text(subtitle, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant) }; Icon(Icons.Default.ChevronRight, null) } } }
 @Composable private fun SettingsCard(content: @Composable ColumnScope.() -> Unit) { Surface(Modifier.padding(horizontal = 16.dp, vertical = 6.dp).fillMaxWidth(), shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceVariant, content = { Column(Modifier.padding(vertical = 8.dp), content = content) }) }
 @Composable private fun SettingRow(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit = {}) { Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 22.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(icon, null, Modifier.size(28.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.width(20.dp)); Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f)); Icon(Icons.Default.ChevronRight, null) } }
 private fun themeLabel(theme: String) = when (theme) { "dark" -> "深色"; "light" -> "浅色"; else -> "跟随系统" }

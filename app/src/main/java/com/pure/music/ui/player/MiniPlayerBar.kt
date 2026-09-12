@@ -18,7 +18,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.FormatListBulleted
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,14 +43,17 @@ import com.pure.music.ui.components.AlbumArt
 @Composable
 fun MiniPlayerBar(
     state: PlaybackState,
+    onPrevious: () -> Unit,
     onTogglePlayPause: () -> Unit,
     onNext: () -> Unit,
-    onExpand: () -> Unit
+    onExpand: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val song = state.currentSong ?: return
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainer,
         tonalElevation = 4.dp
     ) {
@@ -90,6 +95,11 @@ fun MiniPlayerBar(
 
             Spacer(Modifier.width(4.dp))
 
+            // 上一曲
+            IconButton(onClick = onPrevious) {
+                Icon(Icons.Default.SkipPrevious, "上一曲")
+            }
+
             // 播放/暂停
             IconButton(onClick = onTogglePlayPause) {
                 Icon(
@@ -98,12 +108,14 @@ fun MiniPlayerBar(
                 )
             }
 
-            // 播放队列
+            // 下一曲
+            IconButton(onClick = onNext) {
+                Icon(Icons.Default.SkipNext, "下一曲")
+            }
+
+            // 展开全屏播放器
             IconButton(onClick = onExpand) {
-                Icon(
-                    imageVector = Icons.Default.FormatListBulleted,
-                    contentDescription = "播放队列"
-                )
+                Icon(Icons.Default.OpenInFull, "展开播放器")
             }
             }
         }

@@ -379,12 +379,12 @@ private fun LyricsPage(song: Song, colors: CoverColors) {
 private fun DetailPage(song: Song, colors: CoverColors) {
     Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Box(Modifier.weight(1f)) { DetailCard("☀", "播放界面保持屏幕", colors) }
-            Box(Modifier.weight(1f)) { DetailCard("☊", "沉浸模式", colors) }
+            Box(Modifier.weight(1f)) { DetailCard(Icons.Default.WbSunny, "播放界面保持屏幕", colors) }
+            Box(Modifier.weight(1f)) { DetailCard(Icons.Default.SurroundSound, "沉浸模式", colors) }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Box(Modifier.weight(1f)) { DetailCard("▦", "Original Sound", colors) }
-            Box(Modifier.weight(1f)) { DetailCard("◉", "DLNA (beta)", colors) }
+            Box(Modifier.weight(1f)) { DetailCard(Icons.Default.Audiotrack, "Original Sound", colors) }
+            Box(Modifier.weight(1f)) { DetailCard(Icons.Default.Cast, "DLNA (beta)", colors) }
         }
         InfoCard("音频信息", listOf("FLAC format stream", "2 Channels    44100 Hz    828 kbps"), colors)
         InfoCard("出自专辑", listOf(song.album.ifBlank { "原创歌曲合集" }, "未知专辑艺术家"), colors)
@@ -393,9 +393,9 @@ private fun DetailPage(song: Song, colors: CoverColors) {
 }
 
 @Composable
-private fun DetailCard(icon: String, text: String, colors: CoverColors) {
+private fun DetailCard(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String, colors: CoverColors) {
     Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.surface.copy(alpha = .7f)).padding(22.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(icon, color = colors.accent, fontSize = 28.sp)
+        Icon(icon, contentDescription = null, tint = colors.accent, modifier = Modifier.size(28.dp))
         Spacer(Modifier.width(20.dp))
         Text(text, color = colors.accent, fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }

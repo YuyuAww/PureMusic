@@ -48,20 +48,40 @@ fun LibraryScreen(
     val context = androidx.compose.ui.platform.LocalContext.current; val permission = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE; var granted by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it; if (it) viewModel.refresh() }
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val isExpanded = maxWidth >= 600.dp
         val compactDrawerWidth = maxWidth * 0.5f
         val drawerItems: @Composable ColumnScope.() -> Unit = {
-            Text("PureMusic", Modifier.padding(horizontal = 24.dp, vertical = 20.dp), style = MaterialTheme.typography.headlineSmall)
-            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onExit) { Icon(Icons.Default.ExitToApp, "退出应用") }
-                IconButton(onClick = onToggleTheme) { Icon(if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode, if (isDarkTheme) "切换浅色模式" else "切换深色模式") }
-                IconButton(onClick = { scope.launch { drawer.close() }; onShowEqualizer() }) { Icon(Icons.Default.Equalizer, "均衡器") }
+            Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onExit) { Icon(Icons.Default.ExitToApp, "退出应用") }
+                        IconButton(onClick = onToggleTheme) { Icon(if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode, if (isDarkTheme) "切换浅色模式" else "切换深色模式") }
+                        IconButton(onClick = { scope.launch { drawer.close() }; onShowEqualizer() }) { Icon(Icons.Default.Equalizer, "均衡器") }
+                    }
+                }
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Column(Modifier.padding(vertical = 8.dp)) {
+                        LibrarySection.entries.forEach { item -> NavigationDrawerItem(label = { Text(item.title) }, selected = section == item, onClick = { section = item; folderPath = null; scope.launch { drawer.close() } }, icon = { Icon(if (item == LibrarySection.ALBUMS) Icons.Default.Album else if (item == LibrarySection.ARTISTS) Icons.Default.Person else if (item == LibrarySection.FOLDERS) Icons.Default.Folder else if (item == LibrarySection.FAVORITES) Icons.Default.Favorite else if (item == LibrarySection.RECENT) Icons.Default.History else Icons.Default.MusicNote, null) }) }
+                    }
+                }
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Column(Modifier.padding(vertical = 8.dp)) {
+                        NavigationDrawerItem(label = { Text("扫描音乐") }, selected = false, onClick = { viewModel.refresh(); scope.launch { drawer.close() } }, icon = { Icon(Icons.Default.Refresh, null) })
+                        NavigationDrawerItem(label = { Text("设置") }, selected = false, onClick = { scope.launch { drawer.close() }; onShowSettings() }, icon = { Icon(Icons.Default.Settings, null) })
+                    }
+                }
             }
-            HorizontalDivider(Modifier.padding(top = 8.dp))
-            LibrarySection.entries.forEach { item -> NavigationDrawerItem(label = { Text(item.title) }, selected = section == item, onClick = { section = item; folderPath = null; scope.launch { drawer.close() } }, icon = { Icon(if (item == LibrarySection.ALBUMS) Icons.Default.Album else if (item == LibrarySection.ARTISTS) Icons.Default.Person else if (item == LibrarySection.FOLDERS) Icons.Default.Folder else if (item == LibrarySection.FAVORITES) Icons.Default.Favorite else if (item == LibrarySection.RECENT) Icons.Default.History else Icons.Default.MusicNote, null) }) }
-            HorizontalDivider(Modifier.padding(vertical = 12.dp))
-            NavigationDrawerItem(label = { Text("扫描音乐") }, selected = false, onClick = { viewModel.refresh(); scope.launch { drawer.close() } }, icon = { Icon(Icons.Default.Refresh, null) })
-            NavigationDrawerItem(label = { Text("设置") }, selected = false, onClick = { scope.launch { drawer.close() }; onShowSettings() }, icon = { Icon(Icons.Default.Settings, null) })
         }
         val content: @Composable () -> Unit = {
             Scaffold(
@@ -70,7 +90,7 @@ fun LibraryScreen(
                         title = { Text(if (folderPath == null) section.title else folders.firstOrNull { it.path == folderPath }?.name ?: "文件夹") },
                         navigationIcon = {
                             if (folderPath != null) IconButton(onClick = { folderPath = null }) { Icon(Icons.Default.ArrowBack, "返回") }
-                            else if (!isExpanded) IconButton(onClick = { scope.launch { if (drawer.isOpen) drawer.close() else drawer.open() } }) { Icon(Icons.Default.Menu, "导航") }
+                            else IconButton(onClick = { scope.launch { if (drawer.isOpen) drawer.close() else drawer.open() } }) { Icon(Icons.Default.Menu, "导航") }
                         },
                         actions = { IconButton(onClick = onShowSearch) { Icon(Icons.Default.Search, "搜索") } }
                     )
@@ -82,11 +102,11 @@ fun LibraryScreen(
                 }
             }
         }
-        if (isExpanded) {
-            PermanentNavigationDrawer(drawerContent = { PermanentDrawerSheet(content = drawerItems) }, content = content)
-        } else {
-            ModalNavigationDrawer(drawerState = drawer, drawerContent = { ModalDrawerSheet(modifier = Modifier.width(compactDrawerWidth), content = drawerItems) }, content = content)
-        }
+        DismissibleNavigationDrawer(
+            drawerState = drawer,
+            drawerContent = { DismissibleDrawerSheet(modifier = Modifier.width(compactDrawerWidth), content = drawerItems) },
+            content = content
+        )
     }
 }
 
@@ -145,7 +165,7 @@ fun LibraryScreen(
                 Spacer(Modifier.width(7.dp)); Text("${song.artist} · ${song.album}", maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
             }
         }
-        IconButton(onClick = { onToggleFavorite(song.id) }) { Icon(Icons.Default.Add, "添加到歌单", tint = MaterialTheme.colorScheme.onSurfaceVariant) }
+        IconButton(onClick = { onToggleFavorite(song.id) }) { Icon(Icons.Default.PlaylistAdd, "添加到歌单", tint = MaterialTheme.colorScheme.onSurfaceVariant) }
         Icon(Icons.Default.MoreVert, "更多操作")
     }
 }

@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -97,19 +98,7 @@ private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: Player
         }
     }
 
-    Scaffold(
-        bottomBar = {
-            // 底部迷你播放器，有歌曲时显示
-            if (state.currentSong != null && !showNowPlaying) {
-                MiniPlayerBar(
-                    state = state,
-                    onTogglePlayPause = { playerViewModel.togglePlayPause() },
-                    onNext = { playerViewModel.next() },
-                    onExpand = { showNowPlaying = true }
-                )
-            }
-        }
-    ) { padding ->
+    Scaffold { padding ->
         Box(modifier = Modifier.fillMaxSize()) {
             // 正常内容区，带系统栏 padding
             Box(
@@ -166,6 +155,20 @@ private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: Player
                     onToggleFavorite = { playerViewModel.toggleFavorite(state.currentSong?.id ?: -1L) },
                     onPlayQueueSong = { song, queue -> playerViewModel.playQueue(queue, queue.indexOf(song)) },
                     onSleepTimerFinished = { if (state.isPlaying) playerViewModel.togglePlayPause() },
+                )
+            }
+
+            if (state.currentSong != null && !showNowPlaying) {
+                MiniPlayerBar(
+                    state = state,
+                    onPrevious = { playerViewModel.previous() },
+                    onTogglePlayPause = { playerViewModel.togglePlayPause() },
+                    onNext = { playerViewModel.next() },
+                    onExpand = { showNowPlaying = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 12.dp, vertical = 12.dp)
+                        .navigationBarsPadding()
                 )
             }
         }
