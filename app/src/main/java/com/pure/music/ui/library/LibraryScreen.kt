@@ -63,20 +63,25 @@ fun LibraryScreen(
             NavigationDrawerItem(label = { Text("扫描音乐") }, selected = false, onClick = { viewModel.refresh(); scope.launch { drawer.close() } }, icon = { Icon(Icons.Default.Refresh, null) })
             NavigationDrawerItem(label = { Text("设置") }, selected = false, onClick = { scope.launch { drawer.close() }; onShowSettings() }, icon = { Icon(Icons.Default.Settings, null) })
         }
-        val content: @Composable () -> Unit = { Scaffold(topBar = { TopAppBar(
-            title = { Text(if (folderPath == null) section.title else folders.firstOrNull { it.path == folderPath }?.name ?: "文件夹") },
-            navigationIcon = {
-                if (folderPath != null) IconButton(onClick = { folderPath = null }) { Icon(Icons.Default.ArrowBack, "返回") }
-                else if (!isExpanded) IconButton(onClick = { scope.launch { if (drawer.isOpen) drawer.close() else drawer.open() } }) { Icon(Icons.Default.Menu, "导航") }
-            },
-            actions = { IconButton(onClick = onShowSearch) { Icon(Icons.Default.Search, "搜索") } }
-        ) }) { padding ->
-            Box(Modifier.fillMaxSize().imePadding()) {
-                if (!granted) PermissionPanel(padding) { launcher.launch(permission) }
-                else LibraryContent(section, songs, albums, artists, folders, favoriteIds, recentIds, folderPath, "", padding, onPlaySong, viewModel::toggleFavorite) { folderPath = it }
+        val content: @Composable () -> Unit = {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(if (folderPath == null) section.title else folders.firstOrNull { it.path == folderPath }?.name ?: "文件夹") },
+                        navigationIcon = {
+                            if (folderPath != null) IconButton(onClick = { folderPath = null }) { Icon(Icons.Default.ArrowBack, "返回") }
+                            else if (!isExpanded) IconButton(onClick = { scope.launch { if (drawer.isOpen) drawer.close() else drawer.open() } }) { Icon(Icons.Default.Menu, "导航") }
+                        },
+                        actions = { IconButton(onClick = onShowSearch) { Icon(Icons.Default.Search, "搜索") } }
+                    )
+                }
+            ) { padding ->
+                Box(Modifier.fillMaxSize().imePadding()) {
+                    if (!granted) PermissionPanel(padding) { launcher.launch(permission) }
+                    else LibraryContent(section, songs, albums, artists, folders, favoriteIds, recentIds, folderPath, "", padding, onPlaySong, viewModel::toggleFavorite) { folderPath = it }
+                }
             }
         }
-        } }
         if (isExpanded) {
             PermanentNavigationDrawer(drawerContent = { PermanentDrawerSheet(content = drawerItems) }, content = content)
         } else {
