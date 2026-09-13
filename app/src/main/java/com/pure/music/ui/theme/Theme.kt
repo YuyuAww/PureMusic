@@ -62,8 +62,8 @@ fun PureMusicTheme(
     val context = LocalContext.current
     val fallback = CoverColors(BrandPrimary, BrandOnSurfaceVariant, BrandSurface, BrandSurface)
     var coverColors by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(fallback) }
-    androidx.compose.runtime.LaunchedEffect(colorSource, coverAlbumId) {
-        coverColors = if (colorSource == "cover" && coverAlbumId != null) loadCoverColors(context, coverAlbumId, fallback) else fallback
+    androidx.compose.runtime.LaunchedEffect(colorSource, coverAlbumId, darkTheme) {
+        coverColors = if (colorSource == "cover" && coverAlbumId != null) loadCoverColors(context, coverAlbumId, fallback, darkTheme) else fallback
     }
     val colorScheme = when {
         // Android 12+ 使用系统动态取色
@@ -71,17 +71,23 @@ fun PureMusicTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
         colorSource == "cover" -> if (darkTheme) darkColorScheme(
-            primary = coverColors.accent,
-            secondary = coverColors.muted,
-            background = coverColors.background,
-            surface = coverColors.surface,
-            onSurface = Color.White
+            primary = coverColors.accent, onPrimary = onColor(coverColors.accent),
+            primaryContainer = coverColors.surface, onPrimaryContainer = onColor(coverColors.surface),
+            secondary = coverColors.muted, onSecondary = onColor(coverColors.muted),
+            secondaryContainer = coverColors.surface, onSecondaryContainer = onColor(coverColors.surface),
+            tertiary = coverColors.accent, onTertiary = onColor(coverColors.accent),
+            background = coverColors.background, onBackground = Color(0xFFE6E1E5),
+            surface = coverColors.surface, onSurface = Color(0xFFE6E1E5),
+            surfaceVariant = coverColors.background, onSurfaceVariant = Color(0xFFCAC4D0)
         ) else lightColorScheme(
-            primary = coverColors.accent,
-            secondary = coverColors.muted,
-            background = coverColors.background,
-            surface = coverColors.surface,
-            onSurface = Color.Black
+            primary = coverColors.accent, onPrimary = onColor(coverColors.accent),
+            primaryContainer = coverColors.surface, onPrimaryContainer = onColor(coverColors.surface),
+            secondary = coverColors.muted, onSecondary = onColor(coverColors.muted),
+            secondaryContainer = coverColors.surface, onSecondaryContainer = onColor(coverColors.surface),
+            tertiary = coverColors.accent, onTertiary = onColor(coverColors.accent),
+            background = coverColors.background, onBackground = Color(0xFF1D1B20),
+            surface = coverColors.surface, onSurface = Color(0xFF1D1B20),
+            surfaceVariant = coverColors.background, onSurfaceVariant = Color(0xFF49454F)
         )
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
@@ -101,4 +107,9 @@ fun PureMusicTheme(
         typography = Typography,
         content = content
     )
+}
+
+private fun onColor(color: Color): Color {
+    val r = color.red * .2126f + color.green * .7152f + color.blue * .0722f
+    return if (r > .58f) Color(0xFF1D1B20) else Color.White
 }

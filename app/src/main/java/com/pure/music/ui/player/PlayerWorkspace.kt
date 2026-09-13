@@ -1,6 +1,7 @@
 package com.pure.music.ui.player
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -17,8 +18,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -28,6 +31,7 @@ import androidx.media3.common.Player
 import kotlin.math.roundToInt
 import com.pure.music.data.Song
 import com.pure.music.player.PlaybackState
+import com.pure.music.player.EqualizerController
 import com.pure.music.ui.components.AlbumArt
 import com.pure.music.ui.library.formatDuration
 import com.pure.music.ui.utils.CoverColors
@@ -71,8 +75,9 @@ fun PlayerWorkspace(
     var colors by remember(song.albumId) { mutableStateOf(fallback) }
     
     // 异步加载封面提取的颜色
-    LaunchedEffect(song.albumId) { 
-        colors = loadCoverColors(context, song.albumId, fallback) 
+    val darkTheme = isSystemInDarkTheme()
+    LaunchedEffect(song.albumId, darkTheme) {
+        colors = loadCoverColors(context, song.albumId, fallback, darkTheme)
     }
 
     // 使用 Scaffold 划分三大组件区域
@@ -141,7 +146,7 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
     Row(
         Modifier
             .fillMaxWidth()
-            .background(colors.background) // 背景延伸到状态栏区域
+            .background(Brush.horizontalGradient(listOf(colors.gradientStart, colors.gradientEnd))) // 封面渐变色背景
             .statusBarsPadding() // 内容避开状态栏
             .padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 15.dp),
         verticalAlignment = Alignment.Top
@@ -182,7 +187,7 @@ private fun CoverAndLyricsPage(song: Song, colors: CoverColors, onOpenLyrics: ()
                 .height(360.dp)
                 .shadow(8.dp, RoundedCornerShape(16.dp))
                 .clip(RoundedCornerShape(16.dp))
-                .background(colors.surface) // 封面卡片背景：由封面表面色决定
+                .background(Brush.verticalGradient(listOf(colors.gradientStart.copy(alpha = .18f), colors.surface))) // 封面渐变色衬底
         ) {
             AlbumArt(song, Modifier.fillMaxSize())
         }
@@ -222,6 +227,9 @@ private fun PlayerBottomBar(
     var sliderPosition by remember(state.currentSong?.id) { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
     var showSleepTimer by remember { mutableStateOf(false) }
+    var showEqualizer by remember { mutableStateOf(false) }
+    var equalizerEnabled by remember { mutableStateOf(true) }
+    var bandLevels by remember { mutableStateOf(List(10) { 0f }) }
     var sleepSelection by remember { mutableFloatStateOf(5f) }
     LaunchedEffect(state.position, dragging) { if (!dragging) sliderPosition = state.position.toFloat() }
     val displayedPosition = if (dragging) sliderPosition.toLong() else state.position
@@ -233,30 +241,9 @@ private fun PlayerBottomBar(
             .navigationBarsPadding() // 内容避开底部导航栏
             .padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 20.dp)
     ) {
-        // 极细进度条
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .height(6.dp)
-                .clip(RoundedCornerShape(3.dp))
-                .background(colors.accent.copy(alpha = .22f)) // 进度条轨道：封面主色极淡版
-        ) {
-            Box(
-                Modifier
-                    .fillMaxWidth(fraction = sliderPosition / state.duration.coerceAtLeast(1).toFloat())
-                    .fillMaxHeight()
-                    .background(colors.accent) // 已播放进度：封面主色
-            )
-            // 进度圆点
-            Box(
-                Modifier
-                    .align(Alignment.CenterStart)
-                    .offset(x = (sliderPosition / state.duration.coerceAtLeast(1).toFloat() * 100).dp - 5.dp)
-                    .size(10.dp)
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(colors.accent) // 圆点：封面主色
-            )
-        }
+        Slider(value = sliderPosition, onValueChange = { dragging = true; sliderPosition = it },
+            onValueChangeFinished = { dragging = false; onSeek(sliderPosition.toLong()) },
+            valueRange = 0f..state.duration.coerceAtLeast(1).toFloat(), colors = SliderDefaults.colors(thumbColor = colors.accent, activeTrackColor = colors.accent, inactiveTrackColor = colors.accent.copy(alpha = .22f)))
 
         // 时间
         Row(
@@ -308,7 +295,7 @@ private fun PlayerBottomBar(
                 Icon(mode.icon, mode.label, tint = colors.accent, modifier = Modifier.size(24.dp))
             }
             IconButton(onClick = { sleepSelection = state.sleepMinutes.takeIf { it > 0 }?.toFloat() ?: 5f; showSleepTimer = true }) { Icon(Icons.Default.Alarm, "睡眠定时", tint = if (state.sleepMinutes > 0) MaterialTheme.colorScheme.primary else colors.accent, modifier = Modifier.size(24.dp)) }
-            IconButton(onClick = {}) { Icon(Icons.Default.GraphicEq, "音效", tint = colors.accent, modifier = Modifier.size(24.dp)) }
+            IconButton(onClick = { showEqualizer = true }) { Icon(Icons.Default.GraphicEq, "均衡器", tint = colors.accent, modifier = Modifier.size(24.dp)) }
             IconButton(onClick = onQueueClick) { Icon(Icons.Default.QueueMusic, "播放列表", tint = colors.accent, modifier = Modifier.size(24.dp)) }
             IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = colors.accent, modifier = Modifier.size(24.dp)) }
         }
@@ -349,6 +336,27 @@ private fun PlayerBottomBar(
                         Text("开始")
                     }
                 }
+            }
+        }
+    }
+    if (showEqualizer) {
+        ModalBottomSheet(onDismissRequest = { showEqualizer = false }) {
+            Column(Modifier.fillMaxWidth().padding(20.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("均衡器", style = MaterialTheme.typography.headlineSmall)
+                    Switch(checked = equalizerEnabled, onCheckedChange = { equalizerEnabled = it; EqualizerController.setEnabled(it) })
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).height(220.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    bandLevels.forEachIndexed { index, level ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Slider(value = if (equalizerEnabled) level else 0f, onValueChange = { value -> bandLevels = bandLevels.toMutableList().also { it[index] = value }; EqualizerController.setBandLevel(index, value) }, valueRange = -1f..1f, modifier = Modifier.height(180.dp).width(42.dp).graphicsLayer { rotationZ = 270f })
+                            Text(listOf("31", "62", "125", "250", "500", "1k", "2k", "4k", "8k", "16k")[index], style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                }
+                Text("调整各频段增益（dB）", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(20.dp))
             }
         }
     }

@@ -40,6 +40,7 @@ class PlaybackService : MediaSessionService() {
         )
 
         player = newPlayer
+        EqualizerController.attach(newPlayer.audioSessionId)
         return MediaSession.Builder(this, newPlayer)
             .setSessionActivity(sessionActivity)
             .build()
@@ -51,6 +52,7 @@ class PlaybackService : MediaSessionService() {
             release()
         }
         player?.release()
+        EqualizerController.release()
         player = null
         mediaSession = null
         super.onDestroy()
