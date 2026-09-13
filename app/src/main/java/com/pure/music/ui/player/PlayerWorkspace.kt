@@ -327,22 +327,43 @@ private fun PlayerBottomBar(
         }
     }
     if (showSleepTimer) {
-        AlertDialog(
-            onDismissRequest = { showSleepTimer = false },
-            title = { Text("睡眠定时") },
-            text = {
-                Column {
-                    Text(if (sleepMinutes > 0) "剩余 ${sleepMinutes} 分钟" else "设置自动暂停时间")
-                    Spacer(Modifier.height(12.dp))
-                    Slider(value = sleepSelection, onValueChange = { sleepSelection = (it / 5f).roundToInt() * 5f }, valueRange = 5f..60f, steps = 10)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("5 分钟"); Text("${sleepSelection.toInt()} 分钟"); Text("60 分钟")
+        ModalBottomSheet(onDismissRequest = { showSleepTimer = false }) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 520.dp)
+                    .padding(horizontal = 20.dp)
+            ) {
+                Text("睡眠定时", style = MaterialTheme.typography.headlineSmall)
+                Spacer(Modifier.height(8.dp))
+                Text(if (sleepMinutes > 0) "剩余 ${sleepMinutes} 分钟" else "设置自动暂停时间")
+                Spacer(Modifier.height(12.dp))
+                Slider(
+                    value = sleepSelection,
+                    onValueChange = { sleepSelection = (it / 5f).roundToInt() * 5f },
+                    valueRange = 5f..60f,
+                    steps = 10
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("5 分钟")
+                    Text("${sleepSelection.toInt()} 分钟")
+                    Text("60 分钟")
+                }
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, bottom = 24.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { sleepMinutes = 0; showSleepTimer = false }) {
+                        Text(if (sleepMinutes > 0) "取消定时" else "关闭")
+                    }
+                    TextButton(onClick = { sleepMinutes = sleepSelection.toInt().coerceIn(5, 60); showSleepTimer = false }) {
+                        Text("开始")
                     }
                 }
-            },
-            confirmButton = { TextButton(onClick = { sleepMinutes = sleepSelection.toInt().coerceIn(5, 60); showSleepTimer = false }) { Text("开始") } },
-            dismissButton = { TextButton(onClick = { sleepMinutes = 0; showSleepTimer = false }) { Text(if (sleepMinutes > 0) "取消定时" else "关闭") } }
-        )
+            }
+        }
     }
 }
 
