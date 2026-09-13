@@ -18,7 +18,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.activity.compose.BackHandler
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.navigationevent.NavigationEventInfo
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
@@ -91,13 +93,18 @@ private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: Player
     var showSettings by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = showNowPlaying || showSettings || showSearch) {
-        when {
-            showSettings -> showSettings = false
-            showSearch -> showSearch = false
-            else -> showNowPlaying = false
+    val backEventState = rememberNavigationEventState(currentInfo = NavigationEventInfo.None)
+    NavigationBackHandler(
+        state = backEventState,
+        isBackEnabled = showNowPlaying || showSettings || showSearch,
+        onBackCompleted = {
+            when {
+                showSettings -> showSettings = false
+                showSearch -> showSearch = false
+                else -> showNowPlaying = false
+            }
         }
-    }
+    )
 
     Scaffold { padding ->
         Box(modifier = Modifier.fillMaxSize()) {
@@ -155,7 +162,8 @@ private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: Player
                     isFavorite = playerViewModel.isFavorite(state.currentSong?.id ?: -1L),
                     onToggleFavorite = { playerViewModel.toggleFavorite(state.currentSong?.id ?: -1L) },
                     onPlayQueueSong = { song, queue -> playerViewModel.playQueue(queue, queue.indexOf(song)) },
-                    onSleepTimerFinished = { if (state.isPlaying) playerViewModel.togglePlayPause() },
+                    onSetSleepTimer = playerViewModel::setSleepTimer,
+                    onCancelSleepTimer = playerViewModel::cancelSleepTimer,
                 )
             }
 

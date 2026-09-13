@@ -13,6 +13,7 @@ data class PlaybackState(
     val shuffleModeEnabled: Boolean = false,
     val queue: List<Song> = emptyList(),
     val queueIndex: Int = -1,
+    val sleepMinutes: Int = 0,
     val errorMessage: String? = null,
     val isConnecting: Boolean = false
 )

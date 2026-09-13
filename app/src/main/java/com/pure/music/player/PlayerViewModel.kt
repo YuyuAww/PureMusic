@@ -37,6 +37,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun setRepeatMode(mode: Int) = PlayerManager.setRepeatMode(mode)
     fun setShuffleMode(enabled: Boolean) = PlayerManager.setShuffleMode(enabled)
     fun clearError() = PlayerManager.clearError()
+    fun setSleepTimer(minutes: Int) = PlayerManager.setSleepTimer(minutes)
+    fun cancelSleepTimer() = PlayerManager.cancelSleepTimer()
     fun isFavorite(songId: Long): Boolean = songId in favoriteSongIds.value
     fun toggleFavorite(songId: Long) {
         if (songId < 0) return

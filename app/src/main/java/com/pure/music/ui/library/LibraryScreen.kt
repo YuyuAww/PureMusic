@@ -48,7 +48,7 @@ fun LibraryScreen(
     val context = androidx.compose.ui.platform.LocalContext.current; val permission = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE; var granted by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it; if (it) viewModel.refresh() }
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val compactDrawerWidth = maxWidth * 0.5f
+        val compactDrawerWidth = (maxWidth * 0.5f).coerceIn(280.dp, 360.dp)
         val drawerItems: @Composable ColumnScope.() -> Unit = {
             Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Surface(
@@ -90,7 +90,11 @@ fun LibraryScreen(
                         title = { Text(if (folderPath == null) section.title else folders.firstOrNull { it.path == folderPath }?.name ?: "文件夹") },
                         navigationIcon = {
                             if (folderPath != null) IconButton(onClick = { folderPath = null }) { Icon(Icons.Default.ArrowBack, "返回") }
-                            else IconButton(onClick = { scope.launch { if (drawer.isOpen) drawer.close() else drawer.open() } }) { Icon(Icons.Default.Menu, "导航") }
+                            else if (maxWidth < 600.dp) {
+                                IconButton(onClick = { scope.launch { if (drawer.isOpen) drawer.close() else drawer.open() } }) {
+                                    Icon(Icons.Default.Menu, "导航")
+                                }
+                            }
                         },
                         actions = { IconButton(onClick = onShowSearch) { Icon(Icons.Default.Search, "搜索") } }
                     )
@@ -102,11 +106,23 @@ fun LibraryScreen(
                 }
             }
         }
-        DismissibleNavigationDrawer(
-            drawerState = drawer,
-            drawerContent = { DismissibleDrawerSheet(modifier = Modifier.width(compactDrawerWidth), content = drawerItems) },
-            content = content
-        )
+        if (maxWidth >= 600.dp) {
+            PermanentNavigationDrawer(
+                drawerContent = {
+                    PermanentDrawerSheet(
+                        modifier = Modifier.width(compactDrawerWidth),
+                        content = drawerItems
+                    )
+                },
+                content = content
+            )
+        } else {
+            DismissibleNavigationDrawer(
+                drawerState = drawer,
+                drawerContent = { DismissibleDrawerSheet(modifier = Modifier.width(compactDrawerWidth), content = drawerItems) },
+                content = content
+            )
+        }
     }
 }
 

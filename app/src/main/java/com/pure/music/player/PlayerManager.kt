@@ -28,6 +28,7 @@ object PlayerManager {
     private var controller: MediaController? = null
     private var pendingQueue: Pair<List<Song>, Int>? = null
     private var positionJob: Job? = null
+    private var sleepTimerJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Main.immediate)
 
     private val _state = kotlinx.coroutines.flow.MutableStateFlow(PlaybackState())
@@ -49,7 +50,8 @@ object PlayerManager {
                 currentSong = song,
                 queueIndex = index,
                 duration = controller?.duration ?: 0,
-                position = controller?.currentPosition ?: 0
+                position = controller?.currentPosition ?: 0,
+                errorMessage = null
             )
             if (song != null) recordHistory(song)
             notifyWidgetUpdate()
@@ -85,6 +87,11 @@ object PlayerManager {
                 errorMessage = error.localizedMessage ?: "无法播放此音频文件"
             )
             stopPositionUpdates()
+            val activeController = controller
+            if (activeController != null && activeController.hasNextMediaItem()) {
+                activeController.seekToNextMediaItem()
+                activeController.play()
+            }
         }
     }
 
@@ -161,6 +168,26 @@ object PlayerManager {
 
     fun clearError() { _state.value = _state.value.copy(errorMessage = null) }
 
+    fun setSleepTimer(minutes: Int) {
+        val duration = minutes.coerceIn(5, 60)
+        sleepTimerJob?.cancel()
+        _state.value = _state.value.copy(sleepMinutes = duration)
+        sleepTimerJob = scope.launch {
+            repeat(duration) {
+                delay(60_000L)
+                _state.value = _state.value.copy(sleepMinutes = (_state.value.sleepMinutes - 1).coerceAtLeast(0))
+            }
+            controller?.pause()
+            sleepTimerJob = null
+        }
+    }
+
+    fun cancelSleepTimer() {
+        sleepTimerJob?.cancel()
+        sleepTimerJob = null
+        _state.value = _state.value.copy(sleepMinutes = 0)
+    }
+
     private fun startPositionUpdates() {
         if (positionJob?.isActive == true) return
         positionJob = scope.launch {
@@ -205,6 +232,8 @@ object PlayerManager {
         context = null
         pendingQueue = null
         stopPositionUpdates()
+        sleepTimerJob?.cancel()
+        sleepTimerJob = null
     }
 
     /** 将 Song 数据转换为 Media3 MediaItem */

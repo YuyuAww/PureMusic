@@ -51,3 +51,21 @@ interface PlayHistoryDao {
     @Query("SELECT * FROM play_history ORDER BY played_at DESC LIMIT :limit")
     fun observeRecent(limit: Int = 20): Flow<List<PlayHistoryEntity>>
 }
+
+@Dao
+interface SongsDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertAll(songs: List<SongEntity>)
+
+    @Query("SELECT * FROM songs ORDER BY title COLLATE NOCASE ASC")
+    suspend fun getAll(): List<SongEntity>
+
+    @Query("DELETE FROM songs WHERE song_id NOT IN (:ids)")
+    suspend fun deleteMissing(ids: List<Long>)
+
+    @Query("DELETE FROM songs")
+    suspend fun deleteAll()
+
+    @Query("DELETE FROM songs WHERE song_id = :songId")
+    suspend fun deleteById(songId: Long)
+}

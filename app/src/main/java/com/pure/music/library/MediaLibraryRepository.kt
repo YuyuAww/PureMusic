@@ -10,6 +10,8 @@ import android.provider.MediaStore
 import com.pure.music.data.Album
 import com.pure.music.data.Artist
 import com.pure.music.data.Song
+import com.pure.music.data.db.AppDatabase
+import com.pure.music.data.db.SongEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -29,6 +31,7 @@ class MediaLibraryRepository private constructor(context: Context) {
 
     private val appContext = context.applicationContext
     private val resolver = appContext.contentResolver
+    private val songsDao = AppDatabase.get(appContext).songsDao()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var refreshJob: Job? = null
 
@@ -46,6 +49,10 @@ class MediaLibraryRepository private constructor(context: Context) {
         override fun onChange(selfChange: Boolean) {
             refresh()
         }
+
+        override fun onChange(selfChange: Boolean, uri: Uri?) {
+            if (uri == null) refresh() else refresh(uri)
+        }
     }
 
     init {
@@ -54,19 +61,52 @@ class MediaLibraryRepository private constructor(context: Context) {
             true,
             observer
         )
-        refresh()
+        scope.launch {
+            val cached = withContext(Dispatchers.IO) { songsDao.getAll().map { it.toSong() } }
+            publish(cached)
+            refresh()
+        }
     }
 
     /** 请求刷新媒体库；连续触发时只保留最后一次查询。 */
     fun refresh() {
+        refresh(null)
+    }
+
+    private fun refresh(changedUri: Uri?) {
         refreshJob?.cancel()
         refreshJob = scope.launch {
             delay(250)
-            val songList = withContext(Dispatchers.IO) { querySongs() }
-            _songs.value = songList
-            _albums.value = buildAlbums(songList)
-            _artists.value = buildArtists(songList)
+            val songList = withContext(Dispatchers.IO) {
+                if (changedUri != null && changedUri != MediaStore.Audio.Media.EXTERNAL_CONTENT_URI) {
+                    val id = changedUri.lastPathSegment?.toLongOrNull()
+                    if (id != null) {
+                        val song = querySong(id)
+                        if (song == null) songsDao.deleteById(id) else songsDao.upsertAll(listOf(song.toEntity()))
+                    }
+                    songsDao.getAll().map { it.toSong() }
+                } else {
+                    val scanned = querySongs() ?: return@withContext null
+                    syncSongs(scanned)
+                    songsDao.getAll().map { it.toSong() }
+                }
+            }
+            songList?.let(::publish)
         }
+    }
+
+    private fun publish(songList: List<Song>) {
+        _songs.value = songList
+        _albums.value = buildAlbums(songList)
+        _artists.value = buildArtists(songList)
+    }
+
+    private suspend fun syncSongs(scanned: List<Song>) {
+        val ids = scanned.map { it.id }
+        val existing = songsDao.getAll().associateBy { it.songId }
+        val updated = scanned.map { it.toEntity() }.filter { existing[it.songId] != it }
+        if (ids.isEmpty()) songsDao.deleteAll() else songsDao.deleteMissing(ids)
+        if (updated.isNotEmpty()) songsDao.upsertAll(updated)
     }
 
     /** 释放资源，取消协程作用域 */
@@ -76,7 +116,10 @@ class MediaLibraryRepository private constructor(context: Context) {
     }
 
     /** 从 MediaStore 查询所有音乐文件 */
-    private fun querySongs(): List<Song> {
+    private fun querySongs(
+        selection: String = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} > 0",
+        selectionArgs: Array<String>? = null
+    ): List<Song>? {
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
@@ -90,16 +133,19 @@ class MediaLibraryRepository private constructor(context: Context) {
             MediaStore.Audio.Media.TRACK
             ,MediaStore.Audio.Media.DATA
         )
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-
         val results = mutableListOf<Song>()
-        resolver.query(
+        val cursor = try {
+            resolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection,
             selection,
-            null,
+            selectionArgs,
             "${MediaStore.Audio.Media.TITLE} ASC"
-        )?.use { cursor ->
+            )
+        } catch (_: Exception) {
+            return null
+        } ?: return null
+        cursor.use { cursor ->
             val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
             val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
@@ -139,6 +185,11 @@ class MediaLibraryRepository private constructor(context: Context) {
         return results
     }
 
+    private fun querySong(id: Long): Song? {
+        val selection = "${MediaStore.Audio.Media._ID} = ? AND ${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} > 0"
+        return querySongs(selection, arrayOf(id.toString()))?.firstOrNull()
+    }
+
     /** 从歌曲列表聚合生成专辑列表 */
     private fun buildAlbums(songs: List<Song>): List<Album> {
         return songs.groupBy { it.albumId }.map { (albumId, group) ->
@@ -165,6 +216,36 @@ class MediaLibraryRepository private constructor(context: Context) {
             )
         }.sortedBy { it.name }
     }
+
+    private fun Song.toEntity() = SongEntity(
+        songId = id,
+        uri = uri.toString(),
+        title = title,
+        artist = artist,
+        album = album,
+        albumId = albumId,
+        duration = duration,
+        size = size,
+        dateAdded = dateAdded,
+        dateModified = dateModified,
+        trackNumber = trackNumber,
+        path = path
+    )
+
+    private fun SongEntity.toSong() = Song(
+        id = songId,
+        uri = Uri.parse(uri),
+        title = title,
+        artist = artist,
+        album = album,
+        albumId = albumId,
+        duration = duration,
+        size = size,
+        dateAdded = dateAdded,
+        dateModified = dateModified,
+        trackNumber = trackNumber,
+        path = path
+    )
 
     companion object {
         @Volatile

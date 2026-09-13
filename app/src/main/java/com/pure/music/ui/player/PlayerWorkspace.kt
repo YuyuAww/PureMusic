@@ -25,7 +25,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.Player
-import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 import com.pure.music.data.Song
 import com.pure.music.player.PlaybackState
@@ -48,7 +47,8 @@ fun PlayerWorkspace(
     isFavorite: Boolean = false,
     onToggleFavorite: () -> Unit = {},
     onPlayQueueSong: (Song, List<Song>) -> Unit = { _, _ -> },
-    onSleepTimerFinished: () -> Unit = {}
+    onSetSleepTimer: (Int) -> Unit = {},
+    onCancelSleepTimer: () -> Unit = {}
 ) {
     val song = state.currentSong ?: return
     var lyricsJumpNonce by remember { mutableIntStateOf(0) }
@@ -95,7 +95,8 @@ fun PlayerWorkspace(
                 onRepeatMode = onRepeatMode,
                 onShuffleMode = onShuffleMode,
                 onQueueClick = { showQueue = true },
-                onSleepTimerFinished = onSleepTimerFinished
+                onSetSleepTimer = onSetSleepTimer,
+                onCancelSleepTimer = onCancelSleepTimer
             ) 
         }
     ) { paddingValues ->
@@ -133,7 +134,7 @@ fun PlayerWorkspace(
 }
 
 // ---------------------------------------------------------
-// 1. TopBar 组件 (包含歌名、歌手、投屏)
+// 1. TopBar 组件 (包含歌名、歌手)
 // ---------------------------------------------------------
 @Composable
 private fun PlayerTopBar(song: Song, colors: CoverColors) {
@@ -162,14 +163,6 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
-            )
-        }
-        IconButton(onClick = {}, modifier = Modifier.padding(top = 4.dp)) {
-            Icon(
-                Icons.Default.Cast,
-                "切换播放设备",
-                tint = colors.accent, // 封面主色
-                modifier = Modifier.size(24.dp)
             )
         }
     }
@@ -212,6 +205,7 @@ private fun MiniLyricsWindow(current: String, next1: String, next2: String, colo
 // 3. BottomBar 组件 (包含进度条、时间、播放键、工具栏)
 // ---------------------------------------------------------
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 private fun PlayerBottomBar(
     state: PlaybackState,
     colors: CoverColors,
@@ -222,20 +216,13 @@ private fun PlayerBottomBar(
     onRepeatMode: (Int) -> Unit,
     onShuffleMode: (Boolean) -> Unit,
     onQueueClick: () -> Unit,
-    onSleepTimerFinished: () -> Unit
+    onSetSleepTimer: (Int) -> Unit,
+    onCancelSleepTimer: () -> Unit
 ) {
     var sliderPosition by remember(state.currentSong?.id) { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
     var showSleepTimer by remember { mutableStateOf(false) }
-    var sleepMinutes by remember { mutableIntStateOf(0) }
     var sleepSelection by remember { mutableFloatStateOf(5f) }
-    LaunchedEffect(sleepMinutes) {
-        if (sleepMinutes > 0) {
-            delay(60_000L)
-            sleepMinutes = (sleepMinutes - 1).coerceAtLeast(0)
-            if (sleepMinutes == 0) onSleepTimerFinished()
-        }
-    }
     LaunchedEffect(state.position, dragging) { if (!dragging) sliderPosition = state.position.toFloat() }
     val displayedPosition = if (dragging) sliderPosition.toLong() else state.position
 
@@ -320,7 +307,7 @@ private fun PlayerBottomBar(
             }) {
                 Icon(mode.icon, mode.label, tint = colors.accent, modifier = Modifier.size(24.dp))
             }
-            IconButton(onClick = { sleepSelection = sleepMinutes.takeIf { it > 0 }?.toFloat() ?: 5f; showSleepTimer = true }) { Icon(Icons.Default.Alarm, "睡眠定时", tint = if (sleepMinutes > 0) MaterialTheme.colorScheme.primary else colors.accent, modifier = Modifier.size(24.dp)) }
+            IconButton(onClick = { sleepSelection = state.sleepMinutes.takeIf { it > 0 }?.toFloat() ?: 5f; showSleepTimer = true }) { Icon(Icons.Default.Alarm, "睡眠定时", tint = if (state.sleepMinutes > 0) MaterialTheme.colorScheme.primary else colors.accent, modifier = Modifier.size(24.dp)) }
             IconButton(onClick = {}) { Icon(Icons.Default.GraphicEq, "音效", tint = colors.accent, modifier = Modifier.size(24.dp)) }
             IconButton(onClick = onQueueClick) { Icon(Icons.Default.QueueMusic, "播放列表", tint = colors.accent, modifier = Modifier.size(24.dp)) }
             IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = colors.accent, modifier = Modifier.size(24.dp)) }
@@ -336,7 +323,7 @@ private fun PlayerBottomBar(
             ) {
                 Text("睡眠定时", style = MaterialTheme.typography.headlineSmall)
                 Spacer(Modifier.height(8.dp))
-                Text(if (sleepMinutes > 0) "剩余 ${sleepMinutes} 分钟" else "设置自动暂停时间")
+                Text(if (state.sleepMinutes > 0) "剩余 ${state.sleepMinutes} 分钟" else "设置自动暂停时间")
                 Spacer(Modifier.height(12.dp))
                 Slider(
                     value = sleepSelection,
@@ -355,10 +342,10 @@ private fun PlayerBottomBar(
                         .padding(top = 16.dp, bottom = 24.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(onClick = { sleepMinutes = 0; showSleepTimer = false }) {
-                        Text(if (sleepMinutes > 0) "取消定时" else "关闭")
+                    TextButton(onClick = { onCancelSleepTimer(); showSleepTimer = false }) {
+                        Text(if (state.sleepMinutes > 0) "取消定时" else "关闭")
                     }
-                    TextButton(onClick = { sleepMinutes = sleepSelection.toInt().coerceIn(5, 60); showSleepTimer = false }) {
+                    TextButton(onClick = { onSetSleepTimer(sleepSelection.toInt().coerceIn(5, 60)); showSleepTimer = false }) {
                         Text("开始")
                     }
                 }
@@ -405,7 +392,7 @@ private fun DetailPage(song: Song, colors: CoverColors) {
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(Modifier.weight(1f)) { DetailCard(Icons.Default.Audiotrack, "Original Sound", colors) }
-            Box(Modifier.weight(1f)) { DetailCard(Icons.Default.Cast, "DLNA (beta)", colors) }
+            Box(Modifier.weight(1f)) { DetailCard(Icons.Default.Audiotrack, "本地播放", colors) }
         }
         InfoCard("音频信息", listOf("FLAC format stream", "2 Channels    44100 Hz    828 kbps"), colors)
         InfoCard("出自专辑", listOf(song.album.ifBlank { "原创歌曲合集" }, "未知专辑艺术家"), colors)

@@ -34,3 +34,20 @@ data class PlayHistoryEntity(
     @PrimaryKey @ColumnInfo(name = "song_id") val songId: Long,
     @ColumnInfo(name = "played_at") val playedAt: Long
 )
+
+/** MediaStore 歌曲索引，缓存元数据以便快速启动和增量同步。 */
+@Entity(tableName = "songs")
+data class SongEntity(
+    @PrimaryKey @ColumnInfo(name = "song_id") val songId: Long,
+    val uri: String,
+    val title: String,
+    val artist: String,
+    val album: String,
+    @ColumnInfo(name = "album_id") val albumId: Long,
+    val duration: Long,
+    val size: Long,
+    @ColumnInfo(name = "date_added") val dateAdded: Long,
+    @ColumnInfo(name = "date_modified") val dateModified: Long,
+    @ColumnInfo(name = "track_number") val trackNumber: Int,
+    val path: String
+)
