@@ -27,10 +27,14 @@ suspend fun loadCoverColors(context: Context, albumId: Long, fallback: CoverColo
     coverCache[key]?.let { return@withContext it }
     runCatching {
         val uri = Uri.parse("content://media/external/audio/albumart/$albumId")
-        val bitmap = if (Build.VERSION.SDK_INT >= 29) runCatching { context.contentResolver.loadThumbnail(uri, android.util.Size(64, 64), null) }.getOrNull()
-            ?: context.contentResolver.openInputStream(uri)?.use { decodeSmall(it) }
-            else context.contentResolver.openInputStream(uri)?.use { decodeSmall(it) }
-            ?: return@runCatching fallback
+        val bitmap: Bitmap = if (Build.VERSION.SDK_INT >= 29) {
+            runCatching { context.contentResolver.loadThumbnail(uri, android.util.Size(64, 64), null) }.getOrNull()
+                ?: context.contentResolver.openInputStream(uri)?.use { decodeSmall(it) }
+                ?: return@runCatching fallback
+        } else {
+            context.contentResolver.openInputStream(uri)?.use { decodeSmall(it) }
+                ?: return@runCatching fallback
+        }
         if (bitmap.width == 0 || bitmap.height == 0) return@runCatching fallback
 
         val bins = LongArray(24 * 6 * 6); val hsv = FloatArray(3)
