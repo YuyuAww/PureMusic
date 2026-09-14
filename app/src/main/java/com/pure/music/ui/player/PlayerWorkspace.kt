@@ -84,42 +84,76 @@ fun PlayerWorkspace(
         colors = loadCoverColors(context, song.albumId, fallback, darkTheme)
     }
 
-    // 使用 Scaffold 划分三大组件区域
-    Scaffold(
-        containerColor = colors.background, // 整体背景：由封面背景色决定
-        contentWindowInsets = WindowInsets(0, 0, 0, 0), // 移除默认 Insets，交给子组件自行处理
-        topBar = { 
-            // 1. TopBar 组件
-            PlayerTopBar(song = song, colors = colors) 
-        },
-        bottomBar = { 
-            // 3. BottomBar 组件
-            PlayerBottomBar(
-                state = state,
-                colors = colors,
-                onTogglePlayPause = onTogglePlayPause,
-                onNext = onNext,
-                onPrevious = onPrevious,
-                onSeek = onSeek,
-                onRepeatMode = onRepeatMode,
-                onShuffleMode = onShuffleMode,
-                onQueueClick = { showQueue = true },
-                onSetSleepTimer = onSetSleepTimer,
-                onCancelSleepTimer = onCancelSleepTimer
-            ) 
+    // 中间内容区三个页面（横竖屏共用）
+    val playerPages: @Composable (Int) -> Unit = { page ->
+        when (page) {
+            0 -> DetailPage(song, colors)
+            1 -> CoverAndLyricsPage(song, colors) { lyricsJumpNonce++ }
+            else -> LyricsPage(song, colors)
         }
-    ) { paddingValues ->
-        // 2. Content (中间内容) 组件
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) { page ->
-            when (page) {
-                0 -> DetailPage(song, colors)
-                1 -> CoverAndLyricsPage(song, colors) { lyricsJumpNonce++ }
-                else -> LyricsPage(song, colors)
+    }
+    // 底部播放控制栏（横屏时堆叠在右侧，竖屏时由 Scaffold 承载）
+    val playerBottomBar: @Composable () -> Unit = {
+        PlayerBottomBar(
+            state = state,
+            colors = colors,
+            onTogglePlayPause = onTogglePlayPause,
+            onNext = onNext,
+            onPrevious = onPrevious,
+            onSeek = onSeek,
+            onRepeatMode = onRepeatMode,
+            onShuffleMode = onShuffleMode,
+            onQueueClick = { showQueue = true },
+            onSetSleepTimer = onSetSleepTimer,
+            onCancelSleepTimer = onCancelSleepTimer
+        )
+    }
+
+    BoxWithConstraints {
+        // 横屏：左侧为页面内容，右侧为竖屏的 TopBar 与 BottomBar 堆叠
+        val isLandscape = maxWidth > maxHeight
+        if (isLandscape) {
+            Row(Modifier.fillMaxSize()) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) { page -> playerPages(page) }
+
+                // 右侧复用竖屏的 TopBar 和 BottomBar：TopBar 贴顶、BottomBar 贴底
+                Column(
+                    Modifier
+                        .width(300.dp)
+                        .fillMaxHeight()
+                        .background(colors.background)
+                ) {
+                    PlayerTopBar(song = song, colors = colors)
+                    Spacer(Modifier.weight(1f))
+                    playerBottomBar()
+                }
+            }
+        } else {
+            // 竖屏：使用 Scaffold 划分三大组件区域
+            Scaffold(
+                containerColor = colors.background, // 整体背景：由封面背景色决定
+                contentWindowInsets = WindowInsets(0, 0, 0, 0), // 移除默认 Insets，交给子组件自行处理
+                topBar = {
+                    // 1. TopBar 组件
+                    PlayerTopBar(song = song, colors = colors)
+                },
+                bottomBar = {
+                    // 3. BottomBar 组件
+                    playerBottomBar()
+                }
+            ) { paddingValues ->
+                // 2. Content (中间内容) 组件
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) { page -> playerPages(page) }
             }
         }
     }
@@ -233,8 +267,8 @@ private fun PlayerBottomBar(
     val sliderInteractionSource = remember { MutableInteractionSource() }
     var showSleepTimer by remember { mutableStateOf(false) }
     var showEqualizer by remember { mutableStateOf(false) }
-    var equalizerEnabled by remember { mutableStateOf(true) }
-    var bandLevels by remember { mutableStateOf(List(10) { 0f }) }
+    var equalizerEnabled by remember { mutableStateOf(EqualizerController.isEnabled) }
+    var bandLevels by remember { mutableStateOf(EqualizerController.bandLevels) }
     var sleepSelection by remember { mutableFloatStateOf(5f) }
     LaunchedEffect(state.position, dragging) { if (!dragging) sliderPosition = state.position.toFloat() }
     val displayedPosition = if (dragging) sliderPosition.toLong() else state.position
@@ -373,18 +407,31 @@ private fun PlayerBottomBar(
             Column(Modifier.fillMaxWidth().height(PlayerSheetHeight).padding(20.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text("均衡器", style = MaterialTheme.typography.headlineSmall)
-                    Switch(checked = equalizerEnabled, onCheckedChange = { equalizerEnabled = it; EqualizerController.setEnabled(it) })
+                    Switch(
+                        checked = equalizerEnabled,
+                        enabled = EqualizerController.isAvailable,
+                        onCheckedChange = { equalizerEnabled = it; EqualizerController.setEnabled(it) }
+                    )
                 }
                 Spacer(Modifier.height(12.dp))
                 Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).height(220.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     bandLevels.forEachIndexed { index, level ->
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Slider(value = if (equalizerEnabled) level else 0f, onValueChange = { value -> bandLevels = bandLevels.toMutableList().also { it[index] = value }; EqualizerController.setBandLevel(index, value) }, valueRange = -1f..1f, modifier = Modifier.height(180.dp).width(42.dp).graphicsLayer { rotationZ = 270f })
+                            // 横排 Slider 按 180x42 布局后旋转 270° 呈现为竖直滑块，
+                            // 外层 Box 预留 42x180 的占位，避免旋转后的绘制压到频段标签
+                            Box(Modifier.size(42.dp, 180.dp)) {
+                                Slider(
+                                    value = if (equalizerEnabled) level else 0f,
+                                    onValueChange = { value -> bandLevels = bandLevels.toMutableList().also { it[index] = value }; EqualizerController.setBandLevel(index, value) },
+                                    valueRange = -1f..1f,
+                                    modifier = Modifier.size(width = 180.dp, height = 42.dp).align(Alignment.Center).graphicsLayer { rotationZ = 270f }
+                                )
+                            }
                             Text(listOf("31", "62", "125", "250", "500", "1k", "2k", "4k", "8k", "16k")[index], style = MaterialTheme.typography.labelSmall)
                         }
                     }
                 }
-                Text("调整各频段增益（dB）", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(if (EqualizerController.isAvailable) "调整各频段增益（dB）" else "当前设备不支持系统均衡器", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(20.dp))
             }
         }
