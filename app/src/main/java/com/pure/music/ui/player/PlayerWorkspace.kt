@@ -262,7 +262,7 @@ private fun PlayerBottomBar(
             track = { sliderState ->
                 SliderDefaults.Track(
                     sliderPositions = SliderPositions(
-                        activeRange = 0f..((sliderState.value - sliderState.valueRange.start) /
+                        initialActiveRange = 0f..((sliderState.value - sliderState.valueRange.start) /
                             (sliderState.valueRange.endInclusive - sliderState.valueRange.start)).coerceIn(0f, 1f)
                     ),
                     modifier = Modifier.height(2.dp),
