@@ -3,10 +3,10 @@ package com.pure.music.ui.player
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberMutableInteractionSource
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -230,6 +230,7 @@ private fun PlayerBottomBar(
 ) {
     var sliderPosition by remember(state.currentSong?.id) { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
+    val sliderInteractionSource = remember { MutableInteractionSource() }
     var showSleepTimer by remember { mutableStateOf(false) }
     var showEqualizer by remember { mutableStateOf(false) }
     var equalizerEnabled by remember { mutableStateOf(true) }
@@ -250,16 +251,20 @@ private fun PlayerBottomBar(
             onValueChange = { dragging = true; sliderPosition = it },
             onValueChangeFinished = { dragging = false; onSeek(sliderPosition.toLong()) },
             valueRange = 0f..state.duration.coerceAtLeast(1).toFloat(),
+            interactionSource = sliderInteractionSource,
             thumb = {
                 SliderDefaults.Thumb(
-                    interactionSource = rememberMutableInteractionSource(),
+                    interactionSource = sliderInteractionSource,
                     modifier = Modifier.size(8.dp),
                     colors = SliderDefaults.colors(thumbColor = colors.accent)
                 )
             },
-            track = { positions ->
+            track = { sliderState ->
                 SliderDefaults.Track(
-                    positions = positions,
+                    sliderPositions = SliderPositions(
+                        activeRange = 0f..((sliderState.value - sliderState.valueRange.start) /
+                            (sliderState.valueRange.endInclusive - sliderState.valueRange.start)).coerceIn(0f, 1f)
+                    ),
                     modifier = Modifier.height(2.dp),
                     colors = SliderDefaults.colors(
                         activeTrackColor = colors.accent,

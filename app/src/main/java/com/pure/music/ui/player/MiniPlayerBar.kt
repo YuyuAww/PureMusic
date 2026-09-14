@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
@@ -67,7 +68,7 @@ fun MiniPlayerBar(
                 drawContent()
                 val inset = 1.5.dp.toPx()
                 val path = Path().apply {
-                    addRoundRect(inset, inset, size.width - inset, size.height - inset, 20.dp.toPx(), 20.dp.toPx())
+                    addRoundRect(RoundRect(inset, inset, size.width - inset, size.height - inset, 20.dp.toPx(), 20.dp.toPx()))
                 }
                 val measure = PathMeasure().apply { setPath(path, false) }
                 val progressPath = Path()
