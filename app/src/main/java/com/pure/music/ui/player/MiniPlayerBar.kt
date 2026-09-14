@@ -26,7 +26,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,7 +36,6 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
-import androidx.compose.ui.graphics.RoundRect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -57,6 +58,7 @@ fun MiniPlayerBar(
     modifier: Modifier = Modifier
 ) {
     val song = state.currentSong ?: return
+    val progressColor = MaterialTheme.colorScheme.primary
 
     Surface(
         modifier = modifier
@@ -65,7 +67,7 @@ fun MiniPlayerBar(
                 drawContent()
                 val inset = 1.5.dp.toPx()
                 val path = Path().apply {
-                    addRoundRect(RoundRect(inset, inset, size.width - inset, size.height - inset, 20.dp.toPx(), 20.dp.toPx()))
+                    addRoundRect(inset, inset, size.width - inset, size.height - inset, 20.dp.toPx(), 20.dp.toPx())
                 }
                 val measure = PathMeasure().apply { setPath(path, false) }
                 val progressPath = Path()
@@ -75,13 +77,13 @@ fun MiniPlayerBar(
                     progressPath,
                     true
                 )
-                drawPath(progressPath, MaterialTheme.colorScheme.primary, style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx(), cap = StrokeCap.Round))
+                drawPath(progressPath, progressColor, style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx(), cap = StrokeCap.Round))
             },
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainer,
         tonalElevation = 4.dp
     ) {
-        var swipeDistance by remember(song.id) { androidx.compose.runtime.mutableFloatStateOf(0f) }
+        var swipeDistance by remember(song.id) { androidx.compose.runtime.mutableStateOf(0f) }
         Column(
             Modifier
                 .fillMaxWidth()

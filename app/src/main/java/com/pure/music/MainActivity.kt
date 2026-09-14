@@ -92,17 +92,18 @@ private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: Player
     val theme by settingsViewModel.theme.collectAsStateWithLifecycle()
     val darkTheme = theme == "dark" || (theme == "system" && isSystemInDarkTheme())
     val context = LocalContext.current
-    var coverAccent by remember(playerState.currentSong?.albumId, darkTheme) { mutableStateOf(MaterialTheme.colorScheme.primary) }
-    androidx.compose.runtime.LaunchedEffect(playerState.currentSong?.albumId, darkTheme) {
-        val albumId = playerState.currentSong?.albumId
+    val colorScheme = MaterialTheme.colorScheme
+    val albumId = state.currentSong?.albumId
+    var coverAccent by remember(albumId, darkTheme) { mutableStateOf(colorScheme.primary) }
+    androidx.compose.runtime.LaunchedEffect(albumId, darkTheme) {
         coverAccent = if (albumId != null) {
             loadCoverColors(
                 context,
                 albumId,
-                CoverColors(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.background, MaterialTheme.colorScheme.surface),
+                CoverColors(colorScheme.primary, colorScheme.onSurfaceVariant, colorScheme.background, colorScheme.surface),
                 darkTheme
                     ).accent
-        } else MaterialTheme.colorScheme.primary
+        } else colorScheme.primary
     }
     var showNowPlaying by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberMutableInteractionSource
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -249,10 +250,16 @@ private fun PlayerBottomBar(
             onValueChange = { dragging = true; sliderPosition = it },
             onValueChangeFinished = { dragging = false; onSeek(sliderPosition.toLong()) },
             valueRange = 0f..state.duration.coerceAtLeast(1).toFloat(),
-            thumb = { SliderDefaults.Thumb(Modifier.size(8.dp), colors = SliderDefaults.colors(thumbColor = colors.accent)) },
+            thumb = {
+                SliderDefaults.Thumb(
+                    interactionSource = rememberMutableInteractionSource(),
+                    modifier = Modifier.size(8.dp),
+                    colors = SliderDefaults.colors(thumbColor = colors.accent)
+                )
+            },
             track = { positions ->
                 SliderDefaults.Track(
-                    sliderPositions = positions,
+                    positions = positions,
                     modifier = Modifier.height(2.dp),
                     colors = SliderDefaults.colors(
                         activeTrackColor = colors.accent,
