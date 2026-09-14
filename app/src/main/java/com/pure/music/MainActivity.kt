@@ -38,6 +38,8 @@ import com.pure.music.ui.player.MiniPlayerBar
 import com.pure.music.ui.player.PlayerWorkspace
 import com.pure.music.ui.settings.SettingsScreen
 import com.pure.music.ui.theme.PureMusicTheme
+import com.pure.music.ui.utils.CoverColors
+import com.pure.music.ui.utils.loadCoverColors
 
 /** 主界面 Activity，承载所有 Compose UI */
 class MainActivity : ComponentActivity() {
@@ -88,7 +90,20 @@ private fun MainContent() {
 private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: PlayerViewModel) {
     val state by playerViewModel.state.collectAsStateWithLifecycle()
     val theme by settingsViewModel.theme.collectAsStateWithLifecycle()
+    val darkTheme = theme == "dark" || (theme == "system" && isSystemInDarkTheme())
     val context = LocalContext.current
+    var coverAccent by remember(playerState.currentSong?.albumId, darkTheme) { mutableStateOf(MaterialTheme.colorScheme.primary) }
+    androidx.compose.runtime.LaunchedEffect(playerState.currentSong?.albumId, darkTheme) {
+        val albumId = playerState.currentSong?.albumId
+        coverAccent = if (albumId != null) {
+            loadCoverColors(
+                context,
+                albumId,
+                CoverColors(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.background, MaterialTheme.colorScheme.surface),
+                darkTheme
+                    ).accent
+        } else MaterialTheme.colorScheme.primary
+    }
     var showNowPlaying by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
@@ -143,7 +158,8 @@ private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: Player
                         onExit = { (context as? ComponentActivity)?.finish() },
                         isDarkTheme = theme == "dark" || (theme == "system" && isSystemInDarkTheme()),
                         onToggleTheme = { settingsViewModel.setTheme(if (theme == "dark") "light" else "dark") },
-                        onShowEqualizer = { showSettings = true }
+                        onShowEqualizer = { showSettings = true },
+                        drawerAccent = coverAccent
                     )
                 }
             }
@@ -174,6 +190,8 @@ private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: Player
                     onTogglePlayPause = { playerViewModel.togglePlayPause() },
                     onNext = { playerViewModel.next() },
                     onExpand = { showNowPlaying = true },
+                    isFavorite = playerViewModel.isFavorite(state.currentSong?.id ?: -1L),
+                    onToggleFavorite = { playerViewModel.toggleFavorite(state.currentSong?.id ?: -1L) },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(horizontal = 12.dp, vertical = 12.dp)

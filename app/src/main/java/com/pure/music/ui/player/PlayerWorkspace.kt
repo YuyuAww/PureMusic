@@ -38,6 +38,8 @@ import com.pure.music.ui.library.formatDuration
 import com.pure.music.ui.utils.CoverColors
 import com.pure.music.ui.utils.loadCoverColors
 
+private val PlayerSheetHeight = 480.dp
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerWorkspace(
@@ -122,7 +124,7 @@ fun PlayerWorkspace(
     }
     if (showQueue) {
         ModalBottomSheet(onDismissRequest = { showQueue = false }) {
-            Column(Modifier.fillMaxWidth().heightIn(max = 520.dp).padding(horizontal = 20.dp)) {
+            Column(Modifier.fillMaxWidth().height(PlayerSheetHeight).padding(horizontal = 20.dp)) {
                 Text("播放队列", style = MaterialTheme.typography.headlineSmall)
                 Text("${state.queue.size} 首歌曲", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(12.dp))
@@ -147,16 +149,16 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
     Row(
         Modifier
             .fillMaxWidth()
-            .background(Brush.horizontalGradient(listOf(colors.gradientStart, colors.gradientEnd))) // 封面渐变色背景
+            .background(colors.background) // 与页面主体保持同一背景，避免顶部割裂
             .statusBarsPadding() // 内容避开状态栏
-            .padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 15.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 15.dp),
         verticalAlignment = Alignment.Top
     ) {
         Column(Modifier.weight(1f)) {
             Text(
                 song.title,
                 color = colors.accent, // 封面主色
-                fontSize = 28.sp,
+                fontSize = 25.sp,
                 fontWeight = FontWeight.Black,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -165,7 +167,7 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
             Text(
                 song.artist,
                 color = colors.accent.copy(alpha = 0.85f), // 封面主色（淡化）
-                fontSize = 17.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -186,7 +188,7 @@ private fun CoverAndLyricsPage(song: Song, colors: CoverColors, onOpenLyrics: ()
             Modifier
                 .fillMaxWidth()
                 .height(360.dp)
-                .shadow(8.dp, RoundedCornerShape(16.dp))
+                .shadow(10.dp, RoundedCornerShape(15.dp))
                 .clip(RoundedCornerShape(16.dp))
                 .background(Brush.verticalGradient(listOf(colors.gradientStart.copy(alpha = .18f), colors.surface))) // 封面渐变色衬底
         ) {
@@ -242,9 +244,23 @@ private fun PlayerBottomBar(
             .navigationBarsPadding() // 内容避开底部导航栏
             .padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 20.dp)
     ) {
-        Slider(value = sliderPosition, onValueChange = { dragging = true; sliderPosition = it },
+        Slider(
+            value = sliderPosition,
+            onValueChange = { dragging = true; sliderPosition = it },
             onValueChangeFinished = { dragging = false; onSeek(sliderPosition.toLong()) },
-            valueRange = 0f..state.duration.coerceAtLeast(1).toFloat(), colors = SliderDefaults.colors(thumbColor = colors.accent, activeTrackColor = colors.accent, inactiveTrackColor = colors.accent.copy(alpha = .22f)))
+            valueRange = 0f..state.duration.coerceAtLeast(1).toFloat(),
+            thumb = { SliderDefaults.Thumb(Modifier.size(8.dp), colors = SliderDefaults.colors(thumbColor = colors.accent)) },
+            track = { positions ->
+                SliderDefaults.Track(
+                    sliderPositions = positions,
+                    modifier = Modifier.height(2.dp),
+                    colors = SliderDefaults.colors(
+                        activeTrackColor = colors.accent,
+                        inactiveTrackColor = colors.accent.copy(alpha = .22f)
+                    )
+                )
+            }
+        )
 
         // 时间
         Row(
@@ -306,7 +322,7 @@ private fun PlayerBottomBar(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 520.dp)
+                    .height(PlayerSheetHeight)
                     .padding(horizontal = 20.dp)
             ) {
                 Text("睡眠定时", style = MaterialTheme.typography.headlineSmall)
@@ -342,7 +358,7 @@ private fun PlayerBottomBar(
     }
     if (showEqualizer) {
         ModalBottomSheet(onDismissRequest = { showEqualizer = false }) {
-            Column(Modifier.fillMaxWidth().padding(20.dp)) {
+            Column(Modifier.fillMaxWidth().height(PlayerSheetHeight).padding(20.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text("均衡器", style = MaterialTheme.typography.headlineSmall)
                     Switch(checked = equalizerEnabled, onCheckedChange = { equalizerEnabled = it; EqualizerController.setEnabled(it) })

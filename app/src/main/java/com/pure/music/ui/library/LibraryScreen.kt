@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -41,6 +42,7 @@ fun LibraryScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onShowEqualizer: () -> Unit,
+    drawerAccent: Color = MaterialTheme.colorScheme.primary,
     viewModel: LibraryViewModel = viewModel(factory = libraryViewModelFactory)
 ) {
     val songs by viewModel.songs.collectAsStateWithLifecycle(); val albums by viewModel.albums.collectAsStateWithLifecycle(); val artists by viewModel.artists.collectAsStateWithLifecycle(); val folders by viewModel.folders.collectAsStateWithLifecycle(); val favoriteIds by viewModel.favoriteSongIds.collectAsStateWithLifecycle(); val recentIds by viewModel.recentSongIds.collectAsStateWithLifecycle()
@@ -48,7 +50,7 @@ fun LibraryScreen(
     val context = androidx.compose.ui.platform.LocalContext.current; val permission = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE; var granted by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it; if (it) viewModel.refresh() }
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val compactDrawerWidth = (maxWidth * 0.5f).coerceIn(280.dp, 360.dp)
+        val compactDrawerWidth = (maxWidth * 0.5f).coerceIn(160.dp, 320.dp)
         val drawerItems: @Composable ColumnScope.() -> Unit = {
             Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Surface(
@@ -57,9 +59,9 @@ fun LibraryScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = onExit) { Icon(Icons.Default.ExitToApp, "退出应用") }
-                        IconButton(onClick = onToggleTheme) { Icon(if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode, if (isDarkTheme) "切换浅色模式" else "切换深色模式") }
-                        IconButton(onClick = { scope.launch { drawer.close() }; onShowEqualizer() }) { Icon(Icons.Default.Equalizer, "均衡器") }
+                        IconButton(onClick = onExit) { Icon(Icons.Default.ExitToApp, "退出应用", tint = drawerAccent) }
+                        IconButton(onClick = onToggleTheme) { Icon(if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode, if (isDarkTheme) "切换浅色模式" else "切换深色模式", tint = drawerAccent) }
+                        IconButton(onClick = { scope.launch { drawer.close() }; onShowEqualizer() }) { Icon(Icons.Default.Equalizer, "均衡器", tint = drawerAccent) }
                     }
                 }
                 Surface(
@@ -68,7 +70,7 @@ fun LibraryScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Column(Modifier.padding(vertical = 8.dp)) {
-                        LibrarySection.entries.forEach { item -> NavigationDrawerItem(label = { Text(item.title) }, selected = section == item, onClick = { section = item; folderPath = null; scope.launch { drawer.close() } }, icon = { Icon(if (item == LibrarySection.ALBUMS) Icons.Default.Album else if (item == LibrarySection.ARTISTS) Icons.Default.Person else if (item == LibrarySection.FOLDERS) Icons.Default.Folder else if (item == LibrarySection.FAVORITES) Icons.Default.Favorite else if (item == LibrarySection.RECENT) Icons.Default.History else Icons.Default.MusicNote, null) }) }
+                        LibrarySection.entries.forEach { item -> NavigationDrawerItem(label = { Text(item.title) }, selected = false, colors = NavigationDrawerItemDefaults.colors(unselectedIconColor = drawerAccent, selectedIconColor = drawerAccent), onClick = { section = item; folderPath = null; scope.launch { drawer.close() } }, icon = { Icon(if (item == LibrarySection.ALBUMS) Icons.Default.Album else if (item == LibrarySection.ARTISTS) Icons.Default.Person else if (item == LibrarySection.FOLDERS) Icons.Default.Folder else if (item == LibrarySection.FAVORITES) Icons.Default.Favorite else if (item == LibrarySection.RECENT) Icons.Default.History else Icons.Default.MusicNote, null) }) }
                     }
                 }
                 Surface(
@@ -77,8 +79,8 @@ fun LibraryScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Column(Modifier.padding(vertical = 8.dp)) {
-                        NavigationDrawerItem(label = { Text("扫描音乐") }, selected = false, onClick = { viewModel.refresh(); scope.launch { drawer.close() } }, icon = { Icon(Icons.Default.Refresh, null) })
-                        NavigationDrawerItem(label = { Text("设置") }, selected = false, onClick = { scope.launch { drawer.close() }; onShowSettings() }, icon = { Icon(Icons.Default.Settings, null) })
+                        NavigationDrawerItem(label = { Text("扫描音乐") }, selected = false, colors = NavigationDrawerItemDefaults.colors(unselectedIconColor = drawerAccent, selectedIconColor = drawerAccent), onClick = { viewModel.refresh(); scope.launch { drawer.close() } }, icon = { Icon(Icons.Default.Refresh, null) })
+                        NavigationDrawerItem(label = { Text("设置") }, selected = false, colors = NavigationDrawerItemDefaults.colors(unselectedIconColor = drawerAccent, selectedIconColor = drawerAccent), onClick = { scope.launch { drawer.close() }; onShowSettings() }, icon = { Icon(Icons.Default.Settings, null) })
                     }
                 }
             }
