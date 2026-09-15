@@ -2,7 +2,7 @@
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
 #include <taglib/audioproperties.h>
-#include <taglib/tpropertymap.h>
+#include <taglib/toolkit/tpropertymap.h>
 #include <string>
 
 extern "C" JNIEXPORT jstring JNICALL
