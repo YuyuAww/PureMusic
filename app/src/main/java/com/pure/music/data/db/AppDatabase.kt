@@ -12,7 +12,7 @@ import androidx.room.TypeConverters
  */
 @Database(
     entities = [FavoriteEntity::class, PlaylistEntity::class, PlayHistoryEntity::class, SongEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(LongListConverter::class)
@@ -33,7 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "puremusic.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .build().also { instance = it }
             }
         }
@@ -62,6 +62,18 @@ abstract class AppDatabase : RoomDatabase() {
                         path TEXT NOT NULL
                     )
                 """.trimIndent())
+            }
+        }
+
+        private val MIGRATION_3_4 = object : androidx.room.migration.Migration(3, 4) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE songs ADD COLUMN bitrateKbps INTEGER")
+                db.execSQL("ALTER TABLE songs ADD COLUMN sampleRateHz INTEGER")
+                db.execSQL("ALTER TABLE songs ADD COLUMN channels INTEGER")
+                db.execSQL("ALTER TABLE songs ADD COLUMN format TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN lyrics TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN composer TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN genre TEXT")
             }
         }
     }

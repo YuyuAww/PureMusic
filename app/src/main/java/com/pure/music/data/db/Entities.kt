@@ -49,5 +49,12 @@ data class SongEntity(
     @ColumnInfo(name = "date_added") val dateAdded: Long,
     @ColumnInfo(name = "date_modified") val dateModified: Long,
     @ColumnInfo(name = "track_number") val trackNumber: Int,
-    val path: String
+    val path: String,
+    val bitrateKbps: Int? = null,
+    val sampleRateHz: Int? = null,
+    val channels: Int? = null,
+    val format: String? = null,
+    val lyrics: String? = null,
+    val composer: String? = null,
+    val genre: String? = null
 )

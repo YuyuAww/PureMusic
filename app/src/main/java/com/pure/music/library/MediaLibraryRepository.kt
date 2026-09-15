@@ -247,7 +247,8 @@ class MediaLibraryRepository private constructor(context: Context) {
         dateAdded = dateAdded,
         dateModified = dateModified,
         trackNumber = trackNumber,
-        path = path
+        path = path, bitrateKbps = bitrateKbps, sampleRateHz = sampleRateHz,
+        channels = channels, format = format, lyrics = lyrics, composer = composer, genre = genre
     )
 
     private fun SongEntity.toSong() = Song(
@@ -262,7 +263,8 @@ class MediaLibraryRepository private constructor(context: Context) {
         dateAdded = dateAdded,
         dateModified = dateModified,
         trackNumber = trackNumber,
-        path = path
+        path = path, bitrateKbps = bitrateKbps, sampleRateHz = sampleRateHz,
+        channels = channels, format = format, lyrics = lyrics, composer = composer, genre = genre
     )
 
     companion object {

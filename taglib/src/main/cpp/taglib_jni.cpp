@@ -19,15 +19,21 @@ Java_com_pure_music_taglib_TagLibMetadataReader_readNative(JNIEnv* env, jclass, 
         auto it = tagProps.find(key);
         return it == tagProps.end() || it->second.isEmpty() ? "" : it->second.front().to8Bit(true);
     };
+    auto firstAny = [&](std::initializer_list<const char*> keys) {
+        for (auto key : keys) { auto value = first(key); if (!value.empty()) return value; }
+        return std::string();
+    };
     auto clean = [](const TagLib::String& value) { return value.to8Bit(true); };
     const int duration = props ? props->lengthInMilliseconds() : 0;
     const int bitrate = props ? props->bitrate() : 0;
     const int sampleRate = props ? props->sampleRate() : 0;
     const int channels = props ? props->channels() : 0;
-    std::string result = clean(tag->title()) + "\n" + clean(tag->artist()) + "\n" +
-        clean(tag->album()) + "\n" + std::to_string(tag->track()) + "\n" +
-        std::to_string(duration) + "\n" + std::to_string(bitrate) + "\n" +
-        std::to_string(sampleRate) + "\n" + std::to_string(channels) + "\n" +
-        first("LYRICS") + "\n" + first("COMPOSER") + "\n" + first("GENRE");
+    const char sep = '\x1f';
+    std::string result = clean(tag->title()) + sep + clean(tag->artist()) + sep +
+        clean(tag->album()) + sep + std::to_string(tag->track()) + sep +
+        std::to_string(duration) + sep + std::to_string(bitrate) + sep +
+        std::to_string(sampleRate) + sep + std::to_string(channels) + sep +
+        firstAny({"LYRICS", "UNSYNCEDLYRICS", "USLT"}) + sep +
+        firstAny({"COMPOSER", "COMPOSERS"}) + sep + firstAny({"GENRE", "GENRES"});
     return env->NewStringUTF(result.c_str());
 }

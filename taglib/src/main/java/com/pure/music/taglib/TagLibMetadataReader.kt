@@ -14,7 +14,7 @@ object TagLibMetadataReader {
 
     fun read(path: String): AudioMetadata? {
         if (!loaded || path.isBlank()) return null
-        return runCatching { readNative(path)?.split('\n')?.takeIf { it.size >= 8 }?.let { p ->
+        return runCatching { readNative(path)?.split('\u001f')?.takeIf { it.size >= 8 }?.let { p ->
             AudioMetadata(p[0].ifBlank { null }, p[1].ifBlank { null }, p[2].ifBlank { null },
                 p[3].toIntOrNull()?.takeIf { it > 0 }, p[4].toLongOrNull()?.takeIf { it > 0 },
                 p[5].toIntOrNull()?.takeIf { it > 0 }, p[6].toIntOrNull()?.takeIf { it > 0 },
