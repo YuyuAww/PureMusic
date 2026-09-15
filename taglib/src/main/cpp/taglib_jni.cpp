@@ -4,6 +4,7 @@
 #include <taglib/audioproperties.h>
 #include <taglib/toolkit/tpropertymap.h>
 #include <string>
+#include <initializer_list>
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_pure_music_taglib_TagLibMetadataReader_readNative(JNIEnv* env, jclass, jstring path) {

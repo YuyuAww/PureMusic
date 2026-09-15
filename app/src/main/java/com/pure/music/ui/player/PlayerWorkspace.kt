@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -25,6 +26,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -88,8 +93,8 @@ fun PlayerWorkspace(
     val playerPages: @Composable (Int) -> Unit = { page ->
         when (page) {
             0 -> DetailPage(song, colors)
-            1 -> CoverAndLyricsPage(song, colors) { lyricsJumpNonce++ }
-            else -> LyricsPage(song, colors)
+            1 -> CoverAndLyricsPage(song, state.position, colors) { lyricsJumpNonce++ }
+            else -> LyricsPage(song, state.position, colors)
         }
     }
     // 底部播放控制栏（横屏时堆叠在右侧，竖屏时由 Scaffold 承载）
@@ -215,8 +220,8 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
 // 2. 中间内容组件：歌曲封面 + 迷你歌词窗
 // ---------------------------------------------------------
 @Composable
-private fun CoverAndLyricsPage(song: Song, colors: CoverColors, onOpenLyrics: () -> Unit) {
-    val lines = lyricsLines(song)
+private fun CoverAndLyricsPage(song: Song, position: Long, colors: CoverColors, onOpenLyrics: () -> Unit) {
+    val lines = timedLyrics(song)
     Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         // 歌曲封面
         Box(
@@ -231,16 +236,25 @@ private fun CoverAndLyricsPage(song: Song, colors: CoverColors, onOpenLyrics: ()
         }
         Spacer(Modifier.height(35.dp))
         // 迷你歌词窗
-        MiniLyricsWindow(lines[1], lines[2], lines[3], colors, onOpenLyrics)
+        // 取播放进度之前最近的一行；使用 lastOrNull 避免始终停留在第一行
+        val current = lines.lastOrNull { it.timeMs <= position } ?: lines.first()
+        val index = lines.indexOf(current).coerceAtLeast(0)
+        MiniLyricsWindow(
+            lines.getOrNull(index - 1)?.text ?: "",
+            current.text,
+            lines.getOrNull(index + 1)?.text ?: "",
+            colors,
+            onOpenLyrics
+        )
     }
 }
 
 @Composable
-private fun MiniLyricsWindow(current: String, next1: String, next2: String, colors: CoverColors, onCurrentClick: () -> Unit) {
+private fun MiniLyricsWindow(previous: String, current: String, next: String, colors: CoverColors, onCurrentClick: () -> Unit) {
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-        Text(current, color = colors.accent.copy(alpha = 0.9f), fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() }.padding(vertical = 9.dp))
-        Text(next1, color = colors.accent.copy(alpha = 0.8f), fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 9.dp))
-        Text(next2, color = colors.accent.copy(alpha = 0.8f), fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 9.dp))
+        Text(previous, color = colors.muted.copy(alpha = 0.55f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 7.dp))
+        Text(current, color = colors.accent, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() }.padding(vertical = 9.dp))
+        Text(next, color = colors.muted.copy(alpha = 0.75f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 7.dp))
     }
 }
 
@@ -441,21 +455,55 @@ private fun PlayerBottomBar(
 // ---------------------------------------------------------
 // 辅助页面 (详情页 / 全屏歌词页 / 占位歌词)
 // ---------------------------------------------------------
-private fun lyricsLines(song: Song): List<String> = song.lyrics
-    ?.lines()?.map { it.substringAfter("]", it).trim() }?.filter { it.isNotBlank() }
-    ?.takeIf { it.isNotEmpty() } ?: listOf("暂无内嵌歌词", song.title, song.artist, "可在详情页查看音频标签")
+private data class TimedLyric(val timeMs: Long, val text: String, val words: List<TimedWord> = emptyList())
+private data class TimedWord(val timeMs: Long, val text: String)
+
+private fun timedLyrics(song: Song): List<TimedLyric> {
+    val source = song.lyrics.orEmpty()
+    val regex = Regex("([<\\[])(\\d{1,3}):(\\d{2})(?:[.:](\\d{1,3}))?[>\\]]")
+    val parsed = source.lines().flatMap { line ->
+        val matches = regex.findAll(line).toList()
+        if (matches.isEmpty()) listOf(TimedLyric(0, line.trim())) else {
+            val lineStart = matches.firstOrNull { it.value.startsWith("[") } ?: matches.first()
+            val words = matches.drop(if (lineStart == matches.first() && lineStart.value.startsWith("[") && matches.size > 1) 1 else 0).map { m ->
+                val fraction = m.groupValues[4].padEnd(3, '0').take(3).toLongOrNull() ?: 0
+                val time = (m.groupValues[2].toLong() * 60 + m.groupValues[3].toLong()) * 1000 + fraction
+                val end = matches.getOrNull(matches.indexOf(m) + 1)?.range?.first ?: line.length
+                TimedWord(time, line.substring(m.range.last + 1, end).trim())
+            }.filter { it.text.isNotBlank() }
+            TimedLyric(parseLyricTime(lineStart), words.joinToString("") { it.text }.ifBlank { line.substringAfter("]").trim() }, words)
+        }
+    }.filter { it.text.isNotBlank() }.sortedBy { it.timeMs }
+    return parsed.ifEmpty { listOf(TimedLyric(0, "暂无内嵌歌词")) }
+}
+
+private fun parseLyricTime(match: MatchResult): Long {
+    val fraction = match.groupValues[4].padEnd(3, '0').take(3).toLong()
+    return (match.groupValues[2].toLong() * 60 + match.groupValues[3].toLong()) * 1000 + fraction
+}
+
+private fun parseLyricTime(line: String): Long = Regex("\\[(\\d+):(\\d{2})[.:](\\d{1,3})]").find(line)?.let {
+    val f = it.groupValues[3].padEnd(3, '0').take(3).toLong(); (it.groupValues[1].toLong() * 60 + it.groupValues[2].toLong()) * 1000 + f
+} ?: 0
 
 @Composable
-private fun LyricsPage(song: Song, colors: CoverColors) {
-    val lines = lyricsLines(song)
+private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
+    val lines = timedLyrics(song)
+    val currentIndex = lines.indexOfLast { it.timeMs <= position }.coerceAtLeast(0)
+    val listState = rememberLazyListState()
+    LaunchedEffect(song.id, currentIndex) { listState.animateScrollToItem(currentIndex) }
     Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            lines.forEachIndexed { index, line ->
+        LazyColumn(state = listState, modifier = Modifier.fillMaxWidth().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, contentPadding = PaddingValues(vertical = 180.dp)) {
+            itemsIndexed(lines) { index, line ->
                 Text(
-                    line, 
-                    color = if (index == 2) colors.accent else colors.muted.copy(alpha = .32f), // 当前歌词亮色，其他歌词暗色
-                    fontSize = if (index == 2) 29.sp else 23.sp, 
-                    fontWeight = if (index == 2) FontWeight.Bold else FontWeight.Medium, 
+                    if (line.words.isEmpty()) AnnotatedString(line.text) else buildAnnotatedString {
+                        line.words.forEachIndexed { wordIndex, word ->
+                            withStyle(SpanStyle(color = if (position >= word.timeMs && (line.words.getOrNull(wordIndex + 1)?.timeMs ?: Long.MAX_VALUE) > position) colors.accent else colors.muted.copy(alpha = .55f))) { append(word.text) }
+                        }
+                    },
+                    color = if (index == currentIndex) colors.accent else colors.muted.copy(alpha = .45f),
+                    fontSize = if (index == currentIndex) 29.sp else 23.sp,
+                    fontWeight = if (index == currentIndex) FontWeight.Bold else FontWeight.Medium,
                     textAlign = TextAlign.Center, 
                     modifier = Modifier.padding(vertical = 14.dp)
                 )
@@ -471,15 +519,8 @@ private fun LyricsPage(song: Song, colors: CoverColors) {
 
 @Composable
 private fun DetailPage(song: Song, colors: CoverColors) {
-    Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Box(Modifier.weight(1f)) { DetailCard(Icons.Default.WbSunny, "播放界面保持屏幕", colors) }
-            Box(Modifier.weight(1f)) { DetailCard(Icons.Default.SurroundSound, "沉浸模式", colors) }
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Box(Modifier.weight(1f)) { DetailCard(Icons.Default.Audiotrack, "Original Sound", colors) }
-            Box(Modifier.weight(1f)) { DetailCard(Icons.Default.Audiotrack, "本地播放", colors) }
-        }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 25.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        InfoCard("歌曲", listOf(song.title, song.artist, song.album), colors)
         val format = song.format?.let { "$it format stream" } ?: "Audio format stream"
         val technical = buildString {
             song.channels?.let { append("$it Channels") }
@@ -487,8 +528,7 @@ private fun DetailPage(song: Song, colors: CoverColors) {
             song.bitrateKbps?.let { if (isNotEmpty()) append("    "); append("$it kbps") }
         }.ifBlank { "Metadata unavailable" }
         InfoCard("音频信息", listOf(format, technical), colors)
-        InfoCard("出自专辑", listOf(song.album.ifBlank { "原创歌曲合集" }, "未知专辑艺术家"), colors)
-        InfoCard("参与创作的艺术家", listOf(song.artist, song.composer?.let { "作曲：$it" } ?: "作曲信息未知", song.genre?.let { "流派：$it" } ?: "流派信息未知"), colors)
+        InfoCard("标签", listOf(song.composer?.let { "作曲：$it" } ?: "作曲信息未知", song.genre?.let { "流派：$it" } ?: "流派信息未知", "第 ${song.trackNumber} 首"), colors)
     }
 }
 
