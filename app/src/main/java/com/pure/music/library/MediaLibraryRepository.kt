@@ -12,6 +12,7 @@ import com.pure.music.data.Artist
 import com.pure.music.data.Song
 import com.pure.music.data.db.AppDatabase
 import com.pure.music.data.db.SongEntity
+import com.pure.music.taglib.TagLibMetadataReader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -178,6 +179,23 @@ class MediaLibraryRepository private constructor(context: Context) {
                         dateModified = cursor.getLong(dateModifiedCol) * 1000L,
                         trackNumber = cursor.getInt(trackCol)
                         ,path = if (pathCol >= 0 && !cursor.isNull(pathCol)) cursor.getString(pathCol) else ""
+                    ).let { song ->
+                        val metadata = if (song.path.isNotBlank()) TagLibMetadataReader.read(song.path) else null
+                        val extension = song.path.substringAfterLast('.', "").uppercase().ifBlank { null }
+                        if (metadata == null) song.copy(format = extension) else song.copy(
+                            title = metadata.title ?: song.title,
+                            artist = metadata.artist ?: song.artist,
+                            album = metadata.album ?: song.album,
+                            trackNumber = metadata.trackNumber ?: song.trackNumber,
+                            duration = metadata.durationMs ?: song.duration,
+                            bitrateKbps = metadata.bitrateKbps,
+                            sampleRateHz = metadata.sampleRateHz,
+                            channels = metadata.channels,
+                            format = extension,
+                            lyrics = metadata.lyrics,
+                            composer = metadata.composer,
+                            genre = metadata.genre
+                        )
                     )
                 )
             }
@@ -230,6 +248,7 @@ class MediaLibraryRepository private constructor(context: Context) {
         dateModified = dateModified,
         trackNumber = trackNumber,
         path = path
+        ,bitrateKbps = null, sampleRateHz = null, channels = null, format = null
     )
 
     private fun SongEntity.toSong() = Song(

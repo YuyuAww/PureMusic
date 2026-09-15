@@ -216,7 +216,7 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
 // ---------------------------------------------------------
 @Composable
 private fun CoverAndLyricsPage(song: Song, colors: CoverColors, onOpenLyrics: () -> Unit) {
-    val lines = placeholderLyrics(song)
+    val lines = lyricsLines(song)
     Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         // 歌曲封面
         Box(
@@ -441,11 +441,13 @@ private fun PlayerBottomBar(
 // ---------------------------------------------------------
 // 辅助页面 (详情页 / 全屏歌词页 / 占位歌词)
 // ---------------------------------------------------------
-private fun placeholderLyrics(song: Song) = listOf("听见山林深处的风", "唱一曲少年的梦", song.title, "英雄不怕虎豹", "我娘说四宝你瞧瞧", "田野间群山相望")
+private fun lyricsLines(song: Song): List<String> = song.lyrics
+    ?.lines()?.map { it.substringAfter("]", it).trim() }?.filter { it.isNotBlank() }
+    ?.takeIf { it.isNotEmpty() } ?: listOf("暂无内嵌歌词", song.title, song.artist, "可在详情页查看音频标签")
 
 @Composable
 private fun LyricsPage(song: Song, colors: CoverColors) {
-    val lines = placeholderLyrics(song)
+    val lines = lyricsLines(song)
     Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             lines.forEachIndexed { index, line ->
@@ -478,9 +480,15 @@ private fun DetailPage(song: Song, colors: CoverColors) {
             Box(Modifier.weight(1f)) { DetailCard(Icons.Default.Audiotrack, "Original Sound", colors) }
             Box(Modifier.weight(1f)) { DetailCard(Icons.Default.Audiotrack, "本地播放", colors) }
         }
-        InfoCard("音频信息", listOf("FLAC format stream", "2 Channels    44100 Hz    828 kbps"), colors)
+        val format = song.format?.let { "$it format stream" } ?: "Audio format stream"
+        val technical = buildString {
+            song.channels?.let { append("$it Channels") }
+            song.sampleRateHz?.let { if (isNotEmpty()) append("    "); append("$it Hz") }
+            song.bitrateKbps?.let { if (isNotEmpty()) append("    "); append("$it kbps") }
+        }.ifBlank { "Metadata unavailable" }
+        InfoCard("音频信息", listOf(format, technical), colors)
         InfoCard("出自专辑", listOf(song.album.ifBlank { "原创歌曲合集" }, "未知专辑艺术家"), colors)
-        InfoCard("参与创作的艺术家", listOf(song.artist, "9 首"), colors)
+        InfoCard("参与创作的艺术家", listOf(song.artist, song.composer?.let { "作曲：$it" } ?: "作曲信息未知", song.genre?.let { "流派：$it" } ?: "流派信息未知"), colors)
     }
 }
 

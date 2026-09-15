@@ -15,7 +15,7 @@ android {
         versionCode = 100
         versionName = "1.0.0"
 
-        ndk {
+    ndk {
             abiFilters.add("arm64-v8a")
         }
     }
@@ -48,6 +48,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":taglib"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

@@ -1,117 +1,75 @@
 # PureMusic
 
-PureMusic 是一款基于 Jetpack Compose 的 Android 本地音乐播放器。它从系统 `MediaStore` 读取设备上的音频文件，使用 Media3 在前台和后台播放，并将收藏、歌单、设置和最近播放记录保存到本地。
+PureMusic 是一款面向 Android 的本地音乐播放器，使用 Jetpack Compose 构建界面，Media3 负责播放，Room 保存本地库和用户数据。应用不申请网络权限，音乐、标签和封面均来自设备本地文件。
 
-## 当前能力
+## 功能
 
-- 扫描本地音乐，按歌曲、专辑和艺术家浏览
-- 搜索歌曲，按标题、艺术家、专辑、添加时间和时长排序
-- 播放、暂停、上一首、下一首和进度拖动
-- 顺序、循环、单曲循环和随机播放
-- 播放队列、最近播放记录和播放错误提示
+- 扫描 `MediaStore` 音频库，按歌曲、专辑、艺术家和文件夹浏览
+- 搜索、排序、收藏、自定义歌单和播放历史
+- 播放/暂停、上一首、下一首、拖动进度、队列管理
+- 顺序、随机、列表循环和单曲循环
 - MediaSession 后台播放，支持通知栏、锁屏、蓝牙和耳机控制
-- MediaStore 专辑封面 + Coil 加载，缺少封面时显示回退图标
-- 收藏歌曲和自定义歌单
-- 收藏页和最近播放页，支持从歌曲行快速切换收藏状态
-- 跟随系统、亮色和暗色主题，Android 12+ 支持动态取色
-- Glance 桌面小组件，支持打开应用、播放/暂停和下一首
-- 设置页提供系统音效/均衡器入口
+- MediaStore 专辑封面与 Coil 加载，缺少封面时显示回退图标
+- 跟随系统、亮色和暗色主题；Android 12+ 支持动态取色
+- Glance 桌面小组件和系统均衡器入口
+
+## 音频标签与歌词
+
+独立的 `:taglib` Android Library 模块封装 TagLib 2.3.2，通过 JNI 读取 MP3、FLAC、OGG/Opus、M4A/AAC、WAV 等格式的内置信息：标题、艺术家、专辑、曲目号、时长、码率、采样率、声道数、歌词（`LYRICS`）、作曲家（`COMPOSER`）和流派（`GENRE`）。
+
+歌词页和封面页的迷你歌词窗只显示音频内嵌歌词；没有歌词时显示“暂无内嵌歌词”，不会填充虚构歌词。详情页展示读取到的技术参数及扩展标签。TagLib 不可用、路径不可访问或标签缺失时，应用回退到 MediaStore 信息。
 
 ## 技术栈
 
-| 项目 | 当前配置 |
+| 项目 | 配置 |
 | --- | --- |
-| 语言 | Kotlin 2.3.21 |
-| 编译器 | Kotlin Compose Compiler Plugin 2.3.21 |
-| UI | Jetpack Compose、Material 3，Compose BOM 2026.08.00 |
-| 播放 | AndroidX Media3 ExoPlayer / MediaSession 1.11.0 |
-| 数据库 | Room 2.8.4，KSP 2.3.11 |
-| 设置 | DataStore Preferences 1.2.1 |
-| 图片 | Coil Compose 3.6.0 |
-| 小组件 | Glance AppWidget 1.2.0 |
-| 异步 | Kotlin Coroutines 1.11.0 |
-| 架构 | 单模块 MVVM + Repository |
+| Kotlin / Compose | Kotlin 2.3.21、Compose BOM 2026.08.00 |
+| 播放 | AndroidX Media3 1.11.0 |
+| 数据 | Room 2.8.4、DataStore Preferences 1.2.1 |
+| 图片 / 小组件 | Coil 3.6.0、Glance 1.2.0 |
+| 原生标签 | TagLib 2.3.2、CMake、JNI |
 | 构建 | AGP 9.4.0、Gradle 9.6.0、Java 11 |
 
-## 应用规格
-
-| 项目 | 值 |
-| --- | --- |
-| Application ID | `com.pure.music` |
-| ABI | `arm64-v8a` |
-| minSdk | 28（Android 9） |
-| targetSdk | 35（Android 15） |
-| compileSdk | 37 |
-| versionName | `0.1.0` |
-
-## 目录结构
+## 模块与数据流
 
 ```text
-app/src/main/java/com/pure/music/
-├── MainActivity.kt                 # Compose 入口、主题和页面状态
-├── PureMusicApp.kt                 # Application 入口
-├── data/                           # 音乐模型和 Room 数据库
-├── library/                        # MediaStore 仓库和媒体库 ViewModel
-├── player/                         # MediaController、播放服务和播放状态
-├── settings/                       # DataStore 设置仓库和 ViewModel
-├── ui/                             # Compose 页面、组件和主题
-└── widget/                         # Glance 桌面小组件
+PureMusic/
+├── app/       # 主应用、媒体库、播放器、Compose UI、Room、设置和小组件
+└── taglib/    # TagLib 原生库、JNI 和 AudioMetadata 封装
 ```
 
-## 播放和数据流程
+媒体库流程：`MediaStore` 查询 → `:taglib` 解析内置标签 → 合并并缓存到 Room → `StateFlow` 更新界面。播放由 `PlayerManager` 连接 `PlaybackService`，通过 MediaSession 暴露系统控制。
 
-1. `LibraryScreen` 请求音频读取权限。
-2. `MediaLibraryRepository` 查询 `MediaStore.Audio`，并通过 `ContentObserver` 感知媒体库变化。
-3. 用户首次播放时，`PlayerManager` 按需连接 `PlaybackService`。
-4. `PlaybackService` 创建 ExoPlayer 和 MediaSession，系统通知栏和锁屏通过 MediaSession 控制。
-5. 播放状态通过 `StateFlow` 返回 Compose UI；播放历史写入 Room。
+## 应用规格与权限
 
-## 权限
-
-| 权限 | 用途 |
-| --- | --- |
-| `READ_MEDIA_AUDIO` | Android 13 及以上读取本地音频 |
-| `READ_EXTERNAL_STORAGE` | Android 9 至 Android 12 读取本地音频 |
-| `FOREGROUND_SERVICE` | 后台播放前台服务 |
-| `FOREGROUND_SERVICE_MEDIA_PLAYBACK` | 声明媒体播放服务类型 |
-| `WAKE_LOCK` | 播放期间保持必要的 CPU 唤醒 |
-
-项目不申请网络权限，封面和音频均来自本地设备。
+- Application ID：`com.pure.music`
+- minSdk 28（Android 9），targetSdk 35，compileSdk 37
+- 当前仅打包 `arm64-v8a`
+- Android 13+ 使用 `READ_MEDIA_AUDIO`，Android 9–12 使用 `READ_EXTERNAL_STORAGE`
+- 后台播放使用前台媒体服务和必要的唤醒锁权限
 
 ## 构建
 
-### Android Studio
-
-使用支持 AGP 9.4 的 Android Studio 打开项目，等待 Gradle 同步后选择 `app` 模块运行或生成 APK。项目使用 Java 11 编译，CI 使用 JDK 17 运行 Gradle。
-
-### 命令行
-
-仓库包含 `gradlew` 和 `gradle-wrapper.properties`，但当前未提交 `gradle-wrapper.jar`。如果环境已经安装 Gradle 9.6.0，可以执行：
+使用支持 AGP 9.4 的 Android Studio 打开项目，等待 Gradle 同步后运行 `app`。命令行可执行：
 
 ```bash
-gradle assembleDebug
-gradle assembleRelease
+gradle :app:assembleDebug
+gradle :app:assembleRelease
 ```
 
-### GitHub Actions
-
-工作流位于 `.github/workflows/build.yml`，在推送到 `main` 或手动触发时通过 SDK preview channel 安装 JDK 17、Gradle 9.6.0 和 Android SDK 37，执行 Release 构建并上传 APK Artifact。
-
-Release 当前启用 R8，但没有配置正式签名密钥；产物适合 CI 验证，不适合作为正式商店发布包。
+首次构建 `:taglib` 时，CMake 会从 TagLib Git 仓库获取 2.3.2 源码。Release 启用 R8，但未配置正式签名密钥，产物仅用于验证。
 
 ## 已知限制
 
-- 只生成 `arm64-v8a`，普通 x86/x86_64 模拟器不能直接运行。
-- 部分设备或音频文件没有可读取的 MediaStore 专辑封面，会显示回退图标。
-- 当前页面导航使用 Compose 状态和返回键处理，尚未引入 Navigation Compose。
-- 播放历史已保存，但首页尚未提供独立的“最近播放”列表。
-- 均衡器入口跳转系统音效设置，不包含应用内均衡器。
-- 当前没有正式 keystore、自动发布和崩溃收集配置。
-- 本项目遵循仓库约定，不在本地执行编译验证；最终构建以 Android Studio 或 GitHub Actions 结果为准。
+- 仅 arm64 模拟器/设备可直接运行，x86/x86_64 需要调整 ABI 配置
+- 受限存储场景下可能无法取得真实文件路径，此时仅使用 MediaStore 元数据
+- 当前歌词按文本行展示，不包含逐行时间轴同步
+- 内嵌封面尚未直接从 TagLib 提取，封面仍使用 MediaStore 专辑封面 URI
+- 暂无应用内均衡器、崩溃收集和正式发布签名配置
 
 ## 后续计划
 
-1. 增加最近播放页面和播放位置恢复。
-2. 补充播放服务、Room DAO 和关键 Compose 页面测试。
-3. 配置正式签名、AAB 构建和发布流水线。
-4. 根据设备兼容性补充音频元数据封面读取方案。
+- 支持内嵌封面和 LRC 时间轴歌词
+- 完善多 ABI / APK 拆分与构建缓存
+- 增加播放器、媒体库和 Compose UI 测试
+- 配置正式签名、AAB 构建和发布流程

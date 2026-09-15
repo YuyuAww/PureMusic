@@ -15,7 +15,14 @@ data class Song(
     val dateAdded: Long,
     val dateModified: Long,
     val trackNumber: Int,
-    val path: String = ""
+    val path: String = "",
+    val bitrateKbps: Int? = null,
+    val sampleRateHz: Int? = null,
+    val channels: Int? = null,
+    val format: String? = null,
+    val lyrics: String? = null,
+    val composer: String? = null,
+    val genre: String? = null
 )
 
 /** 专辑数据模型，由歌曲聚合生成 */
