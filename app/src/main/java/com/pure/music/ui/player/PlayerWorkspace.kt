@@ -18,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -237,12 +239,13 @@ private fun CoverAndLyricsPage(song: Song, position: Long, colors: CoverColors, 
         Spacer(Modifier.height(35.dp))
         // 迷你歌词窗
         // 取播放进度之前最近的一行；使用 lastOrNull 避免始终停留在第一行
-        val current = lines.lastOrNull { it.timeMs <= position } ?: lines.first()
-        val index = lines.indexOf(current).coerceAtLeast(0)
+        val primaryLines = lines.filter { it.primary }
+        val current = primaryLines.lastOrNull { it.timeMs <= position } ?: primaryLines.firstOrNull() ?: lines.first()
+        val index = primaryLines.indexOf(current).coerceAtLeast(0)
         MiniLyricsWindow(
-            lines.getOrNull(index - 1)?.text ?: "",
+            primaryLines.getOrNull(index - 1)?.text ?: "",
             current.text,
-            lines.getOrNull(index + 1)?.text ?: "",
+            primaryLines.getOrNull(index + 1)?.text ?: "",
             colors,
             onOpenLyrics
         )
@@ -455,7 +458,7 @@ private fun PlayerBottomBar(
 // ---------------------------------------------------------
 // 辅助页面 (详情页 / 全屏歌词页 / 占位歌词)
 // ---------------------------------------------------------
-private data class TimedLyric(val timeMs: Long, val text: String, val words: List<TimedWord> = emptyList())
+private data class TimedLyric(val timeMs: Long, val text: String, val words: List<TimedWord> = emptyList(), val primary: Boolean = false)
 private data class TimedWord(val timeMs: Long, val text: String)
 
 private fun timedLyrics(song: Song): List<TimedLyric> {
@@ -464,18 +467,25 @@ private fun timedLyrics(song: Song): List<TimedLyric> {
     val parsed = source.lines().flatMap { line ->
         val matches = regex.findAll(line).toList()
         if (matches.isEmpty()) listOf(TimedLyric(0, line.trim())) else {
-            val lineStart = matches.firstOrNull { it.value.startsWith("[") } ?: matches.first()
-            val words = matches.drop(if (lineStart == matches.first() && lineStart.value.startsWith("[") && matches.size > 1) 1 else 0).map { m ->
+            val lineStart = matches.firstOrNull { it.value.startsWith("[") }
+            val wordMatches = matches.filter { it.value.startsWith("<") }
+            val words = wordMatches.mapIndexed { index, m ->
                 val fraction = m.groupValues[4].padEnd(3, '0').take(3).toLongOrNull() ?: 0
                 val time = (m.groupValues[2].toLong() * 60 + m.groupValues[3].toLong()) * 1000 + fraction
-                val end = matches.getOrNull(matches.indexOf(m) + 1)?.range?.first ?: line.length
-                TimedWord(time, line.substring(m.range.last + 1, end).trim())
+                val end = wordMatches.getOrNull(index + 1)?.range?.first ?: line.length
+                TimedWord(time, line.substring(m.range.last + 1, end))
             }.filter { it.text.isNotBlank() }
-            listOf(TimedLyric(parseLyricTime(lineStart), words.joinToString("") { it.text }.ifBlank { line.substringAfter("]").trim() }, words))
+            val text = if (words.isNotEmpty()) words.map { it.text.trim() }.reduce { a, b ->
+                val separator = if (a.lastOrNull()?.isLatinOrDigit() == true && b.firstOrNull()?.isLatinOrDigit() == true) " " else ""
+                a + separator + b
+            } else line.substringAfter("]", line).trim()
+            listOf(TimedLyric(lineStart?.let(::parseLyricTime) ?: parseLyricTime(matches.first()), text, words, words.isNotEmpty()))
         }
     }.filter { it.text.isNotBlank() }.sortedBy { it.timeMs }
     return parsed.ifEmpty { listOf(TimedLyric(0, "暂无内嵌歌词")) }
 }
+
+private fun Char.isLatinOrDigit() = isLetterOrDigit() && code < 128
 
 private fun parseLyricTime(match: MatchResult): Long {
     val fraction = match.groupValues[4].padEnd(3, '0').take(3).toLong()
@@ -489,24 +499,39 @@ private fun parseLyricTime(line: String): Long = Regex("\\[(\\d+):(\\d{2})[.:](\
 @Composable
 private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
     val lines = timedLyrics(song)
-    val currentIndex = lines.indexOfLast { it.timeMs <= position }.coerceAtLeast(0)
+    val currentIndex = lines.indexOfLast { it.primary && it.timeMs <= position }
     val listState = rememberLazyListState()
-    LaunchedEffect(song.id, currentIndex) { listState.animateScrollToItem(currentIndex) }
+    LaunchedEffect(song.id, currentIndex) { if (currentIndex >= 0) listState.animateScrollToItem(currentIndex) }
     Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxWidth().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, contentPadding = PaddingValues(vertical = 180.dp)) {
             itemsIndexed(lines) { index, line ->
-                Text(
-                    if (line.words.isEmpty()) AnnotatedString(line.text) else buildAnnotatedString {
-                        line.words.forEachIndexed { wordIndex, word ->
-                            withStyle(SpanStyle(color = if (position >= word.timeMs && (line.words.getOrNull(wordIndex + 1)?.timeMs ?: Long.MAX_VALUE) > position) colors.accent else colors.muted.copy(alpha = .55f))) { append(word.text) }
-                        }
-                    },
+                if (line.words.isEmpty()) Text(
+                    line.text,
                     color = if (index == currentIndex) colors.accent else colors.muted.copy(alpha = .45f),
                     fontSize = if (index == currentIndex) 29.sp else 23.sp,
                     fontWeight = if (index == currentIndex) FontWeight.Bold else FontWeight.Medium,
-                    textAlign = TextAlign.Center, 
+                    textAlign = TextAlign.Center,
                     modifier = Modifier.padding(vertical = 14.dp)
-                )
+                ) else Row(
+                    modifier = Modifier.padding(vertical = 14.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    line.words.forEachIndexed { wordIndex, word ->
+                        val nextTime = line.words.getOrNull(wordIndex + 1)?.timeMs ?: Long.MAX_VALUE
+                        val active = line.primary && position >= word.timeMs && position < nextTime
+                        val sung = position >= nextTime
+                        // 已播放字词保持抬升和高亮，当前字词使用更强的强调动画
+                        val scale by animateFloatAsState(if (active) 1.16f else if (sung) 1.06f else 1f, tween(220), label = "word-scale")
+                        val lift by animateFloatAsState(if (active) -8f else if (sung) -4f else 0f, tween(220), label = "word-lift")
+                        Text(
+                            word.text,
+                            color = when { active -> colors.accent; sung -> colors.accent.copy(alpha = .82f); else -> colors.muted.copy(alpha = .5f) },
+                            fontSize = if (index == currentIndex) 25.sp else 21.sp,
+                            fontWeight = if (active || index == currentIndex) FontWeight.Bold else FontWeight.Medium,
+                            modifier = Modifier.graphicsLayer { scaleX = scale; scaleY = scale; translationY = lift }
+                        )
+                    }
+                }
             }
         }
         Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
