@@ -471,7 +471,7 @@ private fun timedLyrics(song: Song): List<TimedLyric> {
                 val end = matches.getOrNull(matches.indexOf(m) + 1)?.range?.first ?: line.length
                 TimedWord(time, line.substring(m.range.last + 1, end).trim())
             }.filter { it.text.isNotBlank() }
-            TimedLyric(parseLyricTime(lineStart), words.joinToString("") { it.text }.ifBlank { line.substringAfter("]").trim() }, words)
+            listOf(TimedLyric(parseLyricTime(lineStart), words.joinToString("") { it.text }.ifBlank { line.substringAfter("]").trim() }, words))
         }
     }.filter { it.text.isNotBlank() }.sortedBy { it.timeMs }
     return parsed.ifEmpty { listOf(TimedLyric(0, "暂无内嵌歌词")) }
