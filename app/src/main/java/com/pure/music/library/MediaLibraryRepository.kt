@@ -196,7 +196,7 @@ class MediaLibraryRepository private constructor(context: Context) {
                             composer = metadata.composer,
                             genre = metadata.genre
                         )
-                    )
+                    }
                 )
             }
         }
@@ -248,7 +248,6 @@ class MediaLibraryRepository private constructor(context: Context) {
         dateModified = dateModified,
         trackNumber = trackNumber,
         path = path
-        ,bitrateKbps = null, sampleRateHz = null, channels = null, format = null
     )
 
     private fun SongEntity.toSong() = Song(
