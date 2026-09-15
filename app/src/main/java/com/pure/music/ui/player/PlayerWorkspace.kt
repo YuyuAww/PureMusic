@@ -458,17 +458,20 @@ private fun PlayerBottomBar(
 // ---------------------------------------------------------
 // 辅助页面 (详情页 / 全屏歌词页 / 占位歌词)
 // ---------------------------------------------------------
-private data class TimedLyric(val timeMs: Long, val text: String, val words: List<TimedWord> = emptyList(), val primary: Boolean = false)
+private data class TimedLyric(val timeMs: Long, val text: String, val words: List<TimedWord> = emptyList(), val primary: Boolean = false, val roma: String? = null, val translation: String? = null)
 private data class TimedWord(val timeMs: Long, val text: String)
 
 private fun timedLyrics(song: Song): List<TimedLyric> {
     val source = song.lyrics.orEmpty()
+    if (source.trimStart().startsWith("<tt", ignoreCase = true)) return parseTtmlLyrics(source)
     val regex = Regex("([<\\[])(\\d{1,3}):(\\d{2})(?:[.:](\\d{1,3}))?[>\\]]")
     val parsed = source.lines().flatMap { line ->
         val matches = regex.findAll(line).toList()
         if (matches.isEmpty()) listOf(TimedLyric(0, line.trim())) else {
             val lineStart = matches.firstOrNull { it.value.startsWith("[") }
-            val wordMatches = matches.filter { it.value.startsWith("<") }
+            // 实际本地歌词同时存在两种增强 LRC 写法：<mm:ss.xx> 和 [mm:ss.xx]。
+            // 当同一行包含多个时间标记时，第一个是行时间，后续标记是逐字时间。
+            val wordMatches = if (matches.size > 1) matches.drop(1) else emptyList()
             val words = wordMatches.mapIndexed { index, m ->
                 val fraction = m.groupValues[4].padEnd(3, '0').take(3).toLongOrNull() ?: 0
                 val time = (m.groupValues[2].toLong() * 60 + m.groupValues[3].toLong()) * 1000 + fraction
@@ -479,10 +482,46 @@ private fun timedLyrics(song: Song): List<TimedLyric> {
                 val separator = if (a.lastOrNull()?.isLatinOrDigit() == true && b.firstOrNull()?.isLatinOrDigit() == true) " " else ""
                 a + separator + b
             } else line.substringAfter("]", line).trim()
-            listOf(TimedLyric(lineStart?.let(::parseLyricTime) ?: parseLyricTime(matches.first()), text, words, words.isNotEmpty()))
+            listOf(TimedLyric(lineStart?.let(::parseLyricTime) ?: parseLyricTime(matches.first()), text, words, lineStart != null))
         }
     }.filter { it.text.isNotBlank() }.sortedBy { it.timeMs }
-    return parsed.ifEmpty { listOf(TimedLyric(0, "暂无内嵌歌词")) }
+    val merged = parsed.groupBy { it.timeMs }.toSortedMap().values.map { group ->
+        val main = group.firstOrNull { it.words.isNotEmpty() } ?: group.firstOrNull { it.primary }
+        val secondary = group.filter { it !== main }
+        val roma = secondary.firstOrNull { it.text.isMostlyAscii() }?.text
+        val translation = secondary.firstOrNull { !it.text.isMostlyAscii() }?.text
+        main?.copy(roma = roma, translation = translation) ?: group.first()
+    }
+    return merged.ifEmpty { listOf(TimedLyric(0, "暂无内嵌歌词")) }
+}
+
+/** 兼容 Lyrico/TTML：主行使用 span begin，翻译和罗马音使用 role 标记。 */
+private fun parseTtmlLyrics(source: String): List<TimedLyric> {
+    val paragraph = Regex("<p\\b([^>]*)>([\\s\\S]*?)</p>", RegexOption.IGNORE_CASE)
+    val result = paragraph.findAll(source).mapNotNull { p ->
+        val attrs = p.groupValues[1]; val body = p.groupValues[2]
+        val begin = Regex("begin=\\\"([^\\\"]+)\\\"", RegexOption.IGNORE_CASE).find(attrs)?.groupValues?.get(1)?.let(::ttmlTime) ?: 0
+        val role = Regex("role=\\\"([^\\\"]+)\\\"", RegexOption.IGNORE_CASE).find(attrs)?.groupValues?.get(1).orEmpty()
+        val plain = body.replace(Regex("<[^>]+>"), "").trim()
+        if (plain.isBlank()) return@mapNotNull null
+        val words = if (role.isBlank()) Regex("<span\\b([^>]*)>([\\s\\S]*?)</span>", RegexOption.IGNORE_CASE).findAll(body).mapNotNull { s ->
+            val t = Regex("begin=\\\"([^\\\"]+)\\\"", RegexOption.IGNORE_CASE).find(s.groupValues[1])?.groupValues?.get(1) ?: return@mapNotNull null
+            TimedWord(begin + ttmlTime(t), s.groupValues[2].replace(Regex("<[^>]+>"), ""))
+        }.toList() else emptyList()
+        TimedLyric(begin, plain, words, role.isBlank(), if (role.contains("roman", true) || role.contains("roma", true)) plain else null, if (role.contains("translation", true)) plain else null)
+    }.toList().sortedBy { it.timeMs }
+    return result.ifEmpty { listOf(TimedLyric(0, "暂无内嵌歌词")) }
+}
+
+private fun ttmlTime(value: String): Long = when {
+    value.endsWith("ms", true) -> value.dropLast(2).toLongOrNull() ?: 0
+    value.endsWith("s", true) -> ((value.dropLast(1).toDoubleOrNull() ?: 0.0) * 1000).toLong()
+    else -> 0
+}
+
+private fun String.isMostlyAscii(): Boolean {
+    val letters = count { !it.isWhitespace() }
+    return letters > 0 && count { it.code < 128 } * 10 >= letters * 7
 }
 
 private fun Char.isLatinOrDigit() = isLetterOrDigit() && code < 128
@@ -505,6 +544,9 @@ private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
     Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxWidth().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, contentPadding = PaddingValues(vertical = 180.dp)) {
             itemsIndexed(lines) { index, line ->
+                if (line.primary) {
+                    line.roma?.let { Text(it, color = colors.muted.copy(alpha = .5f), fontSize = 15.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 2.dp)) }
+                }
                 if (line.words.isEmpty()) Text(
                     line.text,
                     color = if (index == currentIndex) colors.accent else colors.muted.copy(alpha = .45f),
@@ -531,6 +573,9 @@ private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
                             modifier = Modifier.graphicsLayer { scaleX = scale; scaleY = scale; translationY = lift }
                         )
                     }
+                }
+                if (line.primary) {
+                    line.translation?.let { Text(it, color = colors.muted.copy(alpha = .6f), fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 12.dp)) }
                 }
             }
         }
