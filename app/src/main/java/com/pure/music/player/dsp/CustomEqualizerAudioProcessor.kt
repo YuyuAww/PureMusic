@@ -1,6 +1,5 @@
 package com.pure.music.player.dsp
 
-import androidx.media3.common.AudioFormat
 import androidx.media3.common.C
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.BaseAudioProcessor
@@ -37,7 +36,7 @@ class CustomEqualizerAudioProcessor : BaseAudioProcessor() {
 
     fun setParams(params: List<FilterParam>) { pendingParams.set(params.toList()) }
 
-    override fun onConfigure(inputAudioFormat: AudioFormat): AudioFormat {
+    override fun onConfigure(inputAudioFormat: AudioProcessor.AudioFormat): AudioProcessor.AudioFormat {
         if (inputAudioFormat.encoding != C.ENCODING_PCM_16BIT) {
             throw AudioProcessor.UnhandledAudioFormatException(inputAudioFormat)
         }
