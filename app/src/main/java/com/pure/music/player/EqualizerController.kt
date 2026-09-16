@@ -1,60 +1,40 @@
 package com.pure.music.player
 
-import android.media.audiofx.Equalizer
+import com.pure.music.player.dsp.CustomEqualizerAudioProcessor
+import com.pure.music.player.dsp.FilterParam
+import com.pure.music.player.dsp.FilterType
 
-/**
- * 把 Compose 控件桥接到 ExoPlayer 的音频会话（系统 AudioFX 均衡器）。
- * 同时在进程内记住开关状态与各频段增益：播放器重建会话重新 attach 时
- * 恢复用户曲线，UI 重新进入时读取到上次设置。
- */
+/** 应用内 DSP 均衡器状态与 UI 的桥接。 */
 object EqualizerController {
-    /** 界面固定 10 个频段，按比例映射到系统均衡器的实际频段数 */
     const val BAND_COUNT = 10
-
-    private var equalizer: Equalizer? = null
+    private val frequencies = doubleArrayOf(31.0, 62.0, 125.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0, 16000.0)
+    private const val MAX_GAIN_DB = 12.0
+    private val processor = CustomEqualizerAudioProcessor()
     private var enabled = true
     private var levels = List(BAND_COUNT) { 0f }
 
-    /** 系统均衡器是否可用（attach 成功） */
-    val isAvailable: Boolean get() = equalizer != null
+    val isAvailable: Boolean get() = true
     val isEnabled: Boolean get() = enabled
     val bandLevels: List<Float> get() = levels
-
-    /** 由播放服务在构建播放器时调用，把系统均衡器挂到当前音频会话 */
-    fun attach(audioSessionId: Int) {
-        equalizer?.release()
-        equalizer = runCatching { Equalizer(0, audioSessionId) }.getOrNull()
-        runCatching {
-            equalizer?.let { eq ->
-                eq.enabled = enabled
-                levels.forEachIndexed { i, v -> setDeviceBand(eq, i, v) }
-            }
-        }
-    }
+    val audioProcessor: CustomEqualizerAudioProcessor get() = processor
 
     fun setEnabled(enabled: Boolean) {
         this.enabled = enabled
-        runCatching { equalizer?.enabled = enabled }
+        processor.setEnabled(enabled)
     }
 
-    /** value 为 -1f..1f，线性映射到设备频段增益的最小/最大 mB 值 */
+    /** value 为 -1f..1f，映射到每段 -12..12 dB。 */
     fun setBandLevel(index: Int, value: Float) {
         if (index !in levels.indices) return
-        levels = levels.toMutableList().also { it[index] = value }
-        runCatching { equalizer?.let { setDeviceBand(it, index, value) } }
+        levels = levels.toMutableList().also { it[index] = value.coerceIn(-1f, 1f) }
+        processor.setParams(frequencies.mapIndexed { i, frequency ->
+            FilterParam(FilterType.PEAK, frequency, levels[i] * MAX_GAIN_DB, q = 1.0)
+        })
     }
+
+    fun setPreampGainDb(gainDb: Double) = processor.setPreampGainDb(gainDb)
 
     fun release() {
-        equalizer?.release()
-        equalizer = null
-    }
-
-    private fun setDeviceBand(eq: Equalizer, index: Int, value: Float) {
-        val count = eq.numberOfBands.toInt()
-        if (count == 0) return
-        val band = ((index.toFloat() / (BAND_COUNT - 1)) * (count - 1)).toInt().coerceIn(0, count - 1)
-        val range = eq.bandLevelRange
-        val level = (range[0] + ((value + 1f) / 2f) * (range[1] - range[0])).toInt()
-        eq.setBandLevel(band.toShort(), level.coerceIn(range[0].toInt(), range[1].toInt()).toShort())
+        processor.flush()
     }
 }

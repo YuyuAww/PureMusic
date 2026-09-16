@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
@@ -423,7 +424,7 @@ private fun PlayerBottomBar(
         ModalBottomSheet(onDismissRequest = { showEqualizer = false }) {
             Column(Modifier.fillMaxWidth().height(PlayerSheetHeight).padding(20.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("均衡器", style = MaterialTheme.typography.headlineSmall)
+                    Text("DSP 均衡器", style = MaterialTheme.typography.headlineSmall)
                     Switch(
                         checked = equalizerEnabled,
                         enabled = EqualizerController.isAvailable,
@@ -448,7 +449,7 @@ private fun PlayerBottomBar(
                         }
                     }
                 }
-                Text(if (EqualizerController.isAvailable) "调整各频段增益（dB）" else "当前设备不支持系统均衡器", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("调整各频段增益（dB）", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(20.dp))
             }
         }
@@ -471,26 +472,43 @@ private fun timedLyrics(song: Song): List<TimedLyric> {
             val lineStart = matches.firstOrNull { it.value.startsWith("[") }
             // 实际本地歌词同时存在两种增强 LRC 写法：<mm:ss.xx> 和 [mm:ss.xx]。
             // 当同一行包含多个时间标记时，第一个是行时间，后续标记是逐字时间。
-            val wordMatches = if (matches.size > 1) matches.drop(1) else emptyList()
-            val words = wordMatches.mapIndexed { index, m ->
+            // 有行级时间时，第一个标记属于整行；没有行级时间时，所有标记
+            // 都是逐字时间。后者不能 drop(1)，否则主歌词的首字会永远丢失。
+            val wordMatches = if (lineStart != null) matches.drop(1) else matches
+            val parsedWords = wordMatches.mapIndexed { index, m ->
                 val fraction = m.groupValues[4].padEnd(3, '0').take(3).toLongOrNull() ?: 0
                 val time = (m.groupValues[2].toLong() * 60 + m.groupValues[3].toLong()) * 1000 + fraction
                 val end = wordMatches.getOrNull(index + 1)?.range?.first ?: line.length
                 TimedWord(time, line.substring(m.range.last + 1, end))
             }.filter { it.text.isNotBlank() }
+            // ELRC 允许行时间后直接写首字，再从第二个字开始提供逐字时间。
+            // 这段前缀仍属于主歌词，使用行时间作为它的起点，不能丢弃。
+            val leadingText = if (lineStart != null && wordMatches.isNotEmpty()) {
+                line.substring(lineStart.range.last + 1, wordMatches.first().range.first).trim()
+            } else ""
+            val words = if (leadingText.isNotBlank()) {
+                listOf(TimedWord(parseLyricTime(lineStart!!), leadingText)) + parsedWords
+            } else parsedWords
             val text = if (words.isNotEmpty()) words.map { it.text.trim() }.reduce { a, b ->
                 val separator = if (a.lastOrNull()?.isLatinOrDigit() == true && b.firstOrNull()?.isLatinOrDigit() == true) " " else ""
                 a + separator + b
             } else line.substringAfter("]", line).trim()
-            listOf(TimedLyric(lineStart?.let(::parseLyricTime) ?: parseLyricTime(matches.first()), text, words, lineStart != null))
+            listOf(TimedLyric(lineStart?.let(::parseLyricTime) ?: parseLyricTime(matches.first()), text, words, lineStart != null || words.isNotEmpty()))
         }
     }.filter { it.text.isNotBlank() }.sortedBy { it.timeMs }
-    val merged = parsed.groupBy { it.timeMs }.toSortedMap().values.map { group ->
-        val main = group.firstOrNull { it.words.isNotEmpty() } ?: group.firstOrNull { it.primary }
-        val secondary = group.filter { it !== main }
-        val roma = secondary.firstOrNull { it.text.isMostlyAscii() }?.text
-        val translation = secondary.firstOrNull { !it.text.isMostlyAscii() }?.text
-        main?.copy(roma = roma, translation = translation) ?: group.first()
+    val merged = parsed.groupBy { it.timeMs }.toSortedMap().values.flatMap { group ->
+        // 同一时间戳可能对应连续的两句主歌词；只有恰好一个主行时，
+        // 才把同时间的非主行作为罗马音/翻译附加上去。
+        val primaryLines = group.filter { it.primary }
+        if (primaryLines.size > 1) {
+            group
+        } else {
+            val main = group.firstOrNull { it.words.isNotEmpty() } ?: primaryLines.firstOrNull()
+            val secondary = group.filter { it !== main }
+            val roma = secondary.firstOrNull { it.text.isMostlyAscii() }?.text
+            val translation = secondary.firstOrNull { !it.text.isMostlyAscii() }?.text
+            listOf(main?.copy(roma = roma, translation = translation) ?: group.first())
+        }
     }
     return merged.ifEmpty { listOf(TimedLyric(0, "暂无内嵌歌词")) }
 }
@@ -550,8 +568,8 @@ private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
                 if (line.words.isEmpty()) Text(
                     line.text,
                     color = if (index == currentIndex) colors.accent else colors.muted.copy(alpha = .45f),
-                    fontSize = if (index == currentIndex) 29.sp else 23.sp,
-                    fontWeight = if (index == currentIndex) FontWeight.Bold else FontWeight.Medium,
+                    fontSize = 23.sp,
+                    fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(vertical = 14.dp)
                 ) else Row(
@@ -561,16 +579,31 @@ private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
                     line.words.forEachIndexed { wordIndex, word ->
                         val nextTime = line.words.getOrNull(wordIndex + 1)?.timeMs ?: Long.MAX_VALUE
                         val active = line.primary && position >= word.timeMs && position < nextTime
-                        val sung = position >= nextTime
-                        // 已播放字词保持抬升和高亮，当前字词使用更强的强调动画
-                        val scale by animateFloatAsState(if (active) 1.16f else if (sung) 1.06f else 1f, tween(220), label = "word-scale")
-                        val lift by animateFloatAsState(if (active) -8f else if (sung) -4f else 0f, tween(220), label = "word-lift")
+                        val sung = line.primary && position >= nextTime
+                        // HyperLyric 风格：字词从基线下方浮起，当前字随播放进度
+                        // 继续上移，完成后回落少许，避免整行永久悬空。
+                        val progress = if (active && nextTime != Long.MAX_VALUE) {
+                            ((position - word.timeMs).toFloat() / (nextTime - word.timeMs).coerceAtLeast(1L)).coerceIn(0f, 1f)
+                        } else 0f
+                        val targetLift = when {
+                            active -> -8f - progress * 5f
+                            sung -> -3f
+                            else -> 4f
+                        }
+                        val targetAlpha = when {
+                            active -> 1f
+                            sung -> .86f
+                            else -> .48f
+                        }
+                        val animation = tween<Float>(180, easing = FastOutSlowInEasing)
+                        val lift by animateFloatAsState(targetLift, animation, label = "word-lift")
+                        val alpha by animateFloatAsState(targetAlpha, animation, label = "word-alpha")
                         Text(
                             word.text,
-                            color = when { active -> colors.accent; sung -> colors.accent.copy(alpha = .82f); else -> colors.muted.copy(alpha = .5f) },
-                            fontSize = if (index == currentIndex) 25.sp else 21.sp,
-                            fontWeight = if (active || index == currentIndex) FontWeight.Bold else FontWeight.Medium,
-                            modifier = Modifier.graphicsLayer { scaleX = scale; scaleY = scale; translationY = lift }
+                            color = when { active || sung -> colors.accent; else -> colors.muted },
+                            fontSize = 21.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.graphicsLayer { translationY = lift; this.alpha = alpha }
                         )
                     }
                 }

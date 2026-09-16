@@ -5,6 +5,9 @@ import android.content.Intent
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.audio.AudioSink
+import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import com.pure.music.MainActivity
@@ -20,7 +23,16 @@ class PlaybackService : MediaSessionService() {
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
         mediaSession?.let { return it }
-        val newPlayer = ExoPlayer.Builder(this)
+        val renderersFactory = object : DefaultRenderersFactory(this) {
+            override fun buildAudioSink(
+                context: android.content.Context,
+                enableFloatOutput: Boolean,
+                enableAudioTrackPlaybackParams: Boolean
+            ): AudioSink = DefaultAudioSink.Builder(context)
+                .setAudioProcessors(EqualizerController.audioProcessor)
+                .build()
+        }
+        val newPlayer = ExoPlayer.Builder(this, renderersFactory)
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
@@ -40,7 +52,6 @@ class PlaybackService : MediaSessionService() {
         )
 
         player = newPlayer
-        EqualizerController.attach(newPlayer.audioSessionId)
         return MediaSession.Builder(this, newPlayer)
             .setSessionActivity(sessionActivity)
             .build()

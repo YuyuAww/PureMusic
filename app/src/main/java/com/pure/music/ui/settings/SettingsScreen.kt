@@ -41,7 +41,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
         SettingsCard {
             SettingRow("主题：${themeLabel(theme)}", Icons.Default.LightMode) { showThemeDialog = true }
             SettingRow("主题颜色：${colorSourceLabel(colorSource)}", Icons.Default.Palette) { showColorDialog = true }
-            SettingRow("系统均衡器", Icons.Default.Equalizer)
+            SettingRow("DSP 均衡器", Icons.Default.Equalizer)
             SettingRow("关于", Icons.Default.Info)
         }
         Spacer(Modifier.height(24.dp))
