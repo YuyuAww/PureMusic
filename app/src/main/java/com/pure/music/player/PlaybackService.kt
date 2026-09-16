@@ -29,7 +29,7 @@ class PlaybackService : MediaSessionService() {
                 enableFloatOutput: Boolean,
                 enableAudioTrackPlaybackParams: Boolean
             ): AudioSink = DefaultAudioSink.Builder(context)
-                .setAudioProcessors(EqualizerController.audioProcessor)
+                .setAudioProcessors(arrayOf(EqualizerController.audioProcessor))
                 .build()
         }
         val newPlayer = ExoPlayer.Builder(this, renderersFactory)
