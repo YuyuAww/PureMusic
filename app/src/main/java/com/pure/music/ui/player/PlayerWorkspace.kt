@@ -636,39 +636,39 @@ private fun DetailPage(song: Song, colors: CoverColors) {
         }
 
         // 基本标签
-        val basicTags: List<Pair<String, String>> = listOf(
-            "曲目", song.trackNumber.takeIf { it > 0 }?.toString() ?: "",
-            "碟片", song.discNumber.takeIf { it > 0 }?.toString() ?: "",
-            "年份", song.year?.toString() ?: "",
-            "日期", song.date ?: "",
-            "流派", song.genre ?: "",
-            "评论", song.comment ?: ""
+        val basicTags = listOf(
+            "曲目" to song.trackNumber.takeIf { it > 0 }?.toString().orEmpty(),
+            "碟片" to song.discNumber?.takeIf { it > 0 }?.toString().orEmpty(),
+            "年份" to song.year?.toString().orEmpty(),
+            "日期" to song.date.orEmpty(),
+            "流派" to song.genre.orEmpty(),
+            "评论" to song.comment.orEmpty()
         ).filter { it.second.isNotBlank() }
         if (basicTags.isNotEmpty()) InfoCard("基本标签", colors) {
             basicTags.forEach { (k, v) -> DetailRow(k, v, colors) }
         }
 
         // 扩展标签
-        val extTags: List<Pair<String, String>> = listOf(
-            "作曲家", song.composer ?: "",
-            "词作者", song.lyricist ?: "",
-            "指挥", song.conductor ?: "",
-            "混音", song.remixer ?: "",
-            "情绪", song.mood ?: "",
-            "BPM", song.bpm ?: "",
-            "ISRC", song.isrc ?: "",
-            "版权", song.copyright ?: "",
-            "厂牌", song.label ?: ""
+        val extTags = listOf(
+            "作曲家" to song.composer.orEmpty(),
+            "词作者" to song.lyricist.orEmpty(),
+            "指挥" to song.conductor.orEmpty(),
+            "混音" to song.remixer.orEmpty(),
+            "情绪" to song.mood.orEmpty(),
+            "BPM" to song.bpm.orEmpty(),
+            "ISRC" to song.isrc.orEmpty(),
+            "版权" to song.copyright.orEmpty(),
+            "厂牌" to song.label.orEmpty()
         ).filter { it.second.isNotBlank() }
         if (extTags.isNotEmpty()) InfoCard("扩展标签", colors) {
             extTags.forEach { (k, v) -> DetailRow(k, v, colors) }
         }
 
         // MusicBrainz 标识
-        val mbTags: List<Pair<String, String>> = listOf(
-            "MusicBrainz 曲", song.musicBrainzTrackId ?: "",
-            "MusicBrainz 专辑", song.musicBrainzAlbumId ?: "",
-            "MusicBrainz 艺术家", song.musicBrainzArtistId ?: ""
+        val mbTags = listOf(
+            "MusicBrainz 曲" to song.musicBrainzTrackId.orEmpty(),
+            "MusicBrainz 专辑" to song.musicBrainzAlbumId.orEmpty(),
+            "MusicBrainz 艺术家" to song.musicBrainzArtistId.orEmpty()
         ).filter { it.second.isNotBlank() }
         if (mbTags.isNotEmpty()) InfoCard("MusicBrainz", colors) {
             mbTags.forEach { (k, v) -> DetailRow(k, v, colors) }
