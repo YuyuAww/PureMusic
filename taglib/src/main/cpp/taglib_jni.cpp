@@ -84,7 +84,7 @@ Java_com_pure_music_taglib_TagLibMetadataReader_readNative(JNIEnv* env, jclass, 
                     bool ok = false;
                     auto bv = dataIt->second.toByteVector(&ok);
                     if (ok) {
-                        const unsigned char* raw = bv.data();
+                        const char* raw = bv.data();
                         int len = static_cast<int>(bv.size());
                         if (len > 256 * 1024) len = 256 * 1024;
                         picData.assign(reinterpret_cast<const char*>(raw), len);
