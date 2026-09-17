@@ -9,6 +9,8 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.pure.music.data.Song
+import com.pure.music.widget.NowPlayingWidget
+import com.pure.music.widget.NowPlayingWidgetReceiver
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.Executor
 import kotlinx.coroutines.CoroutineScope
@@ -255,12 +257,11 @@ object PlayerManager {
         context?.let { ctx ->
             try {
                 val widgetManager = android.appwidget.AppWidgetManager.getInstance(ctx)
-                val component = android.content.ComponentName(
-                    ctx, com.pure.music.widget.NowPlayingWidgetReceiver::class.java
-                )
-                val widgetIds = widgetManager.getAppWidgetIds(component)
-                if (widgetIds.isNotEmpty()) {
-                    com.pure.music.widget.NowPlayingWidget().updateAll()
+                val component = ComponentName(ctx, NowPlayingWidgetReceiver::class.java)
+                if (widgetManager.getAppWidgetIds(component).isNotEmpty()) {
+                    scope.launch {
+                        NowPlayingWidget().updateAll(ctx)
+                    }
                 }
             } catch (_: Exception) {
                 // 小部件未安装时忽略
