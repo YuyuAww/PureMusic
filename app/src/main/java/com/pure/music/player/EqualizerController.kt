@@ -35,7 +35,6 @@ object EqualizerController {
     fun setPreampGainDb(gainDb: Double) = processor.setPreampGainDb(gainDb)
 
     fun release() {
-        @Suppress("DEPRECATION")
-        processor.flush()
+        processor.onReset()
     }
 }

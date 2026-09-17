@@ -280,20 +280,30 @@ private fun PlayerBottomBar(
     onSetSleepTimer: (Int) -> Unit,
     onCancelSleepTimer: () -> Unit
 ) {
-    var sliderPosition by remember(state.currentSong?.id) { mutableFloatStateOf(0f) }
-    var dragging by remember { mutableStateOf(false) }
     var showSleepTimer by remember { mutableStateOf(false) }
     var showEqualizer by remember { mutableStateOf(false) }
     var equalizerEnabled by remember { mutableStateOf(EqualizerController.isEnabled) }
     var bandLevels by remember { mutableStateOf(EqualizerController.bandLevels) }
     var sleepSelection by remember { mutableFloatStateOf(5f) }
-    LaunchedEffect(state.position, dragging) { if (!dragging) sliderPosition = state.position.toFloat() }
-    val displayedPosition = if (dragging) sliderPosition.toLong() else state.position
     val sliderColors = SliderDefaults.colors(
         thumbColor = colors.accent,
         activeTrackColor = colors.accent,
         inactiveTrackColor = colors.accent.copy(alpha = .22f)
     )
+    val seekSliderState = remember(state.currentSong?.id, state.duration) {
+        SliderState(
+            value = state.position.toFloat(),
+            valueRange = 0f..state.duration.coerceAtLeast(1).toFloat()
+        )
+    }
+    LaunchedEffect(state.position, seekSliderState.isDragging) {
+        if (!seekSliderState.isDragging) {
+            seekSliderState.value = state.position.toFloat()
+        }
+    }
+    LaunchedEffect(seekSliderState) {
+        seekSliderState.onValueChangeFinished = { onSeek(seekSliderState.value.toLong()) }
+    }
 
     Column(
         Modifier
@@ -302,12 +312,8 @@ private fun PlayerBottomBar(
             .navigationBarsPadding() // 内容避开底部导航栏
             .padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 20.dp)
     ) {
-        @Suppress("DEPRECATION")
         Slider(
-            value = sliderPosition,
-            onValueChange = { dragging = true; sliderPosition = it },
-            onValueChangeFinished = { dragging = false; onSeek(sliderPosition.toLong()) },
-            valueRange = 0f..state.duration.coerceAtLeast(1).toFloat(),
+            state = seekSliderState,
             colors = sliderColors
         )
 
@@ -316,7 +322,7 @@ private fun PlayerBottomBar(
             Modifier.fillMaxWidth().padding(top = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(formatDuration(displayedPosition), color = colors.accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
+            Text(formatDuration(seekSliderState.value.toLong()), color = colors.accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
             Text(formatDuration(state.duration), color = colors.accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
         }
 
@@ -378,12 +384,14 @@ private fun PlayerBottomBar(
                 Spacer(Modifier.height(8.dp))
                 Text(if (state.sleepMinutes > 0) "剩余 ${state.sleepMinutes} 分钟" else "设置自动暂停时间")
                 Spacer(Modifier.height(12.dp))
-                @Suppress("DEPRECATION")
+                val sleepSliderState = remember {
+                    SliderState(value = sleepSelection, valueRange = 5f..60f, steps = 10)
+                }
+                LaunchedEffect(sleepSliderState) {
+                    sleepSliderState.onValueChange = { sleepSelection = (it / 5f).roundToInt() * 5f }
+                }
                 Slider(
-                    value = sleepSelection,
-                    onValueChange = { sleepSelection = (it / 5f).roundToInt() * 5f },
-                    valueRange = 5f..60f,
-                    steps = 10
+                    state = sleepSliderState
                 )
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("5 分钟")
@@ -424,11 +432,17 @@ private fun PlayerBottomBar(
                             // 横排 Slider 按 180x42 布局后旋转 270° 呈现为竖直滑块，
                             // 外层 Box 预留 42x180 的占位，避免旋转后的绘制压到频段标签
                             Box(Modifier.size(42.dp, 180.dp)) {
-                                @Suppress("DEPRECATION")
+                                val eqSliderState = remember(index) {
+                                    SliderState(value = if (equalizerEnabled) level else 0f, valueRange = -1f..1f)
+                                }
+                                LaunchedEffect(eqSliderState) {
+                                    eqSliderState.onValueChange = { value ->
+                                        bandLevels = bandLevels.toMutableList().also { it[index] = value }
+                                        EqualizerController.setBandLevel(index, value)
+                                    }
+                                }
                                 Slider(
-                                    value = if (equalizerEnabled) level else 0f,
-                                    onValueChange = { value -> bandLevels = bandLevels.toMutableList().also { it[index] = value }; EqualizerController.setBandLevel(index, value) },
-                                    valueRange = -1f..1f,
+                                    state = eqSliderState,
                                     modifier = Modifier.size(width = 180.dp, height = 42.dp).align(Alignment.Center).graphicsLayer { rotationZ = 270f }
                                 )
                             }

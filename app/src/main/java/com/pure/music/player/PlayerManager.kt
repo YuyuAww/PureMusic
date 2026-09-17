@@ -251,7 +251,6 @@ object PlayerManager {
             .build()
 
     /** 通知桌面小部件刷新 UI */
-    @Suppress("DEPRECATION")
     private fun notifyWidgetUpdate() {
         context?.let { ctx ->
             try {
@@ -260,8 +259,11 @@ object PlayerManager {
                     ctx, com.pure.music.widget.NowPlayingWidgetReceiver::class.java
                 )
                 val widgetIds = widgetManager.getAppWidgetIds(component)
-                widgetIds.forEach { id ->
-                    widgetManager.notifyAppWidgetViewDataChanged(id, 1)
+                if (widgetIds.isNotEmpty()) {
+                    widgetManager.notifyAppWidgetUpdate(
+                        com.pure.music.widget.NowPlayingWidgetReceiver::class.java,
+                        0, 0
+                    )
                 }
             } catch (_: Exception) {
                 // 小部件未安装时忽略

@@ -11,7 +11,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -93,15 +92,13 @@ fun PureMusicTheme(
         else -> LightColorScheme
     }
 
-    // 同步状态栏和导航栏颜色
+    // 同步状态栏和导航栏外观
     val view = LocalView.current
     if (!view.isInEditMode) {
         val window = (view.context as Activity).window
-        @Suppress("DEPRECATION")
-        window.statusBarColor = colorScheme.surface.toArgb()
-        @Suppress("DEPRECATION")
-        window.navigationBarColor = colorScheme.surface.toArgb()
-        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        val insetsController = WindowCompat.getInsetsController(window, view)
+        insetsController.isAppearanceLightStatusBars = !darkTheme
+        insetsController.isAppearanceLightNavigationBars = !darkTheme
     }
 
     MaterialTheme(
