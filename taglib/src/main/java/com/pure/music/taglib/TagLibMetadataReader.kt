@@ -39,7 +39,7 @@ data class AudioMetadata(
     val coverDescription: String?,
     val coverData: ByteArray?
 ) {
-    val hasEmbeddedCover: Boolean get() = !coverData.isNullOrEmpty()
+    val hasEmbeddedCover: Boolean get() = coverData != null && coverData.isNotEmpty()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
