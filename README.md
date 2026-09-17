@@ -15,9 +15,14 @@ PureMusic 是一款面向 Android 的本地音乐播放器，使用 Jetpack Comp
 
 ## 音频标签与歌词
 
-独立的 `:taglib` Android Library 模块封装 TagLib 2.3.2，通过 JNI 读取 MP3、FLAC、OGG/Opus、M4A/AAC、WAV 等格式的内置信息：标题、艺术家、专辑、曲目号、时长、码率、采样率、声道数、歌词（`LYRICS`）、作曲家（`COMPOSER`）和流派（`GENRE`）。
+独立的 `:taglib` Android Library 模块封装 TagLib 2.3.2，通过 JNI 完整读取 MP3、FLAC、OGG/Opus、M4A/AAC、WAV 等格式的内置信息：
 
-歌词页和封面页的迷你歌词窗只显示音频内嵌歌词；没有歌词时显示“暂无内嵌歌词”，不会填充虚构歌词。详情页展示读取到的技术参数及扩展标签。TagLib 不可用、路径不可访问或标签缺失时，应用回退到 MediaStore 信息。
+- **基本标签**：标题、艺术家、专辑、评论、流派、年份、曲目号、碟片号、副标题、专辑艺术家
+- **扩展标签**：作曲家、词作者、指挥、混音、情绪、BPM、ISRC、版权、厂牌、MusicBrainz ID
+- **技术参数**：时长、码率、采样率、声道数
+- **内嵌封面**：通过 `complexProperties("PICTURE")` 提取第一张嵌入图片（MIME 类型、描述、原始数据），独立 JNI 调用以 `jbyteArray` 传回，上限 256KB
+
+歌词页和封面页的迷你歌词窗只显示音频内嵌歌词；没有歌词时显示"暂无内嵌歌词"，不会填充虚构歌词。详情页展示读取到的技术参数及扩展标签。TagLib 不可用、路径不可访问或标签缺失时，应用回退到 MediaStore 信息。
 
 ## 技术栈
 
@@ -64,12 +69,13 @@ gradle :app:assembleRelease
 - 仅 arm64 模拟器/设备可直接运行，x86/x86_64 需要调整 ABI 配置
 - 受限存储场景下可能无法取得真实文件路径，此时仅使用 MediaStore 元数据
 - 当前歌词按文本行展示，不包含逐行时间轴同步
-- 内嵌封面尚未直接从 TagLib 提取，封面仍使用 MediaStore 专辑封面 URI
-- 暂无应用内均衡器、崩溃收集和正式发布签名配置
+- 内嵌封面数据（`coverData`）已可从 TagLib 提取但尚未接入 Coil 加载管道，封面仍使用 MediaStore 专辑封面 URI
+- 暂无崩溃收集和正式发布签名配置
 
 ## 后续计划
 
-- 支持内嵌封面和 LRC 时间轴歌词
+- 将 TagLib 内嵌封面（`coverData`）接入 Coil 图片加载管道，替代 MediaStore 专辑封面 URI
+- 支持 LRC 时间轴歌词
 - 完善多 ABI / APK 拆分与构建缓存
 - 增加播放器、媒体库和 Compose UI 测试
 - 配置正式签名、AAB 构建和发布流程
