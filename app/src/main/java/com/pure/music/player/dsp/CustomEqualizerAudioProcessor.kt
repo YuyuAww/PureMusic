@@ -36,6 +36,11 @@ class CustomEqualizerAudioProcessor : BaseAudioProcessor() {
 
     fun setParams(params: List<FilterParam>) { pendingParams.set(params.toList()) }
 
+    /** 重置所有 BiquadFilter 的延迟线状态。 */
+    fun resetFilters() {
+        onReset()
+    }
+
     override fun onConfigure(inputAudioFormat: AudioProcessor.AudioFormat): AudioProcessor.AudioFormat {
         if (inputAudioFormat.encoding != C.ENCODING_PCM_16BIT) {
             throw AudioProcessor.UnhandledAudioFormatException(inputAudioFormat)

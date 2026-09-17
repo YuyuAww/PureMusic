@@ -35,6 +35,6 @@ object EqualizerController {
     fun setPreampGainDb(gainDb: Double) = processor.setPreampGainDb(gainDb)
 
     fun release() {
-        processor.onReset()
+        processor.resetFilters()
     }
 }

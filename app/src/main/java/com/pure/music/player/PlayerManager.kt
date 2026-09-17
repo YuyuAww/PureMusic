@@ -260,10 +260,7 @@ object PlayerManager {
                 )
                 val widgetIds = widgetManager.getAppWidgetIds(component)
                 if (widgetIds.isNotEmpty()) {
-                    widgetManager.notifyAppWidgetUpdate(
-                        com.pure.music.widget.NowPlayingWidgetReceiver::class.java,
-                        0, 0
-                    )
+                    com.pure.music.widget.NowPlayingWidget().updateAll()
                 }
             } catch (_: Exception) {
                 // 小部件未安装时忽略
