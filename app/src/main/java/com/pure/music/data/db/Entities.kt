@@ -59,6 +59,7 @@ data class SongEntity(
     val genre: String? = null,
     val comment: String? = null,
     val year: Int? = null,
+    val date: String? = null,
     @ColumnInfo(name = "disc_number") val discNumber: Int? = null,
     val subtitle: String? = null,
     @ColumnInfo(name = "album_artist") val albumArtist: String? = null,

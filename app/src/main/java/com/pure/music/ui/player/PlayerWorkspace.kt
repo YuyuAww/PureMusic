@@ -622,16 +622,86 @@ private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
 
 @Composable
 private fun DetailPage(song: Song, colors: CoverColors) {
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 25.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        InfoCard("歌曲", listOf(song.title, song.artist, song.album), colors)
-        val format = song.format?.let { "$it format stream" } ?: "Audio format stream"
-        val technical = buildString {
-            song.channels?.let { append("$it Channels") }
-            song.sampleRateHz?.let { if (isNotEmpty()) append("    "); append("$it Hz") }
-            song.bitrateKbps?.let { if (isNotEmpty()) append("    "); append("$it kbps") }
-        }.ifBlank { "Metadata unavailable" }
-        InfoCard("音频信息", listOf(format, technical), colors)
-        InfoCard("标签", listOf(song.composer?.let { "作曲：$it" } ?: "作曲信息未知", song.genre?.let { "流派：$it" } ?: "流派信息未知", "第 ${song.trackNumber} 首"), colors)
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 25.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // 歌曲基本信息
+        InfoCard("歌曲", colors) {
+            DetailRow("标题", song.title, colors)
+            DetailRow("艺术家", song.artist, colors)
+            DetailRow("专辑", song.album, colors)
+            DetailRow("副标题", song.subtitle ?: "", colors)
+            DetailRow("专辑艺术家", song.albumArtist ?: "", colors)
+        }
+
+        // 基本标签
+        val basicTags: List<Pair<String, String>> = listOf(
+            "曲目", song.trackNumber.takeIf { it > 0 }?.toString() ?: "",
+            "碟片", song.discNumber.takeIf { it > 0 }?.toString() ?: "",
+            "年份", song.year?.toString() ?: "",
+            "日期", song.date ?: "",
+            "流派", song.genre ?: "",
+            "评论", song.comment ?: ""
+        ).filter { it.second.isNotBlank() }
+        if (basicTags.isNotEmpty()) InfoCard("基本标签", colors) {
+            basicTags.forEach { (k, v) -> DetailRow(k, v, colors) }
+        }
+
+        // 扩展标签
+        val extTags: List<Pair<String, String>> = listOf(
+            "作曲家", song.composer ?: "",
+            "词作者", song.lyricist ?: "",
+            "指挥", song.conductor ?: "",
+            "混音", song.remixer ?: "",
+            "情绪", song.mood ?: "",
+            "BPM", song.bpm ?: "",
+            "ISRC", song.isrc ?: "",
+            "版权", song.copyright ?: "",
+            "厂牌", song.label ?: ""
+        ).filter { it.second.isNotBlank() }
+        if (extTags.isNotEmpty()) InfoCard("扩展标签", colors) {
+            extTags.forEach { (k, v) -> DetailRow(k, v, colors) }
+        }
+
+        // MusicBrainz 标识
+        val mbTags: List<Pair<String, String>> = listOf(
+            "MusicBrainz 曲", song.musicBrainzTrackId ?: "",
+            "MusicBrainz 专辑", song.musicBrainzAlbumId ?: "",
+            "MusicBrainz 艺术家", song.musicBrainzArtistId ?: ""
+        ).filter { it.second.isNotBlank() }
+        if (mbTags.isNotEmpty()) InfoCard("MusicBrainz", colors) {
+            mbTags.forEach { (k, v) -> DetailRow(k, v, colors) }
+        }
+
+        // 音频技术参数
+        InfoCard("音频信息", colors) {
+            DetailRow("格式", song.format?.let { "$it 音频流" } ?: "音频流", colors)
+            DetailRow("码率", song.bitrateKbps?.let { "$it kbps" } ?: "", colors)
+            DetailRow("采样率", song.sampleRateHz?.let { "$it Hz" } ?: "", colors)
+            DetailRow("声道", song.channels?.let { it.toChannelLabel() } ?: "", colors)
+            DetailRow("时长", formatDuration(song.duration), colors)
+        }
+    }
+}
+
+/** 将声道数转为可读标签 */
+private fun Int.toChannelLabel(): String = when (this) {
+    1 -> "单声道"
+    2 -> "双声道"
+    in 3..6 -> "$this 声道"
+    else -> "$this 声道"
+}
+
+@Composable
+private fun DetailRow(key: String, value: String, colors: CoverColors) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        Text(key, color = colors.muted, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.width(72.dp))
+        if (value.isNotBlank()) {
+            Text(value, color = colors.accent, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+        } else {
+            Text("—", color = colors.muted.copy(alpha = 0.4f), fontSize = 15.sp)
+        }
     }
 }
 
@@ -645,10 +715,10 @@ private fun DetailCard(icon: androidx.compose.ui.graphics.vector.ImageVector, te
 }
 
 @Composable
-private fun InfoCard(title: String, values: List<String>, colors: CoverColors) {
+private fun InfoCard(title: String, colors: CoverColors, content: @Composable () -> Unit) {
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.surface.copy(alpha = .7f)).padding(24.dp)) {
-        Text(title, color = colors.accent, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        values.forEach { Text(it, color = colors.muted, fontSize = 19.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 14.dp)) }
+        Text(title, color = colors.accent, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
+        content()
     }
 }
 

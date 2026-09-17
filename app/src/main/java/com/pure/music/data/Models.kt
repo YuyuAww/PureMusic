@@ -27,6 +27,7 @@ data class Song(
     val genre: String? = null,
     val comment: String? = null,
     val year: Int? = null,
+    val date: String? = null,
     val discNumber: Int? = null,
     val subtitle: String? = null,
     val albumArtist: String? = null,
