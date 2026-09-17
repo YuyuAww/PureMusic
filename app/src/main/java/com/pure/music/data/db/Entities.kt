@@ -56,5 +56,21 @@ data class SongEntity(
     val format: String? = null,
     val lyrics: String? = null,
     val composer: String? = null,
-    val genre: String? = null
+    val genre: String? = null,
+    val comment: String? = null,
+    val year: Int? = null,
+    @ColumnInfo(name = "disc_number") val discNumber: Int? = null,
+    val subtitle: String? = null,
+    @ColumnInfo(name = "album_artist") val albumArtist: String? = null,
+    val lyricist: String? = null,
+    val conductor: String? = null,
+    val remixer: String? = null,
+    val mood: String? = null,
+    val bpm: String? = null,
+    val isrc: String? = null,
+    val copyright: String? = null,
+    val label: String? = null,
+    @ColumnInfo(name = "mb_track_id") val musicBrainzTrackId: String? = null,
+    @ColumnInfo(name = "mb_album_id") val musicBrainzAlbumId: String? = null,
+    @ColumnInfo(name = "mb_artist_id") val musicBrainzArtistId: String? = null
 )

@@ -194,7 +194,23 @@ class MediaLibraryRepository private constructor(context: Context) {
                             format = extension,
                             lyrics = metadata.lyrics,
                             composer = metadata.composer,
-                            genre = metadata.genre
+                            genre = metadata.genre,
+                            comment = metadata.comment,
+                            year = metadata.year,
+                            discNumber = metadata.discNumber,
+                            subtitle = metadata.subtitle,
+                            albumArtist = metadata.albumArtist,
+                            lyricist = metadata.lyricist,
+                            conductor = metadata.conductor,
+                            remixer = metadata.remixer,
+                            mood = metadata.mood,
+                            bpm = metadata.bpm,
+                            isrc = metadata.isrc,
+                            copyright = metadata.copyright,
+                            label = metadata.label,
+                            musicBrainzTrackId = metadata.musicBrainzTrackId,
+                            musicBrainzAlbumId = metadata.musicBrainzAlbumId,
+                            musicBrainzArtistId = metadata.musicBrainzArtistId
                         )
                     }
                 )
@@ -247,8 +263,30 @@ class MediaLibraryRepository private constructor(context: Context) {
         dateAdded = dateAdded,
         dateModified = dateModified,
         trackNumber = trackNumber,
-        path = path, bitrateKbps = bitrateKbps, sampleRateHz = sampleRateHz,
-        channels = channels, format = format, lyrics = lyrics, composer = composer, genre = genre
+        path = path,
+        bitrateKbps = bitrateKbps,
+        sampleRateHz = sampleRateHz,
+        channels = channels,
+        format = format,
+        lyrics = lyrics,
+        composer = composer,
+        genre = genre,
+        comment = comment,
+        year = year,
+        discNumber = discNumber,
+        subtitle = subtitle,
+        albumArtist = albumArtist,
+        lyricist = lyricist,
+        conductor = conductor,
+        remixer = remixer,
+        mood = mood,
+        bpm = bpm,
+        isrc = isrc,
+        copyright = copyright,
+        label = label,
+        musicBrainzTrackId = musicBrainzTrackId,
+        musicBrainzAlbumId = musicBrainzAlbumId,
+        musicBrainzArtistId = musicBrainzArtistId
     )
 
     private fun SongEntity.toSong() = Song(
@@ -263,8 +301,30 @@ class MediaLibraryRepository private constructor(context: Context) {
         dateAdded = dateAdded,
         dateModified = dateModified,
         trackNumber = trackNumber,
-        path = path, bitrateKbps = bitrateKbps, sampleRateHz = sampleRateHz,
-        channels = channels, format = format, lyrics = lyrics, composer = composer, genre = genre
+        path = path,
+        bitrateKbps = bitrateKbps,
+        sampleRateHz = sampleRateHz,
+        channels = channels,
+        format = format,
+        lyrics = lyrics,
+        composer = composer,
+        genre = genre,
+        comment = comment,
+        year = year,
+        discNumber = discNumber,
+        subtitle = subtitle,
+        albumArtist = albumArtist,
+        lyricist = lyricist,
+        conductor = conductor,
+        remixer = remixer,
+        mood = mood,
+        bpm = bpm,
+        isrc = isrc,
+        copyright = copyright,
+        label = label,
+        musicBrainzTrackId = musicBrainzTrackId,
+        musicBrainzAlbumId = musicBrainzAlbumId,
+        musicBrainzArtistId = musicBrainzArtistId
     )
 
     companion object {

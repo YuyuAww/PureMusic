@@ -12,7 +12,7 @@ import androidx.room.TypeConverters
  */
 @Database(
     entities = [FavoriteEntity::class, PlaylistEntity::class, PlayHistoryEntity::class, SongEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(LongListConverter::class)
@@ -33,7 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "puremusic.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .build().also { instance = it }
             }
         }
@@ -74,6 +74,27 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE songs ADD COLUMN lyrics TEXT")
                 db.execSQL("ALTER TABLE songs ADD COLUMN composer TEXT")
                 db.execSQL("ALTER TABLE songs ADD COLUMN genre TEXT")
+            }
+        }
+
+        private val MIGRATION_4_5 = object : androidx.room.migration.Migration(4, 5) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE songs ADD COLUMN comment TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN year INTEGER")
+                db.execSQL("ALTER TABLE songs ADD COLUMN disc_number INTEGER")
+                db.execSQL("ALTER TABLE songs ADD COLUMN subtitle TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN album_artist TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN lyricist TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN conductor TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN remixer TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN mood TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN bpm TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN isrc TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN copyright TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN label TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN mb_track_id TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN mb_album_id TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN mb_artist_id TEXT")
             }
         }
     }
