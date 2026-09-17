@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -59,7 +60,7 @@ fun LibraryScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = onExit) { Icon(Icons.Default.ExitToApp, "退出应用", tint = drawerAccent) }
+                        IconButton(onClick = onExit) { Icon(Icons.AutoMirrored.Filled.ExitToApp, "退出应用", tint = drawerAccent) }
                         IconButton(onClick = onToggleTheme) { Icon(if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode, if (isDarkTheme) "切换浅色模式" else "切换深色模式", tint = drawerAccent) }
                         IconButton(onClick = { scope.launch { drawer.close() }; onShowEqualizer() }) { Icon(Icons.Default.Equalizer, "均衡器", tint = drawerAccent) }
                     }
@@ -91,7 +92,7 @@ fun LibraryScreen(
                     TopAppBar(
                         title = { Text(if (folderPath == null) section.title else folders.firstOrNull { it.path == folderPath }?.name ?: "文件夹") },
                         navigationIcon = {
-                            if (folderPath != null) IconButton(onClick = { folderPath = null }) { Icon(Icons.Default.ArrowBack, "返回") }
+                            if (folderPath != null) IconButton(onClick = { folderPath = null }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") }
                             else if (maxWidth < 600.dp) {
                                 IconButton(onClick = { scope.launch { if (drawer.isOpen) drawer.close() else drawer.open() } }) {
                                     Icon(Icons.Default.Menu, "导航")
@@ -140,7 +141,7 @@ fun LibraryScreen(
                 Icon(Icons.Default.Shuffle, null, tint = MaterialTheme.colorScheme.onSurface)
                 Text("${filtered.size}", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 28.dp).weight(1f))
                 Icon(Icons.Default.SortByAlpha, null, tint = MaterialTheme.colorScheme.onSurface)
-                Spacer(Modifier.width(22.dp)); Icon(Icons.Default.FormatListBulleted, null)
+                Spacer(Modifier.width(22.dp)); Icon(Icons.AutoMirrored.Filled.FormatListBulleted, null)
             }
             Box(Modifier.weight(1f)) {
                 val listState = rememberLazyListState()
@@ -183,7 +184,7 @@ fun LibraryScreen(
                 Spacer(Modifier.width(7.dp)); Text("${song.artist} · ${song.album}", maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
             }
         }
-        IconButton(onClick = { onToggleFavorite(song.id) }) { Icon(Icons.Default.PlaylistAdd, "添加到歌单", tint = MaterialTheme.colorScheme.onSurfaceVariant) }
+        IconButton(onClick = { onToggleFavorite(song.id) }) { Icon(Icons.AutoMirrored.Filled.PlaylistAdd, "添加到歌单", tint = MaterialTheme.colorScheme.onSurfaceVariant) }
         Icon(Icons.Default.MoreVert, "更多操作")
     }
 }

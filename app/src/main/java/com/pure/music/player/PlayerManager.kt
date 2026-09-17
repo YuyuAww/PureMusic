@@ -251,6 +251,7 @@ object PlayerManager {
             .build()
 
     /** 通知桌面小部件刷新 UI */
+    @Suppress("DEPRECATION")
     private fun notifyWidgetUpdate() {
         context?.let { ctx ->
             try {
