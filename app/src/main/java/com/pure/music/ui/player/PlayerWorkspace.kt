@@ -283,7 +283,6 @@ private fun PlayerBottomBar(
 ) {
     var sliderPosition by remember(state.currentSong?.id) { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
-    val sliderInteractionSource = remember { MutableInteractionSource() }
     var showSleepTimer by remember { mutableStateOf(false) }
     var showEqualizer by remember { mutableStateOf(false) }
     var equalizerEnabled by remember { mutableStateOf(EqualizerController.isEnabled) }
@@ -291,6 +290,11 @@ private fun PlayerBottomBar(
     var sleepSelection by remember { mutableFloatStateOf(5f) }
     LaunchedEffect(state.position, dragging) { if (!dragging) sliderPosition = state.position.toFloat() }
     val displayedPosition = if (dragging) sliderPosition.toLong() else state.position
+    val sliderColors = SliderDefaults.colors(
+        thumbColor = colors.accent,
+        activeTrackColor = colors.accent,
+        inactiveTrackColor = colors.accent.copy(alpha = .22f)
+    )
 
     Column(
         Modifier
@@ -299,32 +303,13 @@ private fun PlayerBottomBar(
             .navigationBarsPadding() // 内容避开底部导航栏
             .padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 20.dp)
     ) {
+        @Suppress("DEPRECATION")
         Slider(
             value = sliderPosition,
             onValueChange = { dragging = true; sliderPosition = it },
             onValueChangeFinished = { dragging = false; onSeek(sliderPosition.toLong()) },
             valueRange = 0f..state.duration.coerceAtLeast(1).toFloat(),
-            interactionSource = sliderInteractionSource,
-            thumb = {
-                SliderDefaults.Thumb(
-                    interactionSource = sliderInteractionSource,
-                    modifier = Modifier.size(8.dp),
-                    colors = SliderDefaults.colors(thumbColor = colors.accent)
-                )
-            },
-            track = { sliderState ->
-                SliderDefaults.Track(
-                    sliderPositions = SliderPositions(
-                        initialActiveRange = 0f..((sliderState.value - sliderState.valueRange.start) /
-                            (sliderState.valueRange.endInclusive - sliderState.valueRange.start)).coerceIn(0f, 1f)
-                    ),
-                    modifier = Modifier.height(2.dp),
-                    colors = SliderDefaults.colors(
-                        activeTrackColor = colors.accent,
-                        inactiveTrackColor = colors.accent.copy(alpha = .22f)
-                    )
-                )
-            }
+            colors = sliderColors
         )
 
         // 时间

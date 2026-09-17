@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -27,14 +28,14 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
     var showColorDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState())) {
         Row(Modifier.fillMaxWidth().padding(start = 20.dp, top = 24.dp, bottom = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "返回") }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") }
             Text("设置", style = MaterialTheme.typography.headlineMedium)
         }
         SettingsCard {
             SettingRow("用户界面", Icons.Default.Palette)
             SettingRow("歌词", Icons.Default.FormatQuote)
             SettingRow("车载", Icons.Default.DirectionsCar)
-            SettingRow("音频输出", Icons.Default.VolumeUp)
+            SettingRow("音频输出", Icons.AutoMirrored.Filled.VolumeUp)
             SettingRow("USB 独占模式", Icons.Default.Usb)
             SettingRow("通知", Icons.Default.Notifications)
         }
