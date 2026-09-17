@@ -3,7 +3,6 @@ package com.pure.music.ui.player
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -379,6 +378,7 @@ private fun PlayerBottomBar(
                 Spacer(Modifier.height(8.dp))
                 Text(if (state.sleepMinutes > 0) "剩余 ${state.sleepMinutes} 分钟" else "设置自动暂停时间")
                 Spacer(Modifier.height(12.dp))
+                @Suppress("DEPRECATION")
                 Slider(
                     value = sleepSelection,
                     onValueChange = { sleepSelection = (it / 5f).roundToInt() * 5f },
@@ -424,6 +424,7 @@ private fun PlayerBottomBar(
                             // 横排 Slider 按 180x42 布局后旋转 270° 呈现为竖直滑块，
                             // 外层 Box 预留 42x180 的占位，避免旋转后的绘制压到频段标签
                             Box(Modifier.size(42.dp, 180.dp)) {
+                                @Suppress("DEPRECATION")
                                 Slider(
                                     value = if (equalizerEnabled) level else 0f,
                                     onValueChange = { value -> bandLevels = bandLevels.toMutableList().also { it[index] = value }; EqualizerController.setBandLevel(index, value) },
