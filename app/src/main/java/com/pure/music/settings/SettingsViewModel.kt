@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** 设置 ViewModel，提供主题切换等设置的响应式访问 */
+/** 设置 ViewModel，提供主题切换与媒体扫描配置的响应式访问 */
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = SettingsRepository(application)
 
@@ -24,8 +24,14 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val colorSource: StateFlow<String> = repository.colorSource
         .stateIn(viewModelScope, SharingStarted.Eagerly, "monet")
 
-    val enabledMediaSources: StateFlow<Set<String>> = repository.enabledMediaSources
-        .stateIn(viewModelScope, SharingStarted.Eagerly, setOf("local"))
+    val useMediaStore: StateFlow<Boolean> = repository.useMediaStore
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+    val customFolders: StateFlow<Set<String>> = repository.customFolders
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
+    val skipShortTracks: StateFlow<Boolean> = repository.skipShortTracks
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+    val blockedFolders: StateFlow<Set<String>> = repository.blockedFolders
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
 
     fun setTheme(value: String) {
         viewModelScope.launch { repository.setTheme(value) }
@@ -35,12 +41,24 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch { repository.setColorSource(value) }
     }
 
-    fun toggleMediaSource(sourceId: String) {
-        viewModelScope.launch {
-            val current = repository.enabledMediaSources.value
-            val updated = if (current.contains(sourceId)) current - sourceId else current + sourceId
-            repository.setEnabledMediaSources(updated)
-        }
+    fun setUseMediaStore(enabled: Boolean) {
+        viewModelScope.launch { repository.setUseMediaStore(enabled) }
+    }
+
+    fun addCustomFolder(path: String) {
+        viewModelScope.launch { repository.addCustomFolder(path) }
+    }
+
+    fun removeCustomFolder(path: String) {
+        viewModelScope.launch { repository.removeCustomFolder(path) }
+    }
+
+    fun setSkipShortTracks(enabled: Boolean) {
+        viewModelScope.launch { repository.setSkipShortTracks(enabled) }
+    }
+
+    fun setBlockedFolders(folders: Set<String>) {
+        viewModelScope.launch { repository.setBlockedFolders(folders) }
     }
 }
 

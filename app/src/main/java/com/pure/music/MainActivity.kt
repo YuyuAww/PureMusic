@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pure.music.data.Song
+import com.pure.music.library.LibraryViewModel
+import com.pure.music.library.libraryViewModelFactory
 import com.pure.music.player.PlayerViewModel
 import com.pure.music.player.playerViewModelFactory
 import com.pure.music.settings.SettingsViewModel
@@ -89,6 +91,7 @@ private fun MainContent() {
 /** 主 UI 层，组装媒体库、播放器、设置等界面 */
 @Composable
 private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: PlayerViewModel) {
+    val libraryViewModel: LibraryViewModel = viewModel(factory = libraryViewModelFactory)
     val state by playerViewModel.state.collectAsStateWithLifecycle()
     val theme by settingsViewModel.theme.collectAsStateWithLifecycle()
     val darkTheme = theme == "dark" || (theme == "system" && isSystemInDarkTheme())

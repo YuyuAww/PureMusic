@@ -12,6 +12,7 @@ import com.pure.music.data.Artist
 import com.pure.music.data.Song
 import com.pure.music.data.db.AppDatabase
 import com.pure.music.data.db.SongEntity
+import com.pure.music.settings.SettingsRepository
 import com.pure.music.taglib.TagLibMetadataReader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +20,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -77,6 +79,7 @@ class MediaLibraryRepository private constructor(context: Context) {
         refreshJob?.cancel()
         refreshJob = scope.launch {
             delay(250)
+            val settings = SettingsRepository(appContext)
             val songList = withContext(Dispatchers.IO) {
                 if (changedUri != null && changedUri != MediaStore.Audio.Media.EXTERNAL_CONTENT_URI) {
                     val id = changedUri.lastPathSegment?.toLongOrNull()
@@ -86,7 +89,11 @@ class MediaLibraryRepository private constructor(context: Context) {
                     }
                     songsDao.getAll().map { it.toSong() }
                 } else {
-                    val scanned = querySongs() ?: return@withContext null
+                    val skipShort = settings.skipShortTracks.first()
+                    val blocked = settings.blockedFolders.first()
+                    val custom = settings.customFolders.first()
+                    val useMediaStore = settings.useMediaStore.first()
+                    val scanned = querySongs(skipShort, blocked, custom, useMediaStore) ?: return@withContext null
                     syncSongs(scanned)
                     songsDao.getAll().map { it.toSong() }
                 }
