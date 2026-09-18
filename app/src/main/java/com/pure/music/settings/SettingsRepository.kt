@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -17,6 +18,7 @@ class SettingsRepository(private val context: Context) {
     private object Keys {
         val THEME = stringPreferencesKey("theme")
         val COLOR_SOURCE = stringPreferencesKey("color_source")
+        val ENABLED_MEDIA_SOURCES = stringSetPreferencesKey("enabled_media_sources")
     }
 
     /** 主题偏好流，值为 "system" / "light" / "dark" */
@@ -28,6 +30,10 @@ class SettingsRepository(private val context: Context) {
         prefs[Keys.COLOR_SOURCE] ?: "monet"
     }
 
+    val enabledMediaSources: Flow<Set<String>> = context.dataStore.data.map { prefs ->
+        prefs[Keys.ENABLED_MEDIA_SOURCES] ?: setOf("local")
+    }
+
     suspend fun setTheme(theme: String) {
         context.dataStore.edit { prefs ->
             prefs[Keys.THEME] = theme
@@ -36,5 +42,9 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setColorSource(source: String) {
         context.dataStore.edit { prefs -> prefs[Keys.COLOR_SOURCE] = source }
+    }
+
+    suspend fun setEnabledMediaSources(sources: Set<String>) {
+        context.dataStore.edit { prefs -> prefs[Keys.ENABLED_MEDIA_SOURCES] = sources }
     }
 }

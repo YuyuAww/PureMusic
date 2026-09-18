@@ -24,12 +24,23 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val colorSource: StateFlow<String> = repository.colorSource
         .stateIn(viewModelScope, SharingStarted.Eagerly, "monet")
 
+    val enabledMediaSources: StateFlow<Set<String>> = repository.enabledMediaSources
+        .stateIn(viewModelScope, SharingStarted.Eagerly, setOf("local"))
+
     fun setTheme(value: String) {
         viewModelScope.launch { repository.setTheme(value) }
     }
 
     fun setColorSource(value: String) {
         viewModelScope.launch { repository.setColorSource(value) }
+    }
+
+    fun toggleMediaSource(sourceId: String) {
+        viewModelScope.launch {
+            val current = repository.enabledMediaSources.value
+            val updated = if (current.contains(sourceId)) current - sourceId else current + sourceId
+            repository.setEnabledMediaSources(updated)
+        }
     }
 }
 
