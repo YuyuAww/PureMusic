@@ -33,6 +33,7 @@ import com.pure.music.player.playerViewModelFactory
 import com.pure.music.settings.SettingsViewModel
 import com.pure.music.settings.settingsViewModelFactory
 import com.pure.music.ui.library.LibraryScreen
+import com.pure.music.ui.library.ScanScreen
 import com.pure.music.ui.library.SearchScreen
 import com.pure.music.ui.player.MiniPlayerBar
 import com.pure.music.ui.player.PlayerWorkspace
@@ -108,15 +109,17 @@ private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: Player
     var showNowPlaying by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
+    var showScan by remember { mutableStateOf(false) }
 
     val backEventState = rememberNavigationEventState(currentInfo = NavigationEventInfo.None)
     NavigationBackHandler(
         state = backEventState,
-        isBackEnabled = showNowPlaying || showSettings || showSearch,
+        isBackEnabled = showNowPlaying || showSettings || showSearch || showScan,
         onBackCompleted = {
             when {
                 showSettings -> showSettings = false
                 showSearch -> showSearch = false
+                showScan -> showScan = false
                 else -> showNowPlaying = false
             }
         }
@@ -147,6 +150,15 @@ private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: Player
                             if (isCurrentSong) showNowPlaying = true
                         }
                     )
+                } else if (showScan) {
+                    ScanScreen(
+                        onBack = { showScan = false },
+                        onScan = {
+                            libraryViewModel.refresh()
+                            showScan = false
+                        },
+                        viewModel = settingsViewModel
+                    )
                 } else {
                     LibraryScreen(
                         onPlaySong = { song: Song, queue: List<Song> ->
@@ -156,6 +168,7 @@ private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: Player
                         },
                         onShowSettings = { showSettings = true },
                         onShowSearch = { showSearch = true },
+                        onShowScan = { showScan = true },
                         onExit = { (context as? ComponentActivity)?.finish() },
                         isDarkTheme = theme == "dark" || (theme == "system" && isSystemInDarkTheme()),
                         onToggleTheme = { settingsViewModel.setTheme(if (theme == "dark") "light" else "dark") },

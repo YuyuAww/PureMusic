@@ -39,6 +39,7 @@ fun LibraryScreen(
     onPlaySong: (Song, List<Song>) -> Unit,
     onShowSettings: () -> Unit,
     onShowSearch: () -> Unit,
+    onShowScan: () -> Unit,
     onExit: () -> Unit,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
@@ -80,7 +81,7 @@ fun LibraryScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Column(Modifier.padding(vertical = 8.dp)) {
-                        NavigationDrawerItem(label = { Text("扫描音乐") }, selected = false, colors = NavigationDrawerItemDefaults.colors(unselectedIconColor = drawerAccent, selectedIconColor = drawerAccent), onClick = { viewModel.refresh(); scope.launch { drawer.close() } }, icon = { Icon(Icons.Default.Refresh, null) })
+                        NavigationDrawerItem(label = { Text("扫描音乐") }, selected = false, colors = NavigationDrawerItemDefaults.colors(unselectedIconColor = drawerAccent, selectedIconColor = drawerAccent), onClick = { scope.launch { drawer.close() }; onShowScan() }, icon = { Icon(Icons.Default.Refresh, null) })
                         NavigationDrawerItem(label = { Text("设置") }, selected = false, colors = NavigationDrawerItemDefaults.colors(unselectedIconColor = drawerAccent, selectedIconColor = drawerAccent), onClick = { scope.launch { drawer.close() }; onShowSettings() }, icon = { Icon(Icons.Default.Settings, null) })
                     }
                 }
