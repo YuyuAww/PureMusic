@@ -2,6 +2,7 @@ package com.pure.music.player
 
 import android.content.Context
 import android.content.ComponentName
+import androidx.glance.appwidget.updateAll
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
