@@ -125,7 +125,11 @@ class MediaLibraryRepository private constructor(context: Context) {
     /** 从 MediaStore 查询所有音乐文件 */
     private fun querySongs(
         selection: String = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} > 0",
-        selectionArgs: Array<String>? = null
+        selectionArgs: Array<String>? = null,
+        skipShort: Boolean = false,
+        blockedFolders: Set<String> = emptySet(),
+        customFolders: Set<String> = emptySet(),
+        useMediaStore: Boolean = true
     ): List<Song>? {
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
@@ -167,6 +171,15 @@ class MediaLibraryRepository private constructor(context: Context) {
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idCol)
+                val path = if (pathCol >= 0 && !cursor.isNull(pathCol)) cursor.getString(pathCol) else ""
+                val durationMs = cursor.getLong(durationCol)
+                val isBlocked = blockedFolders.any { path.startsWith(it) }
+                if (isBlocked) continue
+                if (skipShort && durationMs < 60_000) continue
+                if (!useMediaStore && customFolders.isNotEmpty()) {
+                    val inCustom = customFolders.any { path.startsWith(it) }
+                    if (!inCustom) continue
+                }
                 val uri = Uri.withAppendedPath(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id.toString()
@@ -179,12 +192,12 @@ class MediaLibraryRepository private constructor(context: Context) {
                         artist = cursor.getString(artistCol) ?: "未知艺术家",
                         album = cursor.getString(albumCol) ?: "未知专辑",
                         albumId = cursor.getLong(albumIdCol),
-                        duration = cursor.getLong(durationCol),
+                        duration = durationMs,
                         size = cursor.getLong(sizeCol),
                         dateAdded = cursor.getLong(dateAddedCol) * 1000L,
                         dateModified = cursor.getLong(dateModifiedCol) * 1000L,
                         trackNumber = cursor.getInt(trackCol)
-                        ,path = if (pathCol >= 0 && !cursor.isNull(pathCol)) cursor.getString(pathCol) else ""
+                        ,path = path
                     ).let { song ->
                         val metadata = if (song.path.isNotBlank()) TagLibMetadataReader.read(song.path) else null
                         val extension = song.path.substringAfterLast('.', "").uppercase().ifBlank { null }

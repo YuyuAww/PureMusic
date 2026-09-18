@@ -67,10 +67,3 @@ data class MusicFolder(
     val name: String,
     val songCount: Int
 )
-
-/** 媒体来源定义，区分本地文件与在线服务 */
-data class MediaSource(
-    val id: String,
-    val name: String,
-    val type: String
-)
