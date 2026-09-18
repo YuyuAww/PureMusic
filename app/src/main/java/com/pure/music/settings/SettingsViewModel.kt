@@ -60,6 +60,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setBlockedFolders(folders: Set<String>) {
         viewModelScope.launch { repository.setBlockedFolders(folders) }
     }
+
+    fun addBlockedFolder(path: String) {
+        viewModelScope.launch { repository.addBlockedFolder(path) }
+    }
 }
 
 val settingsViewModelFactory: ViewModelProvider.Factory = viewModelFactory {

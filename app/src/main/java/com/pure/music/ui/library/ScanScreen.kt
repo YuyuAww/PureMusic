@@ -2,7 +2,10 @@ package com.pure.music.ui.library
 
 import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,13 +16,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +44,29 @@ fun ScanScreen(
     val blockedFolders by viewModel.blockedFolders.collectAsStateWithLifecycle()
     val accent = MaterialTheme.colorScheme.primary
     val context = LocalContext.current
+
+    val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        uri?.let { treeUri ->
+            try {
+                context.contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (_: Exception) { }
+            val path = resolveFolderPath(treeUri)
+            if (path.isNotBlank()) {
+                viewModel.addCustomFolder(path)
+            }
+        }
+    }
+
+    val addBlockedFolderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        uri?.let { treeUri ->
+            val path = resolveFolderPath(treeUri)
+            if (path.isNotBlank()) {
+                viewModel.addBlockedFolder(path)
+            }
+        }
+    }
+
+    var showBlockedList by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -81,7 +107,7 @@ fun ScanScreen(
                         CustomFolderRow(path) { viewModel.removeCustomFolder(path) }
                     }
                     SettingRow("添加自定义文件夹", Icons.Default.Add, accent) {
-                        viewModel.addCustomFolder("/storage/emulated/0/Music")
+                        folderPicker.launch(null)
                     }
                 }
             }
@@ -98,12 +124,28 @@ fun ScanScreen(
                         context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
                     }
                     ToggleRow("不扫描 60 秒以下音频", skipShortTracks) { viewModel.setSkipShortTracks(it) }
-                    SettingRow("被屏蔽的文件夹", Icons.Default.ChevronRight, accent) {
-                        onBack()
+                    SettingRow(
+                        "被屏蔽的文件夹",
+                        if (showBlockedList) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        accent
+                    ) {
+                        showBlockedList = !showBlockedList
                     }
-                    if (blockedFolders.isNotEmpty()) {
-                        blockedFolders.forEach { path ->
-                            CustomFolderRow(path) { viewModel.setBlockedFolders(blockedFolders - path) }
+                    if (showBlockedList) {
+                        if (blockedFolders.isNotEmpty()) {
+                            blockedFolders.forEach { path ->
+                                CustomFolderRow(path) { viewModel.setBlockedFolders(blockedFolders - path) }
+                            }
+                        } else {
+                            Row(
+                                Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("暂无被屏蔽的文件夹", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                        SettingRow("添加屏蔽文件夹", Icons.Default.Add, accent) {
+                            addBlockedFolderPicker.launch(null)
                         }
                     }
                 }
@@ -146,5 +188,22 @@ private fun CustomFolderRow(path: String, onRemove: () -> Unit) {
         Spacer(Modifier.width(14.dp))
         Text(path, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
         IconButton(onClick = onRemove) { Icon(Icons.Default.Close, "移除", Modifier.size(18.dp)) }
+    }
+}
+
+private fun resolveFolderPath(treeUri: Uri): String {
+    return try {
+        val docId = DocumentsContract.getTreeDocumentId(treeUri)
+        val split = docId.split(":")
+        if (split.size < 2) return ""
+        val type = split[0]
+        val rawId = split[1]
+        if (type == "primary") {
+            "/storage/emulated/$rawId"
+        } else {
+            "/storage/${type}/${rawId}"
+        }
+    } catch (_: Exception) {
+        ""
     }
 }

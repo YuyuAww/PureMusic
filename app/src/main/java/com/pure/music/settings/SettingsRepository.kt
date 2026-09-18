@@ -83,4 +83,8 @@ class SettingsRepository(private val context: Context) {
     suspend fun setBlockedFolders(folders: Set<String>) {
         context.dataStore.edit { prefs -> prefs[Keys.BLOCKED_FOLDERS] = folders }
     }
+
+    suspend fun addBlockedFolder(path: String) {
+        context.dataStore.edit { prefs -> prefs[Keys.BLOCKED_FOLDERS] = (prefs[Keys.BLOCKED_FOLDERS] ?: emptySet()) + path }
+    }
 }
