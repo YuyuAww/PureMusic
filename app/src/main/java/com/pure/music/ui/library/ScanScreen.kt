@@ -98,7 +98,7 @@ fun ScanScreen(
                         context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
                     }
                     ToggleRow("不扫描 60 秒以下音频", skipShortTracks) { viewModel.setSkipShortTracks(it) }
-                    SettingRow("被屏蔽的文件夹", Icons.AutoMirrored.Filled.KeyboardArrowRight, accent) {
+                    SettingRow("被屏蔽的文件夹", Icons.Default.ChevronRight, accent) {
                         onBack()
                     }
                     if (blockedFolders.isNotEmpty()) {
