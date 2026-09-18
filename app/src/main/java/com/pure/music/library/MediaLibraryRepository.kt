@@ -65,7 +65,6 @@ class MediaLibraryRepository private constructor(context: Context) {
         scope.launch {
             val cached = withContext(Dispatchers.IO) { songsDao.getAll().map { it.toSong() } }
             publish(cached)
-            refresh()
         }
     }
 
