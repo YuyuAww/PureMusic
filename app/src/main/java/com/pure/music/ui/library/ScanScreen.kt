@@ -164,12 +164,11 @@ fun ScanScreen(
 }
 
 @Composable
-private fun SettingRow(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, accent: androidx.compose.ui.graphics.Color, onClick: () -> Unit, trailing: androidx.compose.ui.graphics.vector.ImageVector? = null) {
+private fun SettingRow(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, accent: androidx.compose.ui.graphics.Color, onClick: () -> Unit) {
     Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 22.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(icon, null, Modifier.size(26.dp), tint = accent)
         Spacer(Modifier.width(18.dp))
         Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-        if (trailing != null) Icon(trailing, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

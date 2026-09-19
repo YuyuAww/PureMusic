@@ -94,7 +94,12 @@ class MediaLibraryRepository private constructor(context: Context) {
                     val blocked = settings.blockedFolders.first()
                     val custom = settings.customFolders.first()
                     val useMediaStore = settings.useMediaStore.first()
-                    val scanned = querySongs(skipShort, blocked, custom, useMediaStore) ?: return@withContext null
+                    val scanned = querySongs(
+                        skipShort = skipShort,
+                        blockedFolders = blocked,
+                        customFolders = custom,
+                        useMediaStore = useMediaStore
+                    ) ?: return@withContext null
                     syncSongs(scanned)
                     songsDao.getAll().map { it.toSong() }
                 }
