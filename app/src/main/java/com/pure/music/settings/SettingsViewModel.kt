@@ -24,10 +24,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val colorSource: StateFlow<String> = repository.colorSource
         .stateIn(viewModelScope, SharingStarted.Eagerly, "monet")
 
-    val useMediaStore: StateFlow<Boolean> = repository.useMediaStore
-        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
-    val customFolders: StateFlow<Set<String>> = repository.customFolders
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
     val skipShortTracks: StateFlow<Boolean> = repository.skipShortTracks
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
     val blockedFolders: StateFlow<Set<String>> = repository.blockedFolders
@@ -39,18 +35,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun setColorSource(value: String) {
         viewModelScope.launch { repository.setColorSource(value) }
-    }
-
-    fun setUseMediaStore(enabled: Boolean) {
-        viewModelScope.launch { repository.setUseMediaStore(enabled) }
-    }
-
-    fun addCustomFolder(path: String) {
-        viewModelScope.launch { repository.addCustomFolder(path) }
-    }
-
-    fun removeCustomFolder(path: String) {
-        viewModelScope.launch { repository.removeCustomFolder(path) }
     }
 
     fun setSkipShortTracks(enabled: Boolean) {

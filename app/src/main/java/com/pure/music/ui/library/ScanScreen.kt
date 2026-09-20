@@ -38,24 +38,10 @@ fun ScanScreen(
     onScan: () -> Unit,
     viewModel: SettingsViewModel
 ) {
-    val useMediaStore by viewModel.useMediaStore.collectAsStateWithLifecycle()
-    val customFolders by viewModel.customFolders.collectAsStateWithLifecycle()
     val skipShortTracks by viewModel.skipShortTracks.collectAsStateWithLifecycle()
     val blockedFolders by viewModel.blockedFolders.collectAsStateWithLifecycle()
     val accent = MaterialTheme.colorScheme.primary
     val context = LocalContext.current
-
-    val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        uri?.let { treeUri ->
-            try {
-                context.contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            } catch (_: Exception) { }
-            val path = resolveFolderPath(treeUri)
-            if (path.isNotBlank()) {
-                viewModel.addCustomFolder(path)
-            }
-        }
-    }
 
     val addBlockedFolderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         uri?.let { treeUri ->
@@ -94,25 +80,7 @@ fun ScanScreen(
                 }
             }
 
-            // 2. 媒体来源配置
-            Surface(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                Column(Modifier.padding(vertical = 8.dp)) {
-                    Text("媒体来源", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 22.dp, vertical = 4.dp))
-                    ToggleRow("使用 Android 媒体库", useMediaStore) { viewModel.setUseMediaStore(it) }
-                    customFolders.forEach { path ->
-                        CustomFolderRow(path) { viewModel.removeCustomFolder(path) }
-                    }
-                    SettingRow("添加自定义文件夹", Icons.Default.Add, accent) {
-                        folderPicker.launch(null)
-                    }
-                }
-            }
-
-            // 3. 高级扫描设置
+            // 2. 高级扫描设置
             Surface(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                 shape = RoundedCornerShape(24.dp),
@@ -151,9 +119,9 @@ fun ScanScreen(
                 }
             }
 
-            // 4. 扫描逻辑说明
+            // 3. 扫描逻辑说明
             Text(
-                "如果同时开启“使用 Android 媒体库”并添加了“自定义文件夹”，最终扫描到的歌曲是二者扫描结果的并集（合并）。如果只想使用自己指定的文件夹，请关闭“使用 Android 媒体库”。",
+                "歌曲始终从 Android 媒体库扫描，并使用 TagLib 读取完整元数据；TagLib 读取失败时回退使用媒体库提供的基本信息。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)

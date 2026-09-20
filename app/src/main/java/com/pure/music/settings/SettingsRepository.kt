@@ -19,8 +19,6 @@ class SettingsRepository(private val context: Context) {
     private object Keys {
         val THEME = stringPreferencesKey("theme")
         val COLOR_SOURCE = stringPreferencesKey("color_source")
-        val USE_MEDIA_STORE = booleanPreferencesKey("use_media_store")
-        val CUSTOM_FOLDERS = stringSetPreferencesKey("custom_folders")
         val SKIP_SHORT_TRACKS = booleanPreferencesKey("skip_short_tracks")
         val BLOCKED_FOLDERS = stringSetPreferencesKey("blocked_folders")
     }
@@ -32,16 +30,6 @@ class SettingsRepository(private val context: Context) {
 
     val colorSource: Flow<String> = context.dataStore.data.map { prefs ->
         prefs[Keys.COLOR_SOURCE] ?: "monet"
-    }
-
-    /** 是否使用 Android 媒体库（MediaStore）扫描 */
-    val useMediaStore: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[Keys.USE_MEDIA_STORE] ?: true
-    }
-
-    /** 自定义扫描文件夹集合 */
-    val customFolders: Flow<Set<String>> = context.dataStore.data.map { prefs ->
-        prefs[Keys.CUSTOM_FOLDERS] ?: emptySet()
     }
 
     /** 是否跳过 60 秒以下的音频 */
@@ -62,18 +50,6 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setColorSource(source: String) {
         context.dataStore.edit { prefs -> prefs[Keys.COLOR_SOURCE] = source }
-    }
-
-    suspend fun setUseMediaStore(enabled: Boolean) {
-        context.dataStore.edit { prefs -> prefs[Keys.USE_MEDIA_STORE] = enabled }
-    }
-
-    suspend fun addCustomFolder(path: String) {
-        context.dataStore.edit { prefs -> prefs[Keys.CUSTOM_FOLDERS] = (prefs[Keys.CUSTOM_FOLDERS] ?: emptySet()) + path }
-    }
-
-    suspend fun removeCustomFolder(path: String) {
-        context.dataStore.edit { prefs -> prefs[Keys.CUSTOM_FOLDERS] = (prefs[Keys.CUSTOM_FOLDERS] ?: emptySet()) - path }
     }
 
     suspend fun setSkipShortTracks(enabled: Boolean) {

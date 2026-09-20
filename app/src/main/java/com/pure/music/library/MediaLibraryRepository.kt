@@ -25,7 +25,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import java.io.File
 
 /**
  * 本地媒体库仓库。MediaStore 负责读取歌曲元数据，ContentObserver 负责感知变化；
@@ -93,13 +92,9 @@ class MediaLibraryRepository private constructor(context: Context) {
                 } else {
                     val skipShort = settings.skipShortTracks.first()
                     val blocked = settings.blockedFolders.first()
-                    val custom = settings.customFolders.first()
-                    val useMediaStore = settings.useMediaStore.first()
                     val scanned = querySongs(
                         skipShort = skipShort,
-                        blockedFolders = blocked,
-                        customFolders = custom,
-                        useMediaStore = useMediaStore
+                        blockedFolders = blocked
                     ) ?: return@withContext null
                     syncSongs(scanned)
                     songsDao.getAll().map { it.toSong() }
@@ -134,192 +129,107 @@ class MediaLibraryRepository private constructor(context: Context) {
         selection: String = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} > 0",
         selectionArgs: Array<String>? = null,
         skipShort: Boolean = false,
-        blockedFolders: Set<String> = emptySet(),
-        customFolders: Set<String> = emptySet(),
-        useMediaStore: Boolean = true
+        blockedFolders: Set<String> = emptySet()
     ): List<Song>? {
         val results = mutableListOf<Song>()
-        val seenPaths = mutableSetOf<String>()
-        if (useMediaStore) {
-            val projection = arrayOf(
-                MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.ALBUM,
-                MediaStore.Audio.Media.ALBUM_ID,
-                MediaStore.Audio.Media.DURATION,
-                MediaStore.Audio.Media.SIZE,
-                MediaStore.Audio.Media.DATE_ADDED,
-                MediaStore.Audio.Media.DATE_MODIFIED,
-                MediaStore.Audio.Media.TRACK
-                , MediaStore.Audio.Media.DATA
+        val projection = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Media.ALBUM,
+            MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.SIZE,
+            MediaStore.Audio.Media.DATE_ADDED,
+            MediaStore.Audio.Media.DATE_MODIFIED,
+            MediaStore.Audio.Media.TRACK,
+            MediaStore.Audio.Media.DATA
+        )
+        val cursor = try {
+            resolver.query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                "${MediaStore.Audio.Media.TITLE} ASC"
             )
-            val cursor = try {
-                resolver.query(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    projection,
-                    selection,
-                    selectionArgs,
-                    "${MediaStore.Audio.Media.TITLE} ASC"
-                )
-            } catch (_: Exception) {
-                return null
-            } ?: return null
-            cursor.use { cursor ->
-                val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-                val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-                val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-                val albumCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
-                val albumIdCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
-                val durationCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
-                val sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
-                val dateAddedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
-                val dateModifiedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
-                val trackCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK)
-                val pathCol = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+        } catch (_: Exception) {
+            return null
+        } ?: return null
+        cursor.use { cursor ->
+            val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+            val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+            val albumCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+            val albumIdCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+            val durationCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+            val sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
+            val dateAddedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
+            val dateModifiedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
+            val trackCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK)
+            val pathCol = cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
 
-                while (cursor.moveToNext()) {
-                    val id = cursor.getLong(idCol)
-                    val path = if (pathCol >= 0 && !cursor.isNull(pathCol)) cursor.getString(pathCol) else ""
-                    val durationMs = cursor.getLong(durationCol)
-                    if (path.isNotBlank()) seenPaths.add(path)
-                    val isBlocked = blockedFolders.any { path.startsWith(it) }
-                    if (isBlocked) continue
-                    if (skipShort && durationMs < 60_000) continue
-                    val uri = Uri.withAppendedPath(
-                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                        id.toString()
-                    )
-                    results.add(
-                        Song(
-                            id = id,
-                            uri = uri,
-                            title = cursor.getString(titleCol) ?: "未知标题",
-                            artist = cursor.getString(artistCol) ?: "未知艺术家",
-                            album = cursor.getString(albumCol) ?: "未知专辑",
-                            albumId = cursor.getLong(albumIdCol),
-                            duration = durationMs,
-                            size = cursor.getLong(sizeCol),
-                            dateAdded = cursor.getLong(dateAddedCol) * 1000L,
-                            dateModified = cursor.getLong(dateModifiedCol) * 1000L,
-                            trackNumber = cursor.getInt(trackCol)
-                            , path = path
-                        ).let { song ->
-                            val metadata = if (song.path.isNotBlank()) TagLibMetadataReader.read(song.path) else null
-                            val extension = song.path.substringAfterLast('.', "").uppercase().ifBlank { null }
-                            if (metadata == null) song.copy(format = extension) else song.copy(
-                                title = metadata.title ?: song.title,
-                                artist = metadata.artist ?: song.artist,
-                                album = metadata.album ?: song.album,
-                                trackNumber = metadata.trackNumber ?: song.trackNumber,
-                                duration = metadata.durationMs ?: song.duration,
-                                bitrateKbps = metadata.bitrateKbps,
-                                sampleRateHz = metadata.sampleRateHz,
-                                channels = metadata.channels,
-                                format = extension,
-                                lyrics = metadata.lyrics,
-                                composer = metadata.composer,
-                                genre = metadata.genre,
-                                comment = metadata.comment,
-                                year = metadata.year,
-                                date = metadata.date,
-                                discNumber = metadata.discNumber,
-                                subtitle = metadata.subtitle,
-                                albumArtist = metadata.albumArtist,
-                                lyricist = metadata.lyricist,
-                                conductor = metadata.conductor,
-                                remixer = metadata.remixer,
-                                mood = metadata.mood,
-                                bpm = metadata.bpm,
-                                isrc = metadata.isrc,
-                                copyright = metadata.copyright,
-                                label = metadata.label,
-                                musicBrainzTrackId = metadata.musicBrainzTrackId,
-                                musicBrainzAlbumId = metadata.musicBrainzAlbumId,
-                                musicBrainzArtistId = metadata.musicBrainzArtistId
-                            )
-                        }
-                    )
-                }
-            }
-            // 并集合并：MediaStore 结果 + 自定义文件夹结果（按 path 去重）
-            if (customFolders.isNotEmpty()) {
-                val extra = querySongsFromCustomFolders(customFolders, skipShort, blockedFolders, seenPaths)
-                results.addAll(extra)
-            }
-        } else {
-            val scanned = querySongsFromCustomFolders(customFolders, skipShort, blockedFolders)
-            results.addAll(scanned)
-        }
-        return results
-    }
-
-    /** 从自定义文件夹直接扫描文件系统；seenPaths 非空时用于跳过已收录的 path（并集去重） */
-    private fun querySongsFromCustomFolders(
-        customFolders: Set<String>,
-        skipShort: Boolean,
-        blockedFolders: Set<String>,
-        seenPaths: MutableSet<String> = mutableSetOf()
-    ): List<Song> {
-        val AUDIO_EXTS = setOf("mp3", "flac", "wav", "ogg", "m4a", "aac", "opus", "wma", "ape", "mka", "aac")
-        val results = mutableListOf<Song>()
-        for (folderPath in customFolders) {
-            val root = File(folderPath)
-            if (!root.exists()) continue
-            val files = root.walkTopDown().filter { it.isFile && it.extension.lowercase() in AUDIO_EXTS }.toList()
-            for (file in files) {
-                val path = file.absolutePath
-                if (path in seenPaths) continue
-                seenPaths.add(path)
-                if (blockedFolders.any { path.startsWith(it) }) continue
-                val extension = path.substringAfterLast('.', "").uppercase().ifBlank { null }
-                val metadata = TagLibMetadataReader.read(path)
-                val durationMs = metadata?.durationMs ?: 0L
+            while (cursor.moveToNext()) {
+                val id = cursor.getLong(idCol)
+                val path = if (pathCol >= 0 && !cursor.isNull(pathCol)) cursor.getString(pathCol) else ""
+                val durationMs = cursor.getLong(durationCol)
+                val isBlocked = blockedFolders.any { path.startsWith(it) }
+                if (isBlocked) continue
                 if (skipShort && durationMs < 60_000) continue
-                val id = path.hashCode().toLong()
-                val uri = Uri.fromFile(file)
-                val song = Song(
-                    id = id,
-                    uri = uri,
-                    title = metadata?.title ?: file.nameWithoutExtension,
-                    artist = metadata?.artist ?: "未知艺术家",
-                    album = metadata?.album ?: "未知专辑",
-                    albumId = id,
-                    duration = durationMs,
-                    size = file.length(),
-                    dateAdded = file.lastModified(),
-                    dateModified = file.lastModified(),
-                    trackNumber = metadata?.trackNumber ?: 0,
-                    path = path
-                ).let { s ->
-                    s.copy(
-                        bitrateKbps = metadata?.bitrateKbps,
-                        sampleRateHz = metadata?.sampleRateHz,
-                        channels = metadata?.channels,
-                        format = extension,
-                        lyrics = metadata?.lyrics,
-                        composer = metadata?.composer,
-                        genre = metadata?.genre,
-                        comment = metadata?.comment,
-                        year = metadata?.year,
-                        date = metadata?.date,
-                        discNumber = metadata?.discNumber,
-                        subtitle = metadata?.subtitle,
-                        albumArtist = metadata?.albumArtist,
-                        lyricist = metadata?.lyricist,
-                        conductor = metadata?.conductor,
-                        remixer = metadata?.remixer,
-                        mood = metadata?.mood,
-                        bpm = metadata?.bpm,
-                        isrc = metadata?.isrc,
-                        copyright = metadata?.copyright,
-                        label = metadata?.label,
-                        musicBrainzTrackId = metadata?.musicBrainzTrackId,
-                        musicBrainzAlbumId = metadata?.musicBrainzAlbumId,
-                        musicBrainzArtistId = metadata?.musicBrainzArtistId
-                    )
-                }
-                results.add(song)
+                val uri = Uri.withAppendedPath(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    id.toString()
+                )
+                results.add(
+                    Song(
+                        id = id,
+                        uri = uri,
+                        title = cursor.getString(titleCol) ?: "未知标题",
+                        artist = cursor.getString(artistCol) ?: "未知艺术家",
+                        album = cursor.getString(albumCol) ?: "未知专辑",
+                        albumId = cursor.getLong(albumIdCol),
+                        duration = durationMs,
+                        size = cursor.getLong(sizeCol),
+                        dateAdded = cursor.getLong(dateAddedCol) * 1000L,
+                        dateModified = cursor.getLong(dateModifiedCol) * 1000L,
+                        trackNumber = cursor.getInt(trackCol),
+                        path = path
+                    ).let { song ->
+                        val metadata = if (song.path.isNotBlank()) TagLibMetadataReader.read(song.path) else null
+                        val extension = song.path.substringAfterLast('.', "").uppercase().ifBlank { null }
+                        if (metadata == null) song.copy(format = extension) else song.copy(
+                            title = metadata.title ?: song.title,
+                            artist = metadata.artist ?: song.artist,
+                            album = metadata.album ?: song.album,
+                            trackNumber = metadata.trackNumber ?: song.trackNumber,
+                            duration = metadata.durationMs ?: song.duration,
+                            bitrateKbps = metadata.bitrateKbps,
+                            sampleRateHz = metadata.sampleRateHz,
+                            channels = metadata.channels,
+                            format = extension,
+                            lyrics = metadata.lyrics,
+                            composer = metadata.composer,
+                            genre = metadata.genre,
+                            comment = metadata.comment,
+                            year = metadata.year,
+                            date = metadata.date,
+                            discNumber = metadata.discNumber,
+                            subtitle = metadata.subtitle,
+                            albumArtist = metadata.albumArtist,
+                            lyricist = metadata.lyricist,
+                            conductor = metadata.conductor,
+                            remixer = metadata.remixer,
+                            mood = metadata.mood,
+                            bpm = metadata.bpm,
+                            isrc = metadata.isrc,
+                            copyright = metadata.copyright,
+                            label = metadata.label,
+                            musicBrainzTrackId = metadata.musicBrainzTrackId,
+                            musicBrainzAlbumId = metadata.musicBrainzAlbumId,
+                            musicBrainzArtistId = metadata.musicBrainzArtistId
+                        )
+                    }
+                )
             }
         }
         return results
