@@ -46,8 +46,6 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         }.sortedBy { it.path }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    fun songsInFolder(path: String): List<Song> = songs.value.filter { it.path.substringBeforeLast('/', "") == path }
-
     fun refresh() = repository.refresh()
 
     fun toggleFavorite(songId: Long) = viewModelScope.launch {

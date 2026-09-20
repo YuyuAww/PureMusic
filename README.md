@@ -4,14 +4,14 @@ PureMusic 是一款面向 Android 的本地音乐播放器，使用 Jetpack Comp
 
 ## 功能
 
-- 扫描 `MediaStore` 音频库，按歌曲、专辑、艺术家和文件夹浏览
-- 搜索、排序、收藏、自定义歌单和播放历史
+- 扫描 `MediaStore` 音频库，按歌曲、专辑、艺术家和文件夹浏览；首次启动或媒体库为空时自动执行一次完整扫描
+- 搜索、排序、收藏和播放历史
 - 播放/暂停、上一首、下一首、拖动进度、队列管理
 - 顺序、随机、列表循环和单曲循环
 - MediaSession 后台播放，支持通知栏、锁屏、蓝牙和耳机控制
-- MediaStore 专辑封面与 Coil 加载，缺少封面时显示回退图标
+- 封面图片优先使用音频内嵌封面（TagLib 提取并经 Coil 加载），缺失时回退 MediaStore 专辑封面，加载失败显示回退图标；播放器配色取自实际加载的封面
 - 跟随系统、亮色和暗色主题；Android 12+ 支持动态取色
-- Glance 桌面小组件和系统均衡器入口
+- 系统均衡器入口
 
 ## 音频标签与歌词
 
@@ -31,7 +31,7 @@ PureMusic 是一款面向 Android 的本地音乐播放器，使用 Jetpack Comp
 | Kotlin / Compose | Kotlin 2.3.21、Compose BOM 2026.08.00 |
 | 播放 | AndroidX Media3 1.11.0 |
 | 数据 | Room 2.8.4、DataStore Preferences 1.2.1 |
-| 图片 / 小组件 | Coil 3.6.0、Glance 1.2.0 |
+| 图片 | Coil 3.6.0 |
 | 原生标签 | TagLib 2.3.2、CMake、JNI |
 | 构建 | AGP 9.4.0、Gradle 9.6.0、Java 11 |
 
@@ -69,12 +69,10 @@ gradle :app:assembleRelease
 - 仅 arm64 模拟器/设备可直接运行，x86/x86_64 需要调整 ABI 配置
 - 受限存储场景下可能无法取得真实文件路径，此时仅使用 MediaStore 元数据
 - 当前歌词按文本行展示，不包含逐行时间轴同步
-- 内嵌封面数据（`coverData`）已可从 TagLib 提取但尚未接入 Coil 加载管道，封面仍使用 MediaStore 专辑封面 URI
 - 暂无崩溃收集和正式发布签名配置
 
 ## 后续计划
 
-- 将 TagLib 内嵌封面（`coverData`）接入 Coil 图片加载管道，替代 MediaStore 专辑封面 URI
 - 支持 LRC 时间轴歌词
 - 完善多 ABI / APK 拆分与构建缓存
 - 增加播放器、媒体库和 Compose UI 测试

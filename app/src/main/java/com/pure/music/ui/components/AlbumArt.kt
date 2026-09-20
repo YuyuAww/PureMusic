@@ -7,19 +7,29 @@ import androidx.compose.material.icons.filled.Album
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.SubcomposeAsyncImage
 import com.pure.music.data.Album
 import com.pure.music.data.Song
+import com.pure.music.library.MediaLibraryRepository
 
 @Composable
 fun AlbumArt(albumId: Long, modifier: Modifier = Modifier, contentDescription: String? = null) {
-    // MediaStore 的专辑封面 URI 只适用于本地媒体，不需要网络权限。
+    // 优先使用 TagLib 写入缓存目录的内嵌封面文件；缺失时回退 MediaStore 专辑封面 URI
+    val context = LocalContext.current
+    val repository = remember(context) { MediaLibraryRepository.get(context) }
+    val generation = repository.coversGeneration.collectAsStateWithLifecycle().value
+    val model: Any = remember(generation, albumId) {
+        repository.getEmbeddedCoverFile(albumId) ?: "content://media/external/audio/albumart/$albumId"
+    }
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         SubcomposeAsyncImage(
-            model = "content://media/external/audio/albumart/$albumId",
+            model = model,
             contentDescription = contentDescription,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,

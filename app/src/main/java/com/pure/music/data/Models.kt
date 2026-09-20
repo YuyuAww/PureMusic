@@ -50,9 +50,7 @@ data class Album(
     val albumId: Long,
     val name: String,
     val artist: String,
-    val coverArtUri: Uri?,
-    val songCount: Int,
-    val songIds: List<Long>
+    val songCount: Int
 )
 
 /** 艺术家数据模型，由歌曲聚合生成 */

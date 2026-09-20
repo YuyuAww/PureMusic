@@ -1,7 +1,6 @@
 package com.pure.music.library
 
 import android.content.Context
-import android.content.ContentUris
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
@@ -13,6 +12,7 @@ import com.pure.music.data.Song
 import com.pure.music.data.db.AppDatabase
 import com.pure.music.data.db.SongEntity
 import com.pure.music.settings.SettingsRepository
+import com.pure.music.taglib.AudioMetadata
 import com.pure.music.taglib.TagLibMetadataReader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.io.File
 
 /**
  * 本地媒体库仓库。MediaStore 负责读取歌曲元数据，ContentObserver 负责感知变化；
@@ -35,6 +36,8 @@ class MediaLibraryRepository private constructor(context: Context) {
     private val appContext = context.applicationContext
     private val resolver = appContext.contentResolver
     private val songsDao = AppDatabase.get(appContext).songsDao()
+    /** 内嵌封面缓存目录，按 albumId 命名 */
+    private val coversDir = File(appContext.cacheDir, "embedded_covers").apply { mkdirs() }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var refreshJob: Job? = null
 
@@ -46,6 +49,10 @@ class MediaLibraryRepository private constructor(context: Context) {
 
     private val _artists = MutableStateFlow<List<Artist>>(emptyList())
     val artists: StateFlow<List<Artist>> = _artists
+
+    /** 媒体库每次 publish 递增，用于感知内嵌封面文件更新 */
+    private val _coversGeneration = MutableStateFlow(0)
+    val coversGeneration: StateFlow<Int> = _coversGeneration
 
     /** 媒体库变化监听器，文件增删改时自动刷新 */
     private val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
@@ -68,6 +75,8 @@ class MediaLibraryRepository private constructor(context: Context) {
         scope.launch {
             val cached = withContext(Dispatchers.IO) { songsDao.getAll().map { it.toSong() } }
             publish(cached)
+            // 首次使用（Room 缓存为空）或媒体库被清空时，启动即执行一次完整扫描
+            if (cached.isEmpty()) refresh()
         }
     }
 
@@ -108,6 +117,7 @@ class MediaLibraryRepository private constructor(context: Context) {
         _songs.value = songList
         _albums.value = buildAlbums(songList)
         _artists.value = buildArtists(songList)
+        _coversGeneration.value++
     }
 
     private suspend fun syncSongs(scanned: List<Song>) {
@@ -116,12 +126,30 @@ class MediaLibraryRepository private constructor(context: Context) {
         val updated = scanned.map { it.toEntity() }.filter { existing[it.songId] != it }
         if (ids.isEmpty()) songsDao.deleteAll() else songsDao.deleteMissing(ids)
         if (updated.isNotEmpty()) songsDao.upsertAll(updated)
+        val validAlbums = scanned.map { it.albumId }.toSet()
+        coversDir.listFiles()?.forEach { file ->
+            val id = file.name.substringBefore('.').toLongOrNull()
+            if (id != null && id !in validAlbums) runCatching { file.delete() }
+        }
     }
 
-    /** 释放资源，取消协程作用域 */
-    fun destroy() {
-        resolver.unregisterContentObserver(observer)
-        scope.cancel()
+    /** 专辑的内嵌封面文件，尚未生成时返回 null */
+    fun getEmbeddedCoverFile(albumId: Long): File? =
+        coversDir.listFiles()?.firstOrNull { it.name == "$albumId" || it.name.startsWith("$albumId.") }
+
+    /** 将内嵌封面写入缓存目录，已存在则跳过（同一专辑只写第一张） */
+    private fun writeEmbeddedCover(metadata: AudioMetadata, albumId: Long) {
+        val data = metadata.coverData ?: return
+        val ext = when (metadata.coverMimeType) {
+            "image/jpeg", "image/jpg" -> "jpg"
+            "image/png" -> "png"
+            "image/gif" -> "gif"
+            "image/webp" -> "webp"
+            else -> "img"
+        }
+        runCatching {
+            File(coversDir, "$albumId.$ext").takeIf { !it.exists() }?.writeBytes(data)
+        }
     }
 
     /** 从 MediaStore 查询所有音乐文件 */
@@ -197,6 +225,7 @@ class MediaLibraryRepository private constructor(context: Context) {
                     ).let { song ->
                         val metadata = if (song.path.isNotBlank()) TagLibMetadataReader.read(song.path) else null
                         val extension = song.path.substringAfterLast('.', "").uppercase().ifBlank { null }
+                        if (metadata != null && metadata.hasEmbeddedCover) writeEmbeddedCover(metadata, song.albumId)
                         if (metadata == null) song.copy(format = extension) else song.copy(
                             title = metadata.title ?: song.title,
                             artist = metadata.artist ?: song.artist,
@@ -247,11 +276,7 @@ class MediaLibraryRepository private constructor(context: Context) {
                 albumId = albumId,
                 name = group.first().album,
                 artist = group.first().artist,
-                coverArtUri = ContentUris.withAppendedId(
-                    Uri.parse("content://media/external/audio/albumart"), albumId
-                ),
-                songCount = group.size,
-                songIds = group.map { it.id }
+                songCount = group.size
             )
         }.sortedBy { it.name }
     }

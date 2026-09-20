@@ -2,7 +2,6 @@ package com.pure.music.player
 
 import android.content.Context
 import android.content.ComponentName
-import androidx.glance.appwidget.updateAll
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
@@ -10,8 +9,6 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.pure.music.data.Song
-import com.pure.music.widget.NowPlayingWidget
-import com.pure.music.widget.NowPlayingWidgetReceiver
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.Executor
 import kotlinx.coroutines.CoroutineScope
@@ -42,7 +39,6 @@ object PlayerManager {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             _state.value = _state.value.copy(isPlaying = isPlaying)
             if (isPlaying) startPositionUpdates() else stopPositionUpdates()
-            notifyWidgetUpdate()
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -57,7 +53,6 @@ object PlayerManager {
                 errorMessage = null
             )
             if (song != null) recordHistory(song)
-            notifyWidgetUpdate()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -169,8 +164,6 @@ object PlayerManager {
         }
     }
 
-    fun clearError() { _state.value = _state.value.copy(errorMessage = null) }
-
     fun setSleepTimer(minutes: Int) {
         val duration = minutes.coerceIn(5, 60)
         sleepTimerJob?.cancel()
@@ -253,20 +246,4 @@ object PlayerManager {
             )
             .build()
 
-    /** 通知桌面小部件刷新 UI */
-    private fun notifyWidgetUpdate() {
-        context?.let { ctx ->
-            try {
-                val widgetManager = android.appwidget.AppWidgetManager.getInstance(ctx)
-                val component = ComponentName(ctx, NowPlayingWidgetReceiver::class.java)
-                if (widgetManager.getAppWidgetIds(component).isNotEmpty()) {
-                    scope.launch {
-                        NowPlayingWidget().updateAll(ctx)
-                    }
-                }
-            } catch (_: Exception) {
-                // 小部件未安装时忽略
-            }
-        }
-    }
 }

@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.ColorUtils
+import com.pure.music.library.MediaLibraryRepository
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -23,17 +24,22 @@ data class CoverColors(
 private val coverCache = ConcurrentHashMap<String, CoverColors>()
 
 suspend fun loadCoverColors(context: Context, albumId: Long, fallback: CoverColors, darkTheme: Boolean = false): CoverColors = withContext(Dispatchers.IO) {
-    val key = "$albumId:$darkTheme"
+    // 取色对象与 AlbumArt 一致：优先 TagLib 内嵌封面文件，缺失时回退 MediaStore 专辑封面
+    val coverFile = MediaLibraryRepository.get(context).getEmbeddedCoverFile(albumId)
+    val key = "$albumId:$darkTheme${if (coverFile != null) ":embedded" else ""}"
     coverCache[key]?.let { return@withContext it }
     runCatching {
         val uri = Uri.parse("content://media/external/audio/albumart/$albumId")
-        val bitmap: Bitmap = if (Build.VERSION.SDK_INT >= 29) {
-            runCatching { context.contentResolver.loadThumbnail(uri, android.util.Size(64, 64), null) }.getOrNull()
-                ?: context.contentResolver.openInputStream(uri)?.use { decodeSmall(it) }
+        val bitmap: Bitmap = when {
+            coverFile != null -> decodeSmall(coverFile.inputStream())
                 ?: return@runCatching fallback
-        } else {
-            context.contentResolver.openInputStream(uri)?.use { decodeSmall(it) }
-                ?: return@runCatching fallback
+            Build.VERSION.SDK_INT >= 29 ->
+                runCatching { context.contentResolver.loadThumbnail(uri, android.util.Size(64, 64), null) }.getOrNull()
+                    ?: context.contentResolver.openInputStream(uri)?.use { decodeSmall(it) }
+                    ?: return@runCatching fallback
+            else ->
+                context.contentResolver.openInputStream(uri)?.use { decodeSmall(it) }
+                    ?: return@runCatching fallback
         }
         if (bitmap.width == 0 || bitmap.height == 0) return@runCatching fallback
 

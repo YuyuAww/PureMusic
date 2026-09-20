@@ -9,7 +9,6 @@ composeBom = "2026.08.00"
 media3 = "1.11.0"
 room = "2.8.4"
 datastore = "1.2.1"
-glance = "1.2.0"
 coroutines = "1.11.0"
 coil = "3.6.0"
 navigationevent = "1.0.0"
@@ -39,7 +38,6 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
-androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 
 [plugins]

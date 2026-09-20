@@ -4,21 +4,18 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 
 /**
- * Room 数据库，持久化收藏、歌单和最近播放记录。
+ * Room 数据库，持久化收藏和最近播放记录。
  * 数据库升级通过显式 Migration 保留已有用户数据。
  */
 @Database(
-    entities = [FavoriteEntity::class, PlaylistEntity::class, PlayHistoryEntity::class, SongEntity::class],
+    entities = [FavoriteEntity::class, PlayHistoryEntity::class, SongEntity::class],
     version = 6,
     exportSchema = false
 )
-@TypeConverters(LongListConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun favoritesDao(): FavoritesDao
-    abstract fun playlistDao(): PlaylistDao
     abstract fun historyDao(): PlayHistoryDao
     abstract fun songsDao(): SongsDao
 
