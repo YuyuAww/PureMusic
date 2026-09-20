@@ -51,11 +51,12 @@ class MediaLibraryRepository private constructor(context: Context) {
     /** 媒体库变化监听器，文件增删改时自动刷新 */
     private val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) {
-            refresh()
+            // 无 uri 的全量变更多为系统批量广播，避免反复触发全量扫描相互 cancel，交由手动扫描覆盖
         }
 
         override fun onChange(selfChange: Boolean, uri: Uri?) {
-            if (uri == null) refresh() else refresh(uri)
+            if (uri == null) return
+            refresh(uri)
         }
     }
 
@@ -138,6 +139,7 @@ class MediaLibraryRepository private constructor(context: Context) {
         useMediaStore: Boolean = true
     ): List<Song>? {
         val results = mutableListOf<Song>()
+        val seenPaths = mutableSetOf<String>()
         if (useMediaStore) {
             val projection = arrayOf(
                 MediaStore.Audio.Media._ID,
@@ -180,10 +182,10 @@ class MediaLibraryRepository private constructor(context: Context) {
                     val id = cursor.getLong(idCol)
                     val path = if (pathCol >= 0 && !cursor.isNull(pathCol)) cursor.getString(pathCol) else ""
                     val durationMs = cursor.getLong(durationCol)
+                    if (path.isNotBlank()) seenPaths.add(path)
                     val isBlocked = blockedFolders.any { path.startsWith(it) }
                     if (isBlocked) continue
                     if (skipShort && durationMs < 60_000) continue
-                    if (customFolders.isNotEmpty() && !customFolders.any { path.startsWith(it) }) continue
                     val uri = Uri.withAppendedPath(
                         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                         id.toString()
@@ -240,6 +242,11 @@ class MediaLibraryRepository private constructor(context: Context) {
                     )
                 }
             }
+            // 并集合并：MediaStore 结果 + 自定义文件夹结果（按 path 去重）
+            if (customFolders.isNotEmpty()) {
+                val extra = querySongsFromCustomFolders(customFolders, skipShort, blockedFolders, seenPaths)
+                results.addAll(extra)
+            }
         } else {
             val scanned = querySongsFromCustomFolders(customFolders, skipShort, blockedFolders)
             results.addAll(scanned)
@@ -247,11 +254,12 @@ class MediaLibraryRepository private constructor(context: Context) {
         return results
     }
 
-    /** 从自定义文件夹直接扫描文件系统（用于 MediaStore 关闭时） */
+    /** 从自定义文件夹直接扫描文件系统；seenPaths 非空时用于跳过已收录的 path（并集去重） */
     private fun querySongsFromCustomFolders(
         customFolders: Set<String>,
         skipShort: Boolean,
-        blockedFolders: Set<String>
+        blockedFolders: Set<String>,
+        seenPaths: Set<String> = emptySet()
     ): List<Song> {
         val AUDIO_EXTS = setOf("mp3", "flac", "wav", "ogg", "m4a", "aac", "opus", "wma", "ape", "mka", "aac")
         val results = mutableListOf<Song>()
@@ -261,6 +269,8 @@ class MediaLibraryRepository private constructor(context: Context) {
             val files = root.walkTopDown().filter { it.isFile && it.extension.lowercase() in AUDIO_EXTS }.toList()
             for (file in files) {
                 val path = file.absolutePath
+                if (path in seenPaths) continue
+                seenPaths.add(path)
                 if (blockedFolders.any { path.startsWith(it) }) continue
                 val extension = path.substringAfterLast('.', "").uppercase().ifBlank { null }
                 val metadata = TagLibMetadataReader.read(path)
