@@ -259,7 +259,7 @@ class MediaLibraryRepository private constructor(context: Context) {
         customFolders: Set<String>,
         skipShort: Boolean,
         blockedFolders: Set<String>,
-        seenPaths: Set<String> = emptySet()
+        seenPaths: MutableSet<String> = mutableSetOf()
     ): List<Song> {
         val AUDIO_EXTS = setOf("mp3", "flac", "wav", "ogg", "m4a", "aac", "opus", "wma", "ape", "mka", "aac")
         val results = mutableListOf<Song>()
