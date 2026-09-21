@@ -153,3 +153,35 @@ Java_com_pure_music_taglib_TagLibMetadataReader_readCoverNative(JNIEnv* env, jcl
     env->SetByteArrayRegion(arr, 0, len, reinterpret_cast<const jbyte*>(bv.data()));
     return arr;
 }
+
+/**
+ * 将歌词写入音频文件内嵌标签（只写 lyrics 一个字段）。
+ * 写标准键 LYRICS，并清理同义的旧别名键（USLT / UNSYNCED LYRICS / LYRIC / LYRICSENG），
+ * 避免播放器/标签软件读到多份互相矛盾的歌词（对齐 Lyrico 的 AudioTagWriteRules）。
+ * 返回 true 表示保存成功；文件不可写/无标签/保存被拒绝时返回 false。
+ */
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_pure_music_taglib_TagLibWriter_writeLyricsNative(JNIEnv* env, jclass, jstring path, jstring lyrics) {
+    if (!path || !lyrics) return JNI_FALSE;
+    const char* utfPath = env->GetStringUTFChars(path, nullptr);
+    const char* utfLyrics = env->GetStringUTFChars(lyrics, nullptr);
+    jboolean ok = JNI_FALSE;
+    try {
+        // readOnly=false：写操作；文件只读/无权限时 FileRef 构造失败，返回 false
+        TagLib::FileRef file(utfPath, false);
+        if (!file.isNull() && file.tag()) {
+            TagLib::PropertyMap props = file.tag()->properties();
+            props.replace("LYRICS", TagLib::StringList(TagLib::String(utfLyrics, TagLib::String::UTF8)));
+            for (const char* alias : {"USLT", "UNSYNCED LYRICS", "LYRIC", "LYRICSENG"}) {
+                props.erase(alias);
+            }
+            file.tag()->setProperties(props);
+            ok = file.save() ? JNI_TRUE : JNI_FALSE;
+        }
+    } catch (const std::exception&) {
+        // 权限/只读/格式不支持：保持 JNI_FALSE
+    }
+    env->ReleaseStringUTFChars(path, utfPath);
+    env->ReleaseStringUTFChars(lyrics, utfLyrics);
+    return ok;
+}

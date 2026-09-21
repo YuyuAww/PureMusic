@@ -37,15 +37,29 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.media3.common.Player
 import kotlin.math.roundToInt
 import com.pure.music.data.Song
+import com.pure.music.lyric.LyricsCodec
+import com.pure.music.lyric.model.LyricFormat
+import com.pure.music.lyric.model.LyricLine
+import com.pure.music.lyric.model.LyricsDocument
+import com.pure.music.lyric.model.visibleText
+import com.pure.music.player.LyricsTagService
 import com.pure.music.player.PlaybackState
 import com.pure.music.player.EqualizerController
 import com.pure.music.ui.components.AlbumArt
 import com.pure.music.ui.library.formatDuration
 import com.pure.music.ui.utils.CoverColors
 import com.pure.music.ui.utils.loadCoverColors
+import android.widget.Toast
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.rememberCoroutineScope
 
 private val PlayerSheetHeight = 480.dp
 
@@ -69,6 +83,7 @@ fun PlayerWorkspace(
     val song = state.currentSong ?: return
     var lyricsJumpNonce by remember { mutableIntStateOf(0) }
     var showQueue by remember { mutableStateOf(false) }
+    var showLyricsOps by remember { mutableStateOf(false) }
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
     LaunchedEffect(lyricsJumpNonce) {
         if (lyricsJumpNonce > 0) pagerState.animateScrollToPage(2)
@@ -95,7 +110,7 @@ fun PlayerWorkspace(
     // 中间内容区三个页面（横竖屏共用）
     val playerPages: @Composable (Int) -> Unit = { page ->
         when (page) {
-            0 -> DetailPage(song, colors)
+            0 -> DetailPage(song, colors, onOpenLyricsOps = { showLyricsOps = true })
             1 -> CoverAndLyricsPage(song, state.position, colors) { lyricsJumpNonce++ }
             else -> LyricsPage(song, state.position, colors)
         }
@@ -182,6 +197,7 @@ fun PlayerWorkspace(
             }
         }
     }
+    if (showLyricsOps) LyricsOpsSheet(song) { showLyricsOps = false }
 }
 
 // ---------------------------------------------------------
@@ -224,7 +240,7 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
 // ---------------------------------------------------------
 @Composable
 private fun CoverAndLyricsPage(song: Song, position: Long, colors: CoverColors, onOpenLyrics: () -> Unit) {
-    val lines = timedLyrics(song)
+    val doc = rememberLyricsDocument(song)
     Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         // 歌曲封面
         Box(
@@ -240,13 +256,14 @@ private fun CoverAndLyricsPage(song: Song, position: Long, colors: CoverColors, 
         Spacer(Modifier.height(35.dp))
         // 迷你歌词窗
         // 取播放进度之前最近的一行；使用 lastOrNull 避免始终停留在第一行
-        val primaryLines = lines.filter { it.primary }
-        val current = primaryLines.lastOrNull { it.timeMs <= position } ?: primaryLines.firstOrNull() ?: lines.first()
-        val index = primaryLines.indexOf(current).coerceAtLeast(0)
+        val timedLines = doc.original.filter { it.startMs != null }
+        val current = timedLines.lastOrNull { it.startMs <= position } ?: doc.original.firstOrNull()
+        val index = current?.let { timedLines.indexOf(it) }?.coerceAtLeast(0) ?: -1
+        val textOf: (LyricLine?) -> String = { it?.let { line -> line.visibleText() } ?: "" }
         MiniLyricsWindow(
-            primaryLines.getOrNull(index - 1)?.text ?: "",
-            current.text,
-            primaryLines.getOrNull(index + 1)?.text ?: "",
+            textOf(timedLines.getOrNull(index - 1)),
+            textOf(current),
+            textOf(timedLines.getOrNull(index + 1)),
             colors,
             onOpenLyrics
         )
@@ -460,115 +477,36 @@ private fun PlayerBottomBar(
 // ---------------------------------------------------------
 // 辅助页面 (详情页 / 全屏歌词页 / 占位歌词)
 // ---------------------------------------------------------
-private data class TimedLyric(val timeMs: Long, val text: String, val words: List<TimedWord> = emptyList(), val primary: Boolean = false, val roma: String? = null, val translation: String? = null)
-private data class TimedWord(val timeMs: Long, val text: String)
-
-private fun timedLyrics(song: Song): List<TimedLyric> {
-    val source = song.lyrics.orEmpty()
-    if (source.trimStart().startsWith("<tt", ignoreCase = true)) return parseTtmlLyrics(source)
-    val regex = Regex("([<\\[])(\\d{1,3}):(\\d{2})(?:[.:](\\d{1,3}))?[>\\]]")
-    val parsed = source.lines().flatMap { line ->
-        val matches = regex.findAll(line).toList()
-        if (matches.isEmpty()) listOf(TimedLyric(0, line.trim())) else {
-            val lineStart = matches.firstOrNull { it.value.startsWith("[") }
-            // 实际本地歌词同时存在两种增强 LRC 写法：<mm:ss.xx> 和 [mm:ss.xx]。
-            // 当同一行包含多个时间标记时，第一个是行时间，后续标记是逐字时间。
-            // 有行级时间时，第一个标记属于整行；没有行级时间时，所有标记
-            // 都是逐字时间。后者不能 drop(1)，否则主歌词的首字会永远丢失。
-            val wordMatches = if (lineStart != null) matches.drop(1) else matches
-            val parsedWords = wordMatches.mapIndexed { index, m ->
-                val fraction = m.groupValues[4].padEnd(3, '0').take(3).toLongOrNull() ?: 0
-                val time = (m.groupValues[2].toLong() * 60 + m.groupValues[3].toLong()) * 1000 + fraction
-                val end = wordMatches.getOrNull(index + 1)?.range?.first ?: line.length
-                TimedWord(time, line.substring(m.range.last + 1, end))
-            }.filter { it.text.isNotBlank() }
-            // ELRC 允许行时间后直接写首字，再从第二个字开始提供逐字时间。
-            // 这段前缀仍属于主歌词，使用行时间作为它的起点，不能丢弃。
-            val leadingText = if (lineStart != null && wordMatches.isNotEmpty()) {
-                line.substring(lineStart.range.last + 1, wordMatches.first().range.first).trim()
-            } else ""
-            val words = if (leadingText.isNotBlank()) {
-                listOf(TimedWord(parseLyricTime(lineStart!!), leadingText)) + parsedWords
-            } else parsedWords
-            val text = if (words.isNotEmpty()) words.map { it.text.trim() }.reduce { a, b ->
-                val separator = if (a.lastOrNull()?.isLatinOrDigit() == true && b.firstOrNull()?.isLatinOrDigit() == true) " " else ""
-                a + separator + b
-            } else line.substringAfter("]", line).trim()
-            listOf(TimedLyric(lineStart?.let(::parseLyricTime) ?: parseLyricTime(matches.first()), text, words, lineStart != null || words.isNotEmpty()))
-        }
-    }.filter { it.text.isNotBlank() }.sortedBy { it.timeMs }
-    val merged = parsed.groupBy { it.timeMs }.toSortedMap().values.flatMap { group ->
-        // 同一时间戳可能对应连续的两句主歌词；只有恰好一个主行时，
-        // 才把同时间的非主行作为罗马音/翻译附加上去。
-        val primaryLines = group.filter { it.primary }
-        if (primaryLines.size > 1) {
-            group
-        } else {
-            val main = group.firstOrNull { it.words.isNotEmpty() } ?: primaryLines.firstOrNull()
-            val secondary = group.filter { it !== main }
-            val roma = secondary.firstOrNull { it.text.isMostlyAscii() }?.text
-            val translation = secondary.firstOrNull { !it.text.isMostlyAscii() }?.text
-            listOf(main?.copy(roma = roma, translation = translation) ?: group.first())
-        }
-    }
-    return merged.ifEmpty { listOf(TimedLyric(0, "暂无内嵌歌词")) }
+/**
+ * 歌词解析结果缓存：解析只随歌词原文变化执行一次，播放进度（position）
+ * 高频变化时不再重复解析整篇歌词（原实现每次重组都重跑正则）。
+ */
+@Composable
+private fun rememberLyricsDocument(song: Song): LyricsDocument = remember(song.id, song.lyrics) {
+    LyricsCodec.parse(song.lyrics) ?: LyricsDocument(original = listOf(LyricLine(text = "暂无内嵌歌词")))
 }
 
-/** 兼容 Lyrico/TTML：主行使用 span begin，翻译和罗马音使用 role 标记。 */
-private fun parseTtmlLyrics(source: String): List<TimedLyric> {
-    val paragraph = Regex("<p\\b([^>]*)>([\\s\\S]*?)</p>", RegexOption.IGNORE_CASE)
-    val result = paragraph.findAll(source).mapNotNull { p ->
-        val attrs = p.groupValues[1]; val body = p.groupValues[2]
-        val begin = Regex("begin=\\\"([^\\\"]+)\\\"", RegexOption.IGNORE_CASE).find(attrs)?.groupValues?.get(1)?.let(::ttmlTime) ?: 0
-        val role = Regex("role=\\\"([^\\\"]+)\\\"", RegexOption.IGNORE_CASE).find(attrs)?.groupValues?.get(1).orEmpty()
-        val plain = body.replace(Regex("<[^>]+>"), "").trim()
-        if (plain.isBlank()) return@mapNotNull null
-        val words = if (role.isBlank()) Regex("<span\\b([^>]*)>([\\s\\S]*?)</span>", RegexOption.IGNORE_CASE).findAll(body).mapNotNull { s ->
-            val t = Regex("begin=\\\"([^\\\"]+)\\\"", RegexOption.IGNORE_CASE).find(s.groupValues[1])?.groupValues?.get(1) ?: return@mapNotNull null
-            TimedWord(begin + ttmlTime(t), s.groupValues[2].replace(Regex("<[^>]+>"), ""))
-        }.toList() else emptyList()
-        TimedLyric(begin, plain, words, role.isBlank(), if (role.contains("roman", true) || role.contains("roma", true)) plain else null, if (role.contains("translation", true)) plain else null)
-    }.toList().sortedBy { it.timeMs }
-    return result.ifEmpty { listOf(TimedLyric(0, "暂无内嵌歌词")) }
-}
-
-private fun ttmlTime(value: String): Long = when {
-    value.endsWith("ms", true) -> value.dropLast(2).toLongOrNull() ?: 0
-    value.endsWith("s", true) -> ((value.dropLast(1).toDoubleOrNull() ?: 0.0) * 1000).toLong()
-    else -> 0
-}
-
-private fun String.isMostlyAscii(): Boolean {
-    val letters = count { !it.isWhitespace() }
-    return letters > 0 && count { it.code < 128 } * 10 >= letters * 7
-}
-
-private fun Char.isLatinOrDigit() = isLetterOrDigit() && code < 128
-
-private fun parseLyricTime(match: MatchResult): Long {
-    val fraction = match.groupValues[4].padEnd(3, '0').take(3).toLong()
-    return (match.groupValues[2].toLong() * 60 + match.groupValues[3].toLong()) * 1000 + fraction
-}
-
-private fun parseLyricTime(line: String): Long = Regex("\\[(\\d+):(\\d{2})[.:](\\d{1,3})]").find(line)?.let {
-    val f = it.groupValues[3].padEnd(3, '0').take(3).toLong(); (it.groupValues[1].toLong() * 60 + it.groupValues[2].toLong()) * 1000 + f
-} ?: 0
 
 @Composable
 private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
-    val lines = timedLyrics(song)
-    val currentIndex = lines.indexOfLast { it.primary && it.timeMs <= position }
+    val doc = rememberLyricsDocument(song)
+    val lines = doc.original
+    val currentIndex = lines.indexOfLast { it.startMs != null && it.startMs <= position }
     val listState = rememberLazyListState()
     LaunchedEffect(song.id, currentIndex) { if (currentIndex >= 0) listState.animateScrollToItem(currentIndex) }
+    // 音译/翻译轨按行关联键对齐主行
+    val romanByKey = remember(doc) { doc.romanization.filter { it.linkKey != null }.groupBy { it.linkKey!! } }
+    val transByKey = remember(doc) { doc.translation.filter { it.linkKey != null }.groupBy { it.linkKey!! } }
     Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxWidth().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, contentPadding = PaddingValues(vertical = 180.dp)) {
             itemsIndexed(lines) { index, line ->
-                if (line.primary) {
-                    line.roma?.let { Text(it, color = colors.muted.copy(alpha = .5f), fontSize = 15.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 2.dp)) }
-                }
+                val roman = romanByKey[line.linkKey]?.firstOrNull()?.text
+                val translation = transByKey[line.linkKey]?.firstOrNull()?.text
+                roman?.let { Text(it, color = colors.muted.copy(alpha = .5f), fontSize = 15.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 2.dp)) }
+                val isCurrent = index == currentIndex
                 if (line.words.isEmpty()) Text(
-                    line.text,
-                    color = if (index == currentIndex) colors.accent else colors.muted.copy(alpha = .45f),
+                    line.visibleText(),
+                    color = if (isCurrent) colors.accent else colors.muted.copy(alpha = .45f),
                     fontSize = 23.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
@@ -578,13 +516,17 @@ private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
                     horizontalArrangement = Arrangement.Center
                 ) {
                     line.words.forEachIndexed { wordIndex, word ->
-                        val nextTime = line.words.getOrNull(wordIndex + 1)?.timeMs ?: Long.MAX_VALUE
-                        val active = line.primary && position >= word.timeMs && position < nextTime
-                        val sung = line.primary && position >= nextTime
+                        // 逐字匹配：词区间 [word.startMs, word.endMs ?: 下一词起点)。
+                        // LRC 系格式词无 end 时退回"下一词起点"；末词无终点则一直保持 active（与原行为一致）
+                        val wordStart = word.startMs ?: line.startMs ?: 0L
+                        val nextStart = line.words.getOrNull(wordIndex + 1)?.startMs
+                        val wordEnd = word.endMs ?: nextStart
+                        val active = isCurrent && position >= wordStart && (wordEnd == null || position < wordEnd)
+                        val sung = isCurrent && wordEnd != null && position >= wordEnd
                         // HyperLyric 风格：字词从基线下方浮起，当前字随播放进度
                         // 继续上移，完成后回落少许，避免整行永久悬空。
-                        val progress = if (active && nextTime != Long.MAX_VALUE) {
-                            ((position - word.timeMs).toFloat() / (nextTime - word.timeMs).coerceAtLeast(1L)).coerceIn(0f, 1f)
+                        val progress = if (active && wordEnd != null && wordEnd > wordStart) {
+                            ((position - wordStart).toFloat() / (wordEnd - wordStart).coerceAtLeast(1L)).coerceIn(0f, 1f)
                         } else 0f
                         val targetLift = when {
                             active -> -8f - progress * 5f
@@ -608,21 +550,20 @@ private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
                         )
                     }
                 }
-                if (line.primary) {
-                    line.translation?.let { Text(it, color = colors.muted.copy(alpha = .6f), fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 12.dp)) }
-                }
+                translation?.let { Text(it, color = colors.muted.copy(alpha = .6f), fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 12.dp)) }
             }
         }
         Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("词", color = colors.accent, modifier = Modifier.clip(RoundedCornerShape(5.dp)).background(colors.surface.copy(alpha = .7f)).padding(horizontal = 7.dp, vertical = 4.dp))
             Spacer(Modifier.width(10.dp))
-            Text("EMBEDDED", color = colors.muted, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(doc.format?.label() ?: "纯文本", color = colors.muted, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
     }
 }
 
 @Composable
-private fun DetailPage(song: Song, colors: CoverColors) {
+private fun DetailPage(song: Song, colors: CoverColors, onOpenLyricsOps: () -> Unit) {
+    val doc = rememberLyricsDocument(song)
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 25.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -634,6 +575,17 @@ private fun DetailPage(song: Song, colors: CoverColors) {
             DetailRow("专辑", song.album, colors)
             DetailRow("副标题", song.subtitle ?: "", colors)
             DetailRow("专辑艺术家", song.albumArtist ?: "", colors)
+        }
+
+        // 歌词（内嵌标签）
+        InfoCard("歌词", colors) {
+            DetailRow("来源", "内嵌标签", colors)
+            DetailRow("格式", doc.format?.label() ?: "纯文本", colors)
+            DetailRow("行数", "${doc.original.size} 行", colors)
+            DetailRow("逐字", if (doc.hasWordTiming) "支持" else "无逐字时间轴", colors)
+            TextButton(onClick = onOpenLyricsOps, enabled = song.lyrics.orEmpty().isNotBlank() || song.path.isNotBlank()) {
+                Text("歌词选项（导入 / 偏移 / 转换 / 写入标签）", color = colors.accent)
+            }
         }
 
         // 基本标签
@@ -682,6 +634,119 @@ private fun DetailPage(song: Song, colors: CoverColors) {
             DetailRow("采样率", song.sampleRateHz?.let { "$it Hz" } ?: "", colors)
             DetailRow("声道", song.channels?.let { it.toChannelLabel() } ?: "", colors)
             DetailRow("时长", formatDuration(song.duration), colors)
+        }
+    }
+}
+
+/** 歌词操作面板：导入外部歌词文件、时间轴偏移、格式转换，结果写回音频内嵌标签（Lyrico 同款交互） */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LyricsOpsSheet(song: Song, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val raw = song.lyrics.orEmpty()
+    val doc = remember(song.id, song.lyrics) { LyricsCodec.parse(song.lyrics) }
+    val hasWordTiming = doc?.hasWordTiming == true
+    var offsetMs by remember { mutableLongStateOf(0L) }
+    var targetFormat by remember { mutableStateOf(LyricFormat.ENHANCED_LRC) }
+    var busy by remember { mutableStateOf(false) }
+
+    fun toast(message: String) = Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+
+    /** 写回标签：成功刷新媒体库（歌曲数据经 StateFlow 回流到 UI） */
+    fun write(text: String) {
+        if (busy) return
+        busy = true
+        scope.launch {
+            val error = LyricsTagService.writeLyrics(context, song, text)
+            busy = false
+            if (error == null) {
+                toast("歌词已写入标签")
+                onDismiss()
+            } else toast(error)
+        }
+    }
+
+    // SAF 导入外部歌词文件（.lrc / .ttml / .txt 等）
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            val text = runCatching {
+                context.contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() }
+            }.getOrNull()
+            if (text.isNullOrBlank()) toast("无法读取所选歌词文件") else write(text)
+        }
+    }
+
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.fillMaxWidth().height(PlayerSheetHeight).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Text("歌词选项", style = MaterialTheme.typography.headlineSmall)
+            Text(
+                when {
+                    raw.isBlank() -> "当前歌曲暂无内嵌歌词，可导入外部歌词文件写入"
+                    doc?.hasWordTiming == true -> "当前为逐字歌词（${doc.format?.label() ?: "格式未知"}），支持转换与偏移"
+                    else -> "当前为行级歌词（${doc?.format?.label() ?: "纯文本"}），无逐字时间轴"
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 14.sp
+            )
+
+            // 导入外部歌词
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("导入外部歌词文件", style = MaterialTheme.typography.bodyLarge)
+                TextButton(onClick = { importLauncher.launch(arrayOf("text/*", "*/*")) }, enabled = !busy) {
+                    Text("导入")
+                }
+            }
+
+            // 时间轴偏移（-10s ~ +10s，步进 100ms，与 Lyrico 一致）
+            if (raw.isNotBlank()) {
+                Text("时间轴偏移", style = MaterialTheme.typography.bodyLarge)
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = { offsetMs = (offsetMs - 100L).coerceAtLeast(-10_000L) }) { Text("-100ms") }
+                    Text("${offsetMs}ms", modifier = Modifier.weight(1f))
+                    TextButton(onClick = { offsetMs = (offsetMs + 100L).coerceAtMost(10_000L) }) { Text("+100ms") }
+                    TextButton(onClick = { offsetMs = 0L }, enabled = offsetMs != 0L) { Text("重置") }
+                }
+                TextButton(onClick = { write(LyricsCodec.shiftText(raw, offsetMs)) }, enabled = offsetMs != 0L && !busy) {
+                    Text("应用偏移并写入")
+                }
+            }
+
+            // 格式转换
+            if (raw.isNotBlank()) {
+                Text("转换歌词格式", style = MaterialTheme.typography.bodyLarge)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LyricFormat.entries.forEach { format ->
+                        val enabled = !format.usesWordTiming || hasWordTiming
+                        FilterChip(
+                            selected = targetFormat == format,
+                            onClick = { targetFormat = format },
+                            enabled = enabled,
+                            label = { Text(format.label()) }
+                        )
+                    }
+                }
+                Text(
+                    if (targetFormat.usesWordTiming && !hasWordTiming) {
+                        "源歌词没有逐字时间轴，无法转换到" + targetFormat.label()
+                    } else "将转换为 " + targetFormat.label() + " 并写入标签",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 12.sp
+                )
+                TextButton(
+                    onClick = {
+                        val encoded = doc?.let { LyricsCodec.encode(it, targetFormat) }
+                        when {
+                            encoded == null -> toast("转换失败：源歌词没有逐字时间轴或解析失败")
+                            else -> write(encoded)
+                        }
+                    },
+                    enabled = (targetFormat.usesWordTiming && hasWordTiming) || !targetFormat.usesWordTiming
+                ) {
+                    Text("转换并写入")
+                }
+            }
         }
     }
 }

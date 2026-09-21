@@ -23,3 +23,4 @@ dependencyResolutionManagement {
 rootProject.name = "PureMusic"
 include(":app")
 include(":taglib")
+include(":lyric")
