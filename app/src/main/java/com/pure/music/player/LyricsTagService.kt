@@ -23,13 +23,16 @@ object LyricsTagService {
                 song.path.isBlank() -> "无法访问音频文件，请确认媒体库包含文件路径"
                 !File(song.path).exists() -> "音频文件不存在：${song.path}"
                 lyricsText.isBlank() -> "歌词内容为空"
-                else -> when (TagLibWriter.writeLyrics(song.path, lyricsText)) {
-                    is TagLibWriter.Result.Ok -> {
-                        // 文件变更会触发 MediaStore 通知，这里再主动刷一次兜底
-                        MediaLibraryRepository.get(context.applicationContext).refresh()
-                        null
+                else -> {
+                    val result = TagLibWriter.writeLyrics(song.path, lyricsText)
+                    when (result) {
+                        is TagLibWriter.Result.Ok -> {
+                            // 文件变更会触发 MediaStore 通知，这里再主动刷一次兜底
+                            MediaLibraryRepository.get(context.applicationContext).refresh()
+                            null
+                        }
+                        is TagLibWriter.Result.Fail -> "写入标签失败：${result.reason}"
                     }
-                    is TagLibWriter.Result.Fail -> "写入标签失败：${it.reason}"
                 }
             }
         }

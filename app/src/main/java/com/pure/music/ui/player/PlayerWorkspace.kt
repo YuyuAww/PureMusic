@@ -58,8 +58,8 @@ import com.pure.music.ui.library.formatDuration
 import com.pure.music.ui.utils.CoverColors
 import com.pure.music.ui.utils.loadCoverColors
 import android.widget.Toast
+import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rememberCoroutineScope
 
 private val PlayerSheetHeight = 480.dp
 
@@ -257,7 +257,7 @@ private fun CoverAndLyricsPage(song: Song, position: Long, colors: CoverColors, 
         // 迷你歌词窗
         // 取播放进度之前最近的一行；使用 lastOrNull 避免始终停留在第一行
         val timedLines = doc.original.filter { it.startMs != null }
-        val current = timedLines.lastOrNull { it.startMs <= position } ?: doc.original.firstOrNull()
+        val current = timedLines.lastOrNull { it.startMs!! <= position } ?: doc.original.firstOrNull()
         val index = current?.let { timedLines.indexOf(it) }?.coerceAtLeast(0) ?: -1
         val textOf: (LyricLine?) -> String = { it?.let { line -> line.visibleText() } ?: "" }
         MiniLyricsWindow(
@@ -491,7 +491,7 @@ private fun rememberLyricsDocument(song: Song): LyricsDocument = remember(song.i
 private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
     val doc = rememberLyricsDocument(song)
     val lines = doc.original
-    val currentIndex = lines.indexOfLast { it.startMs != null && it.startMs <= position }
+    val currentIndex = lines.indexOfLast { it.startMs?.let { ms -> ms <= position } ?: false }
     val listState = rememberLazyListState()
     LaunchedEffect(song.id, currentIndex) { if (currentIndex >= 0) listState.animateScrollToItem(currentIndex) }
     // 音译/翻译轨按行关联键对齐主行
