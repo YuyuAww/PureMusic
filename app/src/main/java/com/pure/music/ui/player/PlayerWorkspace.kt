@@ -21,7 +21,6 @@ import androidx.compose.runtime.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.withFrameNanos
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,15 +54,16 @@ import com.pure.music.lyric.model.LyricLine
 import com.pure.music.lyric.model.LyricsDocument
 import com.pure.music.lyric.model.visibleText
 import com.pure.music.player.LyricsTagService
+import com.pure.music.player.PlayerManager
 import com.pure.music.player.PlaybackState
 import com.pure.music.player.EqualizerController
 import com.pure.music.ui.components.AlbumArt
 import com.pure.music.ui.library.formatDuration
 import com.pure.music.ui.utils.CoverColors
 import com.pure.music.ui.utils.loadCoverColors
-import android.os.SystemClock
 import android.widget.Toast
 import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private val PlayerSheetHeight = 480.dp
@@ -499,38 +499,23 @@ private fun rememberLyricsDocument(song: Song): LyricsDocument = remember(song.i
 }
 
 /**
- * 帧级平滑播放位置：粗位置（PlaybackState.position）每 500ms 更新一次，
- * 帧循环在两次粗更新之间用系统时钟外推真实播放位置，使逐字进度逐帧连续；
- * 每收到新粗位置/暂停/切歌都重同步基准，外推漂移随之被纠正。
+ * 帧级平滑播放位置：播放时每 16ms 直接读取播放器真实位置（零漂移、seek 即时生效）；
+ * 暂停时钉在真实位置；暂停中 seek 由粗位置的 onPositionDiscontinuity 更新驱动重新钉位。
  */
 @Composable
 private fun rememberSmoothPosition(position: Long, isPlaying: Boolean, key: Any): Long {
-    val clock = remember(key) { SmoothPositionClock().also { it.resync(position) } }
-    LaunchedEffect(position, isPlaying) {
-        clock.resync(position)
-        if (!isPlaying) clock.value = position
+    val value = remember(key) { mutableStateOf(position) }
+    LaunchedEffect(position, isPlaying, key) {
+        if (!isPlaying) value.value = PlayerManager.currentPositionMs()
     }
     LaunchedEffect(isPlaying, key) {
         if (!isPlaying) return@LaunchedEffect
         while (true) {
-            clock.value = clock.extrapolated()
-            withFrameNanos { }
+            value.value = PlayerManager.currentPositionMs()
+            delay(16)
         }
     }
-    return clock.value
-}
-
-private class SmoothPositionClock {
-    private var basePos = 0L
-    private var baseTime = 0L
-    val value = mutableLongOf(0L)
-
-    fun resync(position: Long) {
-        basePos = position
-        baseTime = SystemClock.uptimeMillis()
-    }
-
-    fun extrapolated(): Long = basePos + (SystemClock.uptimeMillis() - baseTime)
+    return value.value
 }
 
 
@@ -623,9 +608,12 @@ private fun WordLevelLine(
                     fontSize = 21.sp,
                     fontWeight = FontWeight.Medium,
                     brush = Brush.linearGradient(
-                        colors = listOf(colors.accent, colors.accent, colors.muted, colors.muted),
-                        end = Offset(Float.POSITIVE_INFINITY, 0f),
-                        positions = floatArrayOf(0f, progress, progress, 1f)
+                        0f to colors.accent,
+                        progress to colors.accent,
+                        progress to colors.muted,
+                        1f to colors.muted,
+                        start = Offset.Zero,
+                        end = Offset(Float.POSITIVE_INFINITY, 0f)
                     )
                 )
                 sung -> TextStyle(

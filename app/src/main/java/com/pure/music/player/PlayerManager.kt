@@ -215,6 +215,9 @@ object PlayerManager {
     fun next() { controller?.seekToNextMediaItem() }
     fun previous() { controller?.seekToPreviousMediaItem() }
     fun seekTo(position: Long) { controller?.seekTo(position) }
+
+    /** 读取当前播放位置（ms）。供高频 UI（歌词逐字动画）直接消费。 */
+    fun currentPositionMs(): Long = controller?.currentPosition ?: 0L
     fun setRepeatMode(mode: Int) { controller?.repeatMode = mode }
     fun setShuffleMode(enabled: Boolean) { controller?.shuffleModeEnabled = enabled }
 
