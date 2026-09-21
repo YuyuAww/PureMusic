@@ -21,16 +21,19 @@ import androidx.compose.runtime.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.withFrameNanos
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -46,6 +49,7 @@ import androidx.media3.common.Player
 import kotlin.math.roundToInt
 import com.pure.music.data.Song
 import com.pure.music.lyric.LyricsCodec
+import com.pure.music.lyric.format.LrcTime
 import com.pure.music.lyric.model.LyricFormat
 import com.pure.music.lyric.model.LyricLine
 import com.pure.music.lyric.model.LyricsDocument
@@ -57,6 +61,7 @@ import com.pure.music.ui.components.AlbumArt
 import com.pure.music.ui.library.formatDuration
 import com.pure.music.ui.utils.CoverColors
 import com.pure.music.ui.utils.loadCoverColors
+import android.os.SystemClock
 import android.widget.Toast
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
@@ -111,8 +116,8 @@ fun PlayerWorkspace(
     val playerPages: @Composable (Int) -> Unit = { page ->
         when (page) {
             0 -> DetailPage(song, colors, onOpenLyricsOps = { showLyricsOps = true })
-            1 -> CoverAndLyricsPage(song, state.position, colors) { lyricsJumpNonce++ }
-            else -> LyricsPage(song, state.position, colors)
+            1 -> CoverAndLyricsPage(song, state.position, state.isPlaying, colors) { lyricsJumpNonce++ }
+            else -> LyricsPage(song, state.position, state.isPlaying, colors)
         }
     }
     // 底部播放控制栏（横屏时堆叠在右侧，竖屏时由 Scaffold 承载）
@@ -239,8 +244,10 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
 // 2. 中间内容组件：歌曲封面 + 迷你歌词窗
 // ---------------------------------------------------------
 @Composable
-private fun CoverAndLyricsPage(song: Song, position: Long, colors: CoverColors, onOpenLyrics: () -> Unit) {
+private fun CoverAndLyricsPage(song: Song, position: Long, isPlaying: Boolean, colors: CoverColors, onOpenLyrics: () -> Unit) {
     val doc = rememberLyricsDocument(song)
+    // 帧级平滑播放位置：与全屏歌词页同源，上一句/当前句/下一句的切换时刻完全一致
+    val smoothPos = rememberSmoothPosition(position, isPlaying, song.id)
     Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         // 歌曲封面
         Box(
@@ -254,16 +261,16 @@ private fun CoverAndLyricsPage(song: Song, position: Long, colors: CoverColors, 
             AlbumArt(song, Modifier.fillMaxSize())
         }
         Spacer(Modifier.height(35.dp))
-        // 迷你歌词窗
-        // 取播放进度之前最近的一行；使用 lastOrNull 避免始终停留在第一行
+        // 迷你歌词窗：取播放进度之前最近的一行；使用 lastOrNull 避免始终停留在第一行
         val timedLines = doc.original.filter { it.startMs != null }
-        val current = timedLines.lastOrNull { it.startMs!! <= position } ?: doc.original.firstOrNull()
+        val current = timedLines.lastOrNull { it.startMs!! <= smoothPos } ?: doc.original.firstOrNull()
         val index = current?.let { timedLines.indexOf(it) }?.coerceAtLeast(0) ?: -1
         val textOf: (LyricLine?) -> String = { it?.let { line -> line.visibleText() } ?: "" }
         MiniLyricsWindow(
             textOf(timedLines.getOrNull(index - 1)),
-            textOf(current),
+            current,
             textOf(timedLines.getOrNull(index + 1)),
+            smoothPos,
             colors,
             onOpenLyrics
         )
@@ -271,10 +278,15 @@ private fun CoverAndLyricsPage(song: Song, position: Long, colors: CoverColors, 
 }
 
 @Composable
-private fun MiniLyricsWindow(previous: String, current: String, next: String, colors: CoverColors, onCurrentClick: () -> Unit) {
+private fun MiniLyricsWindow(previous: String, current: LyricLine?, next: String, smoothPos: Long, colors: CoverColors, onCurrentClick: () -> Unit) {
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
         Text(previous, color = colors.muted.copy(alpha = 0.55f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 7.dp))
-        Text(current, color = colors.accent, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() }.padding(vertical = 9.dp))
+        if (current != null && current.words.isNotEmpty()) {
+            // 有逐字时间轴：与全屏歌词页同款动画（accent 从左往右填充 + 抬升）
+            WordLevelLine(current, true, smoothPos, colors, Modifier.fillMaxWidth().clickable { onCurrentClick() }.padding(vertical = 9.dp))
+        } else {
+            Text(current?.visibleText().orEmpty(), color = colors.accent, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() }.padding(vertical = 9.dp))
+        }
         Text(next, color = colors.muted.copy(alpha = 0.75f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 7.dp))
     }
 }
@@ -486,12 +498,49 @@ private fun rememberLyricsDocument(song: Song): LyricsDocument = remember(song.i
     LyricsCodec.parse(song.lyrics) ?: LyricsDocument(original = listOf(LyricLine(text = "暂无内嵌歌词")))
 }
 
+/**
+ * 帧级平滑播放位置：粗位置（PlaybackState.position）每 500ms 更新一次，
+ * 帧循环在两次粗更新之间用系统时钟外推真实播放位置，使逐字进度逐帧连续；
+ * 每收到新粗位置/暂停/切歌都重同步基准，外推漂移随之被纠正。
+ */
+@Composable
+private fun rememberSmoothPosition(position: Long, isPlaying: Boolean, key: Any): Long {
+    val clock = remember(key) { SmoothPositionClock().also { it.resync(position) } }
+    LaunchedEffect(position, isPlaying) {
+        clock.resync(position)
+        if (!isPlaying) clock.value = position
+    }
+    LaunchedEffect(isPlaying, key) {
+        if (!isPlaying) return@LaunchedEffect
+        while (true) {
+            clock.value = clock.extrapolated()
+            withFrameNanos { }
+        }
+    }
+    return clock.value
+}
+
+private class SmoothPositionClock {
+    private var basePos = 0L
+    private var baseTime = 0L
+    val value = mutableLongOf(0L)
+
+    fun resync(position: Long) {
+        basePos = position
+        baseTime = SystemClock.uptimeMillis()
+    }
+
+    fun extrapolated(): Long = basePos + (SystemClock.uptimeMillis() - baseTime)
+}
+
 
 @Composable
-private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
+private fun LyricsPage(song: Song, position: Long, isPlaying: Boolean, colors: CoverColors) {
     val doc = rememberLyricsDocument(song)
     val lines = doc.original
-    val currentIndex = lines.indexOfLast { it.startMs?.let { ms -> ms <= position } ?: false }
+    // 帧级平滑播放位置：粗位置每 500ms 才更新一次，逐字进度需要逐帧连续
+    val smoothPos = rememberSmoothPosition(position, isPlaying, song.id)
+    val currentIndex = lines.indexOfLast { it.startMs?.let { ms -> ms <= smoothPos } ?: false }
     val listState = rememberLazyListState()
     LaunchedEffect(song.id, currentIndex) { if (currentIndex >= 0) listState.animateScrollToItem(currentIndex) }
     // 音译/翻译轨按行关联键对齐主行
@@ -511,45 +560,7 @@ private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(vertical = 14.dp)
-                ) else Row(
-                    modifier = Modifier.padding(vertical = 14.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    line.words.forEachIndexed { wordIndex, word ->
-                        // 逐字匹配：词区间 [word.startMs, word.endMs ?: 下一词起点)。
-                        // LRC 系格式词无 end 时退回"下一词起点"；末词无终点则一直保持 active（与原行为一致）
-                        val wordStart = word.startMs ?: line.startMs ?: 0L
-                        val nextStart = line.words.getOrNull(wordIndex + 1)?.startMs
-                        val wordEnd = word.endMs ?: nextStart
-                        val active = isCurrent && position >= wordStart && (wordEnd == null || position < wordEnd)
-                        val sung = isCurrent && wordEnd != null && position >= wordEnd
-                        // HyperLyric 风格：字词从基线下方浮起，当前字随播放进度
-                        // 继续上移，完成后回落少许，避免整行永久悬空。
-                        val progress = if (active && wordEnd != null && wordEnd > wordStart) {
-                            ((position - wordStart).toFloat() / (wordEnd - wordStart).coerceAtLeast(1L)).coerceIn(0f, 1f)
-                        } else 0f
-                        val targetLift = when {
-                            active -> -8f - progress * 5f
-                            sung -> -3f
-                            else -> 4f
-                        }
-                        val targetAlpha = when {
-                            active -> 1f
-                            sung -> .86f
-                            else -> .48f
-                        }
-                        val animation = tween<Float>(180, easing = FastOutSlowInEasing)
-                        val lift by animateFloatAsState(targetLift, animation, label = "word-lift")
-                        val alpha by animateFloatAsState(targetAlpha, animation, label = "word-alpha")
-                        Text(
-                            word.text,
-                            color = when { active || sung -> colors.accent; else -> colors.muted },
-                            fontSize = 21.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.graphicsLayer { translationY = lift; this.alpha = alpha }
-                        )
-                    }
-                }
+                ) else WordLevelLine(line, isCurrent, smoothPos, colors, Modifier.padding(vertical = 14.dp))
                 translation?.let { Text(it, color = colors.muted.copy(alpha = .6f), fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 12.dp)) }
             }
         }
@@ -557,6 +568,82 @@ private fun LyricsPage(song: Song, position: Long, colors: CoverColors) {
             Text("词", color = colors.accent, modifier = Modifier.clip(RoundedCornerShape(5.dp)).background(colors.surface.copy(alpha = .7f)).padding(horizontal = 7.dp, vertical = 4.dp))
             Spacer(Modifier.width(10.dp))
             Text(doc.format?.label() ?: "纯文本", color = colors.muted, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        }
+    }
+}
+
+/**
+ * 逐字歌词行（全屏歌词页与迷你歌词窗共用）：进行中的词由 accent 从左往右
+ * 随词内进度填充（硬边扫过）；已唱词全词填充并保持抬升不回落；
+ * 未唱词基线下方、底色。超宽时 FlowRow 自动换行、逐行居中，不挤压末尾。
+ */
+@Composable
+private fun WordLevelLine(
+    line: LyricLine,
+    isCurrent: Boolean,
+    smoothPos: Long,
+    colors: CoverColors,
+    modifier: Modifier = Modifier
+) {
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        line.words.forEachIndexed { wordIndex, word ->
+            // 逐字匹配：词区间 [wordStart, wordEnd)。LRC 系格式词无 end 时退回"下一词起点"；
+            // 末词用 LrcTime 缺省 +500ms 时长收口，不再永久 active（TTML 词起点缺失时同样兜底）
+            val wordStart = word.startMs ?: line.startMs ?: 0L
+            val nextStart = line.words.getOrNull(wordIndex + 1)?.startMs
+            val wordEnd = LrcTime.wordEndMs(word, nextStart) ?: wordStart + LrcTime.DEFAULT_WORD_DURATION_MS
+            val active = isCurrent && smoothPos in wordStart until wordEnd
+            val sung = smoothPos >= wordEnd
+            // 唱完后字词保持在抬升位不再回落；历史行已唱词以更低透明度
+            // 与当前行区分层次，整行不回到基线下方
+            val progress = if (active) {
+                ((smoothPos - wordStart).toFloat() / (wordEnd - wordStart).coerceAtLeast(1L)).coerceIn(0f, 1f)
+            } else 0f
+            val targetLift = when {
+                active -> -8f - progress * 5f
+                sung -> -8f
+                else -> 4f
+            }
+            val targetAlpha = when {
+                active -> 1f
+                sung -> if (isCurrent) .86f else .5f
+                else -> .48f
+            }
+            val animation = tween<Float>(180, easing = FastOutSlowInEasing)
+            val lift by animateFloatAsState(targetLift, animation, label = "word-lift")
+            val alpha by animateFloatAsState(targetAlpha, animation, label = "word-alpha")
+            // 高光填充：进行中的词由 accent 从左往右随词内进度扫过（硬边），
+            // 未扫到的部分保持底色；已唱词全词填充，未唱词底色
+            val wordStyle = when {
+                active -> TextStyle(
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Medium,
+                    brush = Brush.linearGradient(
+                        colors = listOf(colors.accent, colors.accent, colors.muted, colors.muted),
+                        end = Offset(Float.POSITIVE_INFINITY, 0f),
+                        positions = floatArrayOf(0f, progress, progress, 1f)
+                    )
+                )
+                sung -> TextStyle(
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = colors.accent
+                )
+                else -> TextStyle(
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = colors.muted
+                )
+            }
+            Text(
+                word.text,
+                style = wordStyle,
+                modifier = Modifier.graphicsLayer { translationY = lift; this.alpha = alpha }
+            )
         }
     }
 }
