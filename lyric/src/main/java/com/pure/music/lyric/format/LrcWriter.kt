@@ -28,7 +28,7 @@ internal fun writeLrc(document: LyricsDocument, target: LyricFormat): String {
     val translationBy = document.translation.filter { it.linkKey != null }.groupBy { it.linkKey!! }
 
     lines.filter { it.startMs != null }
-        .groupBy { it.startMs }
+        .groupBy { it.startMs!! }
         .toSortedMap()
         .forEach { (start, group) ->
             group.forEach { line -> appendOriginalLine(builder, line, target, isWordLevel) }

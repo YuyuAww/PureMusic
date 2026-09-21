@@ -103,7 +103,7 @@ object LyricsCodec {
         }
 
         document.original.filter { it.startMs != null }
-            .groupBy { it.startMs }
+            .groupBy { it.startMs!! }
             .toSortedMap()
             .forEach { (start, group) ->
                 val key = group.firstOrNull { !it.linkKey.isNullOrBlank() }?.linkKey ?: start.toString()

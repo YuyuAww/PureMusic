@@ -89,7 +89,7 @@ private fun splitLrcTracks(
     val translation = mutableListOf<LyricLine>()
 
     lines.filter { it.startMs != null }
-        .groupBy { it.startMs }
+        .groupBy { it.startMs!! }
         .toSortedMap()
         .forEach { (_, group) ->
             val timedPrimary = group.first { it.startMs != null }

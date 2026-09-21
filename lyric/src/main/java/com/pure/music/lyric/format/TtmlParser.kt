@@ -6,6 +6,7 @@ import com.pure.music.lyric.model.LyricsDocument
 import com.pure.music.lyric.model.LyricsMetadata
 import org.w3c.dom.Element
 import org.w3c.dom.Node
+import org.w3c.dom.NodeList
 import java.io.StringReader
 import javax.xml.parsers.DocumentBuilderFactory
 import org.xml.sax.InputSource
@@ -144,12 +145,12 @@ private fun parseP(p: Element, isCommentTrack: Boolean): ParsedP {
                         }
                     }
 
-                    else -> el.childNodes.forEach { visit(it) }
+                    else -> el.childNodes.forEachNode { visit(it) }
                 }
             }
         }
     }
-    p.childNodes.forEach { visit(it) }
+    p.childNodes.forEachNode { visit(it) }
     return ParsedP(start, end, parts, words, inlineRoma?.toString(), inlineTrans?.toString())
 }
 
@@ -176,6 +177,11 @@ private fun DocumentBuilderFactory.setFeatureSafe(uri: String, value: Boolean) {
     runCatching { setFeature(uri, value) }
 }
 
+/** NodeList 不实现 Iterable，按索引遍历子节点 */
+private fun NodeList.forEachNode(action: (Node) -> Unit) {
+    for (i in 0 until length) action(item(i) ?: return)
+}
+
 /** 按 localName 递归收集元素（文档序） */
 private fun Element.allElementsWithLocalName(local: String): List<Element> {
     val result = mutableListOf<Element>()
@@ -183,10 +189,10 @@ private fun Element.allElementsWithLocalName(local: String): List<Element> {
         if (node.nodeType == Node.ELEMENT_NODE) {
             val el = node as Element
             if (el.localName == local) result.add(el)
-            el.childNodes.forEach { visit(it) }
+            el.childNodes.forEachNode { visit(it) }
         }
     }
-    childNodes.forEach { visit(it) }
+    childNodes.forEachNode { visit(it) }
     return result
 }
 
