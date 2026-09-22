@@ -28,7 +28,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -37,6 +42,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -216,7 +222,7 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
             .fillMaxWidth()
             .background(colors.background) // 与页面主体保持同一背景，避免顶部割裂
             .statusBarsPadding() // 内容避开状态栏
-            .padding(start = 20.dp, end = 20.dp, top = 15.dp, bottom = 5.dp),
+            .padding(start = 25.dp, end = 25.dp, top = 5.dp, bottom = 10.dp),
         verticalAlignment = Alignment.Top
     ) {
         Column(Modifier.weight(1f)) {
@@ -249,14 +255,14 @@ private fun CoverAndLyricsPage(song: Song, position: Long, isPlaying: Boolean, c
     val doc = rememberLyricsDocument(song)
     // 帧级平滑播放位置：与全屏歌词页同源，上一句/当前句/下一句的切换时刻完全一致
     val smoothPos = rememberSmoothPosition(position, isPlaying, song.id)
-    Column(Modifier.fillMaxSize().padding(horizontal = 15.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         // 歌曲封面
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(360.dp)
+                .height(350.dp)
                 .shadow(15.dp, RoundedCornerShape(15.dp))
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(15.dp))
                 .background(Brush.verticalGradient(listOf(colors.gradientStart.copy(alpha = .18f), colors.surface))) // 封面渐变色衬底
         ) {
             AlbumArt(song, Modifier.fillMaxSize())
@@ -281,20 +287,112 @@ private fun CoverAndLyricsPage(song: Song, position: Long, isPlaying: Boolean, c
 @Composable
 private fun MiniLyricsWindow(previous: String, current: LyricLine?, next: String, smoothPos: Long, colors: CoverColors, onCurrentClick: () -> Unit) {
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-        Text(previous, color = colors.muted.copy(alpha = 0.55f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 7.dp))
+        Text(previous, color = colors.muted.copy(alpha = 0.55f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 4.dp))
         if (current != null && current.words.isNotEmpty()) {
             // 有逐字时间轴：与全屏歌词页同款动画（accent 从左往右填充 + 抬升）
-            WordLevelLine(current, true, smoothPos, colors, Modifier.fillMaxWidth().clickable { onCurrentClick() }.padding(vertical = 9.dp))
+            WordLevelLine(current, true, smoothPos, colors, Modifier.fillMaxWidth().clickable { onCurrentClick() }.padding(vertical = 6.dp), fontSize = 14.sp, alignCenter = false)
         } else {
-            Text(current?.visibleText().orEmpty(), color = colors.accent, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() }.padding(vertical = 9.dp))
+            Text(current?.visibleText().orEmpty(), color = colors.accent, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() }.padding(vertical = 6.dp))
         }
-        Text(next, color = colors.muted.copy(alpha = 0.75f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 7.dp))
+        Text(next, color = colors.muted.copy(alpha = 0.75f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 4.dp))
     }
 }
 
 // ---------------------------------------------------------
 // 3. BottomBar 组件 (包含进度条、时间、播放键、工具栏)
 // ---------------------------------------------------------
+/** 极简细线进度条 + 彗星滑块（accent 细线轨道、流光拖尾、发光滑头），点击/拖动均可拖动进度 */
+@Composable
+private fun CometSeekBar(
+    value: Float,          // 当前进度 ms
+    duration: Long,
+    accent: Color,
+    onScrub: (Float) -> Unit,
+    onCommit: (Float) -> Unit,
+    onScrubbingChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var lastMs by remember { mutableFloatStateOf(value) }
+    val trackH = 3.dp.toPx()
+    val tailLen = 64.dp.toPx()
+    val tailH = 5.dp.toPx()
+    val glowR = 18.dp.toPx()
+    val headR = 7.dp.toPx()
+
+    fun msFromX(x: Float, width: Int): Float =
+        ((if (width > 0) x / width.toFloat() else 0f).coerceIn(0f, 1f) * duration)
+
+    Box(
+        modifier
+            .fillMaxWidth()
+            .height(36.dp)
+            .pointerInput(value) {
+                detectTapGestures(
+                    onTap = { offset ->
+                        val ms = msFromX(offset.x, size.width)
+                        lastMs = ms
+                        onScrub(ms)
+                        onCommit(ms)
+                    }
+                )
+            }
+            .pointerInput(duration) {
+                detectHorizontalDragGestures(
+                    onDragStart = { offset ->
+                        onScrubbingChanged(true)
+                        lastMs = msFromX(offset.x, size.width)
+                        onScrub(lastMs)
+                    },
+                    onHorizontalDrag = { change, _ ->
+                        lastMs = msFromX(change.position.x, size.width)
+                        onScrub(lastMs)
+                    },
+                    onDragEnd = {
+                        onScrubbingChanged(false)
+                        onCommit(lastMs)
+                    },
+                    onDragCancel = {
+                        onScrubbingChanged(false)
+                        onCommit(lastMs)
+                    }
+                )
+            }
+            .drawBehind {
+                val w = size.width.toFloat()
+                val cy = size.height / 2f
+                val frac = (value / duration.coerceAtLeast(1)).coerceIn(0f, 1f)
+                val x = (frac * w).coerceAtLeast(0f).coerceAtMost(w)
+                // 极简细线轨道
+                drawLine(accent.copy(alpha = 0.16f), Offset(0f, cy), Offset(w, cy), trackH, StrokeCap.Round)
+                // 已播放部分（实线）
+                drawLine(accent, Offset(0f, cy), Offset(x, cy), trackH, StrokeCap.Round)
+                // 流光拖尾：自滑块向左逐渐消散
+                val tailStart = (x - tailLen).coerceAtLeast(0f)
+                if (x > 0f) {
+                    drawLine(
+                        Brush.linearGradient(
+                            listOf(Color.Transparent, accent.copy(alpha = 0.5f)),
+                            Offset(tailStart, cy),
+                            Offset(x, cy)
+                        ),
+                        Offset(tailStart, cy),
+                        Offset(x, cy),
+                        tailH,
+                        StrokeCap.Round
+                    )
+                }
+                // 彗星光晕
+                drawCircle(
+                    Brush.radialGradient(listOf(Color.Transparent, accent.copy(alpha = 0.35f))),
+                    radius = glowR,
+                    center = Offset(x, cy)
+                )
+                // 彗星滑头
+                drawCircle(accent, radius = headR, center = Offset(x, cy))
+            }
+    )
+}
+
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun PlayerBottomBar(
@@ -315,24 +413,17 @@ private fun PlayerBottomBar(
     var equalizerEnabled by remember { mutableStateOf(EqualizerController.isEnabled) }
     var bandLevels by remember { mutableStateOf(EqualizerController.bandLevels) }
     var sleepSelection by remember { mutableFloatStateOf(5f) }
-    val sliderColors = SliderDefaults.colors(
-        thumbColor = colors.accent,
-        activeTrackColor = colors.accent,
-        inactiveTrackColor = colors.accent.copy(alpha = .22f)
-    )
+    var isScrubbing by remember { mutableStateOf(false) }
     val seekSliderState = remember(state.currentSong?.id, state.duration) {
         SliderState(
             value = state.position.toFloat(),
             valueRange = 0f..state.duration.coerceAtLeast(1).toFloat()
         )
     }
-    LaunchedEffect(state.position, seekSliderState.isDragging) {
-        if (!seekSliderState.isDragging) {
+    LaunchedEffect(state.position, isScrubbing) {
+        if (!isScrubbing) {
             seekSliderState.value = state.position.toFloat()
         }
-    }
-    LaunchedEffect(seekSliderState) {
-        seekSliderState.onValueChangeFinished = { onSeek(seekSliderState.value.toLong()) }
     }
 
     Column(
@@ -340,20 +431,24 @@ private fun PlayerBottomBar(
             .fillMaxWidth()
             .background(colors.background) // 底部背景：与 TopBar 保持一致
             .navigationBarsPadding() // 内容避开底部导航栏
-            .padding(start = 20.dp, end = 20.dp, top = 5.dp, bottom = 15.dp)
+            .padding(start = 25.dp, end = 25.dp, top = 5.dp, bottom = 15.dp)
     ) {
-        Slider(
-            state = seekSliderState,
-            colors = sliderColors
+        CometSeekBar(
+            value = seekSliderState.value,
+            duration = state.duration,
+            accent = colors.accent,
+            onScrub = { seekSliderState.value = it },
+            onCommit = { seekSliderState.value = it; onSeek(it.toLong()) },
+            onScrubbingChanged = { isScrubbing = it }
         )
 
         // 时间
         Row(
-            Modifier.fillMaxWidth().padding(top = 8.dp),
+            Modifier.fillMaxWidth().padding(top = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(formatDuration(seekSliderState.value.toLong()), color = colors.accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
-            Text(formatDuration(state.duration), color = colors.accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
+            Text(formatDuration(seekSliderState.value.toLong()), color = colors.accent, fontWeight = FontWeight.Black, fontSize = 14.sp)
+            Text(formatDuration(state.duration), color = colors.accent, fontWeight = FontWeight.Black, fontSize = 14.sp)
         }
 
         Spacer(Modifier.height(15.dp))
@@ -604,11 +699,13 @@ private fun WordLevelLine(
     isCurrent: Boolean,
     smoothPos: Long,
     colors: CoverColors,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit = 21.sp,
+    alignCenter: Boolean = true
 ) {
     FlowRow(
         modifier = modifier,
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = if (alignCenter) Arrangement.Center else Arrangement.Start,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         line.words.forEachIndexed { wordIndex, word ->
@@ -641,7 +738,7 @@ private fun WordLevelLine(
             // 未扫到的部分保持底色；已唱词全词填充，未唱词底色
             val wordStyle = when {
                 active -> TextStyle(
-                    fontSize = 21.sp,
+                    fontSize = fontSize,
                     fontWeight = FontWeight.Medium,
                     brush = Brush.linearGradient(
                         0f to colors.accent,
@@ -653,12 +750,12 @@ private fun WordLevelLine(
                     )
                 )
                 sung -> TextStyle(
-                    fontSize = 21.sp,
+                    fontSize = fontSize,
                     fontWeight = FontWeight.Medium,
                     color = colors.accent
                 )
                 else -> TextStyle(
-                    fontSize = 21.sp,
+                    fontSize = fontSize,
                     fontWeight = FontWeight.Medium,
                     color = colors.muted
                 )
