@@ -33,7 +33,6 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -301,7 +300,7 @@ private fun MiniLyricsWindow(previous: String, current: LyricLine?, next: String
 // ---------------------------------------------------------
 // 3. BottomBar 组件 (包含进度条、时间、播放键、工具栏)
 // ---------------------------------------------------------
-/** 极简细线进度条 + 彗星滑块（accent 细线轨道、流光拖尾、发光滑头），点击/拖动均可拖动进度 */
+/** 极简细线进度条 + 普通圆形滑块（accent 细线轨道），点击/拖动均可拖动进度 */
 @Composable
 private fun CometSeekBar(
     value: Float,          // 当前进度 ms
@@ -314,10 +313,7 @@ private fun CometSeekBar(
 ) {
     var lastMs by remember { mutableFloatStateOf(value) }
     val trackH = 3.dp.toPx()
-    val tailLen = 64.dp.toPx()
-    val tailH = 5.dp.toPx()
-    val glowR = 18.dp.toPx()
-    val headR = 7.dp.toPx()
+    val thumbR = 10.dp.toPx()
 
     fun msFromX(x: Float, width: Int): Float =
         ((if (width > 0) x / width.toFloat() else 0f).coerceIn(0f, 1f) * duration)
@@ -366,29 +362,8 @@ private fun CometSeekBar(
                 drawLine(accent.copy(alpha = 0.16f), Offset(0f, cy), Offset(w, cy), trackH, StrokeCap.Round)
                 // 已播放部分（实线）
                 drawLine(accent, Offset(0f, cy), Offset(x, cy), trackH, StrokeCap.Round)
-                // 流光拖尾：自滑块向左逐渐消散
-                val tailStart = (x - tailLen).coerceAtLeast(0f)
-                if (x > 0f) {
-                    drawLine(
-                        Brush.linearGradient(
-                            listOf(Color.Transparent, accent.copy(alpha = 0.5f)),
-                            Offset(tailStart, cy),
-                            Offset(x, cy)
-                        ),
-                        Offset(tailStart, cy),
-                        Offset(x, cy),
-                        tailH,
-                        StrokeCap.Round
-                    )
-                }
-                // 彗星光晕
-                drawCircle(
-                    Brush.radialGradient(listOf(Color.Transparent, accent.copy(alpha = 0.35f))),
-                    radius = glowR,
-                    center = Offset(x, cy)
-                )
-                // 彗星滑头
-                drawCircle(accent, radius = headR, center = Offset(x, cy))
+                // 普通圆形滑块
+                drawCircle(accent, radius = thumbR, center = Offset(x, cy))
             }
     )
 }
