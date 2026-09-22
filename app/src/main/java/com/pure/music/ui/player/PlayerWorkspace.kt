@@ -153,7 +153,7 @@ fun PlayerWorkspace(
                 // 右侧复用竖屏的 TopBar 和 BottomBar：TopBar 贴顶、BottomBar 贴底
                 Column(
                     Modifier
-                        .width(300.dp)
+                        .weight(1f)
                         .fillMaxHeight()
                         .background(colors.background)
                 ) {
@@ -216,7 +216,7 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
             .fillMaxWidth()
             .background(colors.background) // 与页面主体保持同一背景，避免顶部割裂
             .statusBarsPadding() // 内容避开状态栏
-            .padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 15.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 15.dp, bottom = 5.dp),
         verticalAlignment = Alignment.Top
     ) {
         Column(Modifier.weight(1f)) {
@@ -249,19 +249,19 @@ private fun CoverAndLyricsPage(song: Song, position: Long, isPlaying: Boolean, c
     val doc = rememberLyricsDocument(song)
     // 帧级平滑播放位置：与全屏歌词页同源，上一句/当前句/下一句的切换时刻完全一致
     val smoothPos = rememberSmoothPosition(position, isPlaying, song.id)
-    Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.fillMaxSize().padding(horizontal = 15.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         // 歌曲封面
         Box(
             Modifier
                 .fillMaxWidth()
                 .height(360.dp)
-                .shadow(10.dp, RoundedCornerShape(15.dp))
+                .shadow(15.dp, RoundedCornerShape(15.dp))
                 .clip(RoundedCornerShape(16.dp))
                 .background(Brush.verticalGradient(listOf(colors.gradientStart.copy(alpha = .18f), colors.surface))) // 封面渐变色衬底
         ) {
             AlbumArt(song, Modifier.fillMaxSize())
         }
-        Spacer(Modifier.height(35.dp))
+        Spacer(Modifier.height(15.dp))
         // 迷你歌词窗：取播放进度之前最近的一行；使用 lastOrNull 避免始终停留在第一行
         val timedLines = doc.original.filter { it.startMs != null }
         val current = timedLines.lastOrNull { it.startMs!! <= smoothPos } ?: doc.original.firstOrNull()
@@ -286,7 +286,7 @@ private fun MiniLyricsWindow(previous: String, current: LyricLine?, next: String
             // 有逐字时间轴：与全屏歌词页同款动画（accent 从左往右填充 + 抬升）
             WordLevelLine(current, true, smoothPos, colors, Modifier.fillMaxWidth().clickable { onCurrentClick() }.padding(vertical = 9.dp))
         } else {
-            Text(current?.visibleText().orEmpty(), color = colors.accent, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() }.padding(vertical = 9.dp))
+            Text(current?.visibleText().orEmpty(), color = colors.accent, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() }.padding(vertical = 9.dp))
         }
         Text(next, color = colors.muted.copy(alpha = 0.75f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 7.dp))
     }
@@ -340,7 +340,7 @@ private fun PlayerBottomBar(
             .fillMaxWidth()
             .background(colors.background) // 底部背景：与 TopBar 保持一致
             .navigationBarsPadding() // 内容避开底部导航栏
-            .padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 20.dp)
+            .padding(start = 20.dp, end = 20.dp, top = 5.dp, bottom = 15.dp)
     ) {
         Slider(
             state = seekSliderState,
@@ -356,7 +356,7 @@ private fun PlayerBottomBar(
             Text(formatDuration(state.duration), color = colors.accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
         }
 
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(15.dp))
 
         // 播放控制区
         Row(
@@ -364,24 +364,24 @@ private fun PlayerBottomBar(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onPrevious, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Default.SkipPrevious, "上一首", tint = colors.accent, modifier = Modifier.size(32.dp))
+            IconButton(onClick = onPrevious, modifier = Modifier.size(35.dp)) {
+                Icon(Icons.Default.SkipPrevious, "上一首", tint = colors.accent, modifier = Modifier.size(35.dp))
             }
             Spacer(Modifier.width(70.dp))
-            IconButton(onClick = onTogglePlayPause, modifier = Modifier.size(42.dp)) {
-                Icon(if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, "播放", tint = colors.accent, modifier = Modifier.size(42.dp))
+            IconButton(onClick = onTogglePlayPause, modifier = Modifier.size(45.dp)) {
+                Icon(if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, "播放", tint = colors.accent, modifier = Modifier.size(45.dp))
             }
             Spacer(Modifier.width(70.dp))
-            IconButton(onClick = onNext, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Default.SkipNext, "下一首", tint = colors.accent, modifier = Modifier.size(32.dp))
+            IconButton(onClick = onNext, modifier = Modifier.size(35.dp)) {
+                Icon(Icons.Default.SkipNext, "下一首", tint = colors.accent, modifier = Modifier.size(35.dp))
             }
         }
 
-        Spacer(Modifier.height(44.dp))
+        Spacer(Modifier.height(45.dp))
 
         // 底部工具栏
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 13.dp),
+            Modifier.fillMaxWidth().padding(horizontal = 15.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -394,12 +394,12 @@ private fun PlayerBottomBar(
                     PlaybackMode.SINGLE_LOOP -> { onRepeatMode(Player.REPEAT_MODE_OFF); onShuffleMode(true) }
                 }
             }) {
-                Icon(mode.icon, mode.label, tint = colors.accent, modifier = Modifier.size(24.dp))
+                Icon(mode.icon, mode.label, tint = colors.accent, modifier = Modifier.size(25.dp))
             }
-            IconButton(onClick = { sleepSelection = state.sleepMinutes.takeIf { it > 0 }?.toFloat() ?: 5f; showSleepTimer = true }) { Icon(Icons.Default.Alarm, "睡眠定时", tint = if (state.sleepMinutes > 0) MaterialTheme.colorScheme.primary else colors.accent, modifier = Modifier.size(24.dp)) }
-            IconButton(onClick = { showEqualizer = true }) { Icon(Icons.Default.GraphicEq, "均衡器", tint = colors.accent, modifier = Modifier.size(24.dp)) }
-            IconButton(onClick = onQueueClick) { Icon(Icons.AutoMirrored.Filled.QueueMusic, "播放列表", tint = colors.accent, modifier = Modifier.size(24.dp)) }
-            IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = colors.accent, modifier = Modifier.size(24.dp)) }
+            IconButton(onClick = { sleepSelection = state.sleepMinutes.takeIf { it > 0 }?.toFloat() ?: 5f; showSleepTimer = true }) { Icon(Icons.Default.Alarm, "睡眠定时", tint = if (state.sleepMinutes > 0) MaterialTheme.colorScheme.primary else colors.accent, modifier = Modifier.size(25.dp)) }
+            IconButton(onClick = { showEqualizer = true }) { Icon(Icons.Default.GraphicEq, "均衡器", tint = colors.accent, modifier = Modifier.size(25.dp)) }
+            IconButton(onClick = onQueueClick) { Icon(Icons.AutoMirrored.Filled.QueueMusic, "播放列表", tint = colors.accent, modifier = Modifier.size(25.dp)) }
+            IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = colors.accent, modifier = Modifier.size(25.dp)) }
         }
     }
     if (showSleepTimer) {
