@@ -45,6 +45,7 @@ import androidx.compose.material3.Text
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.media3.common.Player
+import kotlin.math.abs
 import kotlin.math.roundToInt
 import com.pure.music.data.Song
 import com.pure.music.lyric.LyricsCodec
@@ -117,7 +118,7 @@ fun PlayerWorkspace(
         when (page) {
             0 -> DetailPage(song, colors, onOpenLyricsOps = { showLyricsOps = true })
             1 -> CoverAndLyricsPage(song, state.position, state.isPlaying, colors) { lyricsJumpNonce++ }
-            else -> LyricsPage(song, state.position, state.isPlaying, colors)
+            else -> LyricsPage(song, state.position, state.isPlaying, colors, onSeek = onSeek)
         }
     }
     // 底部播放控制栏（横屏时堆叠在右侧，竖屏时由 Scaffold 承载）
@@ -519,15 +520,41 @@ private fun rememberSmoothPosition(position: Long, isPlaying: Boolean, key: Any)
 }
 
 
+/** 歌词列表滚动来源：区分用户浏览与播放自动跟随，只有用户滚动停下才触发跳转 */
+private enum class ScrollSource { Idle, User, Programmatic }
+
 @Composable
-private fun LyricsPage(song: Song, position: Long, isPlaying: Boolean, colors: CoverColors) {
+private fun LyricsPage(song: Song, position: Long, isPlaying: Boolean, colors: CoverColors, onSeek: (Long) -> Unit) {
     val doc = rememberLyricsDocument(song)
     val lines = doc.original
     // 帧级平滑播放位置：粗位置每 500ms 才更新一次，逐字进度需要逐帧连续
     val smoothPos = rememberSmoothPosition(position, isPlaying, song.id)
     val currentIndex = lines.indexOfLast { it.startMs?.let { ms -> ms <= smoothPos } ?: false }
     val listState = rememberLazyListState()
-    LaunchedEffect(song.id, currentIndex) { if (currentIndex >= 0) listState.animateScrollToItem(currentIndex) }
+    // 滚动来源状态机：用户 fling/拖拽停下时，seek 到列表垂直中心处的歌词行；
+    // 当前行自动跟随的滚动不触发 seek，且用户浏览期间挂起自动跟随，避免播放把列表拽回
+    val scrollSource = remember { mutableStateOf(ScrollSource.Idle) }
+    val isScrolling = derivedStateOf { listState.isScrollInProgress }.value
+    fun seekToCenteredLine() {
+        val info = listState.layoutInfo
+        val centerY = (info.viewportStartOffset + info.viewportEndOffset) / 2
+        val centered = info.visibleItemsInfo.minByOrNull { abs(it.offset + it.size / 2 - centerY) } ?: return
+        // 与当前行相同则不重复跳转（避免误触重启）；无时轴行不可跳
+        if (centered.index != currentIndex) lines[centered.index].startMs?.let { onSeek(it) }
+    }
+    LaunchedEffect(song.id, currentIndex) {
+        if (currentIndex >= 0 && scrollSource.value != ScrollSource.User) {
+            scrollSource.value = ScrollSource.Programmatic
+            listState.animateScrollToItem(currentIndex)
+        }
+    }
+    LaunchedEffect(isScrolling) {
+        when {
+            isScrolling -> if (scrollSource.value == ScrollSource.Idle) scrollSource.value = ScrollSource.User
+            scrollSource.value == ScrollSource.User -> seekToCenteredLine()
+        }
+        if (!isScrolling) scrollSource.value = ScrollSource.Idle
+    }
     // 音译/翻译轨按行关联键对齐主行
     val romanByKey = remember(doc) { doc.romanization.filter { it.linkKey != null }.groupBy { it.linkKey!! } }
     val transByKey = remember(doc) { doc.translation.filter { it.linkKey != null }.groupBy { it.linkKey!! } }
@@ -538,14 +565,23 @@ private fun LyricsPage(song: Song, position: Long, isPlaying: Boolean, colors: C
                 val translation = transByKey[line.linkKey]?.firstOrNull()?.text
                 roman?.let { Text(it, color = colors.muted.copy(alpha = .5f), fontSize = 15.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 2.dp)) }
                 val isCurrent = index == currentIndex
+                val seekToLine: () -> Unit = { line.startMs?.let(onSeek) }
                 if (line.words.isEmpty()) Text(
                     line.visibleText(),
                     color = if (isCurrent) colors.accent else colors.muted.copy(alpha = .45f),
                     fontSize = 23.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(vertical = 14.dp)
-                ) else WordLevelLine(line, isCurrent, smoothPos, colors, Modifier.padding(vertical = 14.dp))
+                    modifier = Modifier
+                        .padding(vertical = 14.dp)
+                        .clickable(enabled = line.startMs != null) { seekToLine() }
+                ) else WordLevelLine(
+                    line,
+                    isCurrent,
+                    smoothPos,
+                    colors,
+                    Modifier.padding(vertical = 14.dp).clickable(enabled = line.startMs != null) { seekToLine() }
+                )
                 translation?.let { Text(it, color = colors.muted.copy(alpha = .6f), fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 12.dp)) }
             }
         }
