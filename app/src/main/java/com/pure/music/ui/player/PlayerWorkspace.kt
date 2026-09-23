@@ -28,11 +28,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -300,74 +296,6 @@ private fun MiniLyricsWindow(previous: String, current: LyricLine?, next: String
 // ---------------------------------------------------------
 // 3. BottomBar 组件 (包含进度条、时间、播放键、工具栏)
 // ---------------------------------------------------------
-/** 极简细线进度条 + 普通圆形滑块（accent 细线轨道），点击/拖动均可拖动进度 */
-@Composable
-private fun CometSeekBar(
-    value: Float,          // 当前进度 ms
-    duration: Long,
-    accent: Color,
-    onScrub: (Float) -> Unit,
-    onCommit: (Float) -> Unit,
-    onScrubbingChanged: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var lastMs by remember { mutableFloatStateOf(value) }
-    val trackH = 3.dp.toPx()
-    val thumbR = 10.dp.toPx()
-
-    fun msFromX(x: Float, width: Int): Float =
-        ((if (width > 0) x / width.toFloat() else 0f).coerceIn(0f, 1f) * duration)
-
-    Box(
-        modifier
-            .fillMaxWidth()
-            .height(36.dp)
-            .pointerInput(value) {
-                detectTapGestures(
-                    onTap = { offset ->
-                        val ms = msFromX(offset.x, size.width)
-                        lastMs = ms
-                        onScrub(ms)
-                        onCommit(ms)
-                    }
-                )
-            }
-            .pointerInput(duration) {
-                detectHorizontalDragGestures(
-                    onDragStart = { offset ->
-                        onScrubbingChanged(true)
-                        lastMs = msFromX(offset.x, size.width)
-                        onScrub(lastMs)
-                    },
-                    onHorizontalDrag = { change, _ ->
-                        lastMs = msFromX(change.position.x, size.width)
-                        onScrub(lastMs)
-                    },
-                    onDragEnd = {
-                        onScrubbingChanged(false)
-                        onCommit(lastMs)
-                    },
-                    onDragCancel = {
-                        onScrubbingChanged(false)
-                        onCommit(lastMs)
-                    }
-                )
-            }
-            .drawBehind {
-                val w = size.width.toFloat()
-                val cy = size.height / 2f
-                val frac = (value / duration.coerceAtLeast(1)).coerceIn(0f, 1f)
-                val x = (frac * w).coerceAtLeast(0f).coerceAtMost(w)
-                // 极简细线轨道
-                drawLine(accent.copy(alpha = 0.16f), Offset(0f, cy), Offset(w, cy), trackH, StrokeCap.Round)
-                // 已播放部分（实线）
-                drawLine(accent, Offset(0f, cy), Offset(x, cy), trackH, StrokeCap.Round)
-                // 普通圆形滑块
-                drawCircle(accent, radius = thumbR, center = Offset(x, cy))
-            }
-    )
-}
-
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun PlayerBottomBar(
@@ -388,17 +316,24 @@ private fun PlayerBottomBar(
     var equalizerEnabled by remember { mutableStateOf(EqualizerController.isEnabled) }
     var bandLevels by remember { mutableStateOf(EqualizerController.bandLevels) }
     var sleepSelection by remember { mutableFloatStateOf(5f) }
-    var isScrubbing by remember { mutableStateOf(false) }
+    val sliderColors = SliderDefaults.colors(
+        thumbColor = colors.accent,
+        activeTrackColor = colors.accent,
+        inactiveTrackColor = colors.accent.copy(alpha = .22f)
+    )
     val seekSliderState = remember(state.currentSong?.id, state.duration) {
         SliderState(
             value = state.position.toFloat(),
             valueRange = 0f..state.duration.coerceAtLeast(1).toFloat()
         )
     }
-    LaunchedEffect(state.position, isScrubbing) {
-        if (!isScrubbing) {
+    LaunchedEffect(state.position, seekSliderState.isDragging) {
+        if (!seekSliderState.isDragging) {
             seekSliderState.value = state.position.toFloat()
         }
+    }
+    LaunchedEffect(seekSliderState) {
+        seekSliderState.onValueChangeFinished = { onSeek(seekSliderState.value.toLong()) }
     }
 
     Column(
@@ -408,13 +343,9 @@ private fun PlayerBottomBar(
             .navigationBarsPadding() // 内容避开底部导航栏
             .padding(start = 25.dp, end = 25.dp, top = 5.dp, bottom = 15.dp)
     ) {
-        CometSeekBar(
-            value = seekSliderState.value,
-            duration = state.duration,
-            accent = colors.accent,
-            onScrub = { seekSliderState.value = it },
-            onCommit = { seekSliderState.value = it; onSeek(it.toLong()) },
-            onScrubbingChanged = { isScrubbing = it }
+        Slider(
+            state = seekSliderState,
+            colors = sliderColors
         )
 
         // 时间
