@@ -11,7 +11,6 @@ PureMusic 是一款面向 Android 的本地音乐播放器，使用 Jetpack Comp
 - MediaSession 后台播放，支持通知栏、锁屏、蓝牙和耳机控制
 - 封面图片优先使用音频内嵌封面（TagLib 提取并经 Coil 加载），缺失时回退 MediaStore 专辑封面，加载失败显示回退图标；播放器配色取自实际加载的封面
 - 跟随系统、亮色和暗色主题；Android 12+ 支持动态取色
-- 系统均衡器入口
 
 ## 音频标签与歌词
 
