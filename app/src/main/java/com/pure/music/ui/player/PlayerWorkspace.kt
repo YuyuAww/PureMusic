@@ -49,6 +49,7 @@ import androidx.media3.common.Player
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import com.pure.music.data.Song
+import com.pure.music.lyric.LyricData
 import com.pure.music.lyric.LyricsCodec
 import com.pure.music.lyric.format.LrcTime
 import com.pure.music.lyric.model.LyricFormat
@@ -497,7 +498,8 @@ private fun PlayerBottomBar(
  */
 @Composable
 private fun rememberLyricsDocument(song: Song): LyricsDocument = remember(song.id, song.lyrics) {
-    LyricsCodec.parse(song.lyrics) ?: LyricsDocument(original = listOf(LyricLine(text = "暂无内嵌歌词")))
+    LyricData.of(song.id, song.lyrics).document
+        ?: LyricsDocument(original = listOf(LyricLine(text = "暂无内嵌歌词")))
 }
 
 /**
@@ -758,9 +760,10 @@ private fun DetailPage(song: Song, colors: CoverColors, onOpenLyricsOps: () -> U
 private fun LyricsOpsSheet(song: Song, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val raw = song.lyrics.orEmpty()
-    val doc = remember(song.id, song.lyrics) { LyricsCodec.parse(song.lyrics) }
-    val hasWordTiming = doc?.hasWordTiming == true
+    val lyricData = remember(song.id, song.lyrics) { LyricData.of(song.id, song.lyrics) }
+    val raw = lyricData.rawText.orEmpty()
+    val doc = lyricData.document
+    val hasWordTiming = lyricData.hasWordTiming
     var offsetMs by remember { mutableLongStateOf(0L) }
     var targetFormat by remember { mutableStateOf(LyricFormat.ENHANCED_LRC) }
     var busy by remember { mutableStateOf(false) }

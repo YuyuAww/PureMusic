@@ -69,8 +69,7 @@ Java_com_pure_music_taglib_TagLibMetadataReader_readNative(JNIEnv* env, jclass, 
     std::string mbAlbumId = firstVal({"MUSICBRAINZ_ALBUMID", "MUSICBRAINZALBUMID"});
     std::string mbArtistId = firstVal({"MUSICBRAINZ_ARTISTID", "MUSICBRAINZARTISTID"});
 
-    // Embedded cover: data + mimeType + description
-    std::string picData;
+    // Embedded cover: 仅取 mimeType 与 description，二进制数据由 readCoverNative 单独完整读取
     std::string picMime;
     std::string picDesc;
     if (tag) {
@@ -79,17 +78,6 @@ Java_com_pure_music_taglib_TagLibMetadataReader_readNative(JNIEnv* env, jclass, 
             auto pics = tag->complexProperties(TagLib::String("PICTURE"));
             if (!pics.isEmpty()) {
                 auto& firstPic = pics.front();
-                auto dataIt = firstPic.find(TagLib::String("data"));
-                if (dataIt != firstPic.end()) {
-                    bool ok = false;
-                    auto bv = dataIt->second.toByteVector(&ok);
-                    if (ok) {
-                        const char* raw = bv.data();
-                        int len = static_cast<int>(bv.size());
-                        if (len > 256 * 1024) len = 256 * 1024;
-                        picData.assign(reinterpret_cast<const char*>(raw), len);
-                    }
-                }
                 auto mimeIt = firstPic.find(TagLib::String("mimeType"));
                 if (mimeIt != firstPic.end()) picMime = clean(mimeIt->second.toString());
                 auto descIt = firstPic.find(TagLib::String("description"));
@@ -146,9 +134,8 @@ Java_com_pure_music_taglib_TagLibMetadataReader_readCoverNative(JNIEnv* env, jcl
     auto bv = dataIt->second.toByteVector(&ok);
     if (!ok || bv.isEmpty()) return nullptr;
 
+    // 完整返回内嵌封面，不截断
     int len = static_cast<int>(bv.size());
-    if (len > 256 * 1024) len = 256 * 1024;
-
     jbyteArray arr = env->NewByteArray(len);
     env->SetByteArrayRegion(arr, 0, len, reinterpret_cast<const jbyte*>(bv.data()));
     return arr;
