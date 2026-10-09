@@ -1,130 +1,153 @@
 package com.pure.music.ui.library
 
-import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pure.music.settings.SettingsViewModel
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.basic.SmallTopAppBar
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Add
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Close
+import top.yukonga.miuix.kmp.icon.extended.ExpandLess
+import top.yukonga.miuix.kmp.icon.extended.ExpandMore
+import top.yukonga.miuix.kmp.icon.extended.Folder
+import top.yukonga.miuix.kmp.icon.extended.Refresh
+import top.yukonga.miuix.kmp.preference.ArrowPreference
+import top.yukonga.miuix.kmp.preference.SwitchPreference
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** 媒体来源页：Miuix 偏好设置风格（SmallTitle + Card + ArrowPreference/SwitchPreference） */
 @Composable
 fun ScanScreen(
     onBack: () -> Unit,
     onScan: () -> Unit,
-    viewModel: SettingsViewModel
+    viewModel: SettingsViewModel,
 ) {
     val skipShortTracks by viewModel.skipShortTracks.collectAsStateWithLifecycle()
     val blockedFolders by viewModel.blockedFolders.collectAsStateWithLifecycle()
-    val accent = MaterialTheme.colorScheme.primary
-    val context = LocalContext.current
+    val colors = MiuixTheme.colorScheme
+    var showBlockedList by remember { mutableStateOf(false) }
 
     val addBlockedFolderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         uri?.let { treeUri ->
             val path = resolveFolderPath(treeUri)
-            if (path.isNotBlank()) {
-                viewModel.addBlockedFolder(path)
-            }
+            if (path.isNotBlank()) viewModel.addBlockedFolder(path)
         }
     }
 
-    var showBlockedList by remember { mutableStateOf(false) }
-
     Scaffold(
+        containerColor = colors.background,
         topBar = {
-            TopAppBar(
-                title = { Text("媒体来源") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } }
+            SmallTopAppBar(
+                title = "媒体来源",
+                navigationIcon = {
+                    IconButton(onClick = onBack) { Icon(MiuixIcons.Back, "返回") }
+                },
             )
-        }
+        },
     ) { padding ->
         Column(
             Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+                .fillMaxWidth()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // 1. 媒体扫描操作
-            Surface(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant
+            SmallTitle("媒体扫描", modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Card(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                insideMargin = PaddingValues(vertical = 4.dp),
             ) {
-                Column(Modifier.padding(vertical = 8.dp)) {
-                    SettingRow("开始扫描", Icons.Default.Refresh, accent) { onScan() }
+                ArrowPreference(
+                    title = "开始扫描",
+                    summary = "重新扫描 MediaStore 并用 TagLib 刷新标签缓存",
+                    startAction = { Icon(MiuixIcons.Refresh, null, Modifier.size(24.dp)) },
+                    onClick = onScan,
+                )
+            }
+            SmallTitle("高级扫描设置", modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Card(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                insideMargin = PaddingValues(vertical = 4.dp),
+            ) {
+                SwitchPreference(
+                    title = "跳过短音频",
+                    summary = "不扫描时长小于 30 秒的音频片段",
+                    checked = skipShortTracks,
+                    onCheckedChange = viewModel::setSkipShortTracks,
+                )
+                HorizontalDivider()
+                ArrowPreference(
+                    title = "屏蔽文件夹列表",
+                    summary = if (blockedFolders.isEmpty()) "暂无屏蔽文件夹" else "${blockedFolders.size} 个文件夹",
+                    startAction = { Icon(MiuixIcons.Folder, null, Modifier.size(24.dp)) },
+                    endActions = {
+                        IconButton(onClick = { showBlockedList = !showBlockedList }) {
+                            Icon(
+                                if (showBlockedList) MiuixIcons.ExpandLess else MiuixIcons.ExpandMore,
+                                if (showBlockedList) "收起" else "展开",
+                            )
+                        }
+                    },
+                )
+                if (showBlockedList) {
+                    HorizontalDivider()
+                    if (blockedFolders.isEmpty()) {
+                        Text(
+                            "暂无被屏蔽的文件夹",
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                            fontSize = 14.sp,
+                            color = colors.onSurfaceVariantSummary,
+                        )
+                    } else {
+                        blockedFolders.forEach { path ->
+                            BlockedFolderRow(path) { viewModel.setBlockedFolders(blockedFolders - path) }
+                        }
+                    }
+                    HorizontalDivider()
+                    ArrowPreference(
+                        title = "添加屏蔽文件夹",
+                        startAction = { Icon(MiuixIcons.Add, null, Modifier.size(24.dp)) },
+                        onClick = { addBlockedFolderPicker.launch(null) },
+                    )
                 }
             }
 
-            // 2. 高级扫描设置
-            Surface(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                Column(Modifier.padding(vertical = 8.dp)) {
-                    Text("高级扫描设置", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 22.dp, vertical = 4.dp))
-                    SettingRow("管理外部存储权限", Icons.Default.OpenInNew, accent) {
-                        context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
-                    }
-                    ToggleRow("不扫描 60 秒以下音频", skipShortTracks) { viewModel.setSkipShortTracks(it) }
-                    SettingRow(
-                        "被屏蔽的文件夹",
-                        if (showBlockedList) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        accent
-                    ) {
-                        showBlockedList = !showBlockedList
-                    }
-                    if (showBlockedList) {
-                        if (blockedFolders.isNotEmpty()) {
-                            blockedFolders.forEach { path ->
-                                CustomFolderRow(path) { viewModel.setBlockedFolders(blockedFolders - path) }
-                            }
-                        } else {
-                            Row(
-                                Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("暂无被屏蔽的文件夹", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
-                        SettingRow("添加屏蔽文件夹", Icons.Default.Add, accent) {
-                            addBlockedFolderPicker.launch(null)
-                        }
-                    }
-                }
-            }
-
-            // 3. 扫描逻辑说明
             Text(
                 "歌曲始终从 Android 媒体库扫描，并使用 TagLib 读取完整元数据；TagLib 读取失败时回退使用媒体库提供的基本信息。",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+                fontSize = 13.sp,
+                color = colors.onSurfaceVariantSummary,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
             )
             Spacer(Modifier.height(24.dp))
         }
@@ -132,29 +155,24 @@ fun ScanScreen(
 }
 
 @Composable
-private fun SettingRow(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, accent: androidx.compose.ui.graphics.Color, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 22.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, null, Modifier.size(26.dp), tint = accent)
-        Spacer(Modifier.width(18.dp))
-        Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-    }
-}
-
-@Composable
-private fun ToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth().clickable { onCheckedChange(!checked) }.padding(horizontal = 22.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
-    }
-}
-
-@Composable
-private fun CustomFolderRow(path: String, onRemove: () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Default.Folder, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun BlockedFolderRow(path: String, onRemove: () -> Unit) {
+    val colors = MiuixTheme.colorScheme
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 22.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(MiuixIcons.Folder, null, Modifier.size(20.dp), tint = colors.onSurfaceVariantSummary)
         Spacer(Modifier.width(14.dp))
-        Text(path, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-        IconButton(onClick = onRemove) { Icon(Icons.Default.Close, "移除", Modifier.size(18.dp)) }
+        Text(
+            path,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 14.sp,
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(onClick = onRemove) { Icon(MiuixIcons.Close, "移除", Modifier.size(18.dp)) }
     }
 }
 

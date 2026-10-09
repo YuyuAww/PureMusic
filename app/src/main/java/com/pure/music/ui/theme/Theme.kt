@@ -1,114 +1,80 @@
 package com.pure.music.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.pure.music.ui.utils.CoverColors
 import com.pure.music.ui.utils.loadCoverColors
+import top.yukonga.miuix.kmp.theme.ColorSchemeMode
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.ThemeController
 
-/** 暗色主题配色方案 */
-private val DarkColorScheme = darkColorScheme(
-    primary = BrandDarkPrimary,
-    secondary = BrandAccent,
-    tertiary = BrandDarkPrimary,
-    surface = BrandDarkSurface,
-    onSurface = BrandDarkOnSurface,
-    background = BrandDarkSurface,
-    surfaceVariant = BrandDarkSurfaceVariant
-)
+/** 品牌强调色：封面取色失败时作为 Miuix 动态色种子回退。 */
+val BrandAccent = Color(0xFF6750A4)
 
-/** 亮色主题配色方案 */
-private val LightColorScheme = lightColorScheme(
-    primary = BrandPrimary,
-    onPrimary = BrandOnPrimary,
-    primaryContainer = BrandPrimaryContainer,
-    onPrimaryContainer = BrandOnPrimaryContainer,
-    secondary = BrandSecondary,
-    secondaryContainer = BrandSecondaryContainer,
-    onSecondaryContainer = BrandOnSecondaryContainer,
-    tertiary = BrandAccent,
-    surface = BrandSurface,
-    onSurface = BrandOnSurface,
-    background = Color(0xFFFFF9FD),
-    surfaceVariant = BrandSurfaceVariant,
-    onSurfaceVariant = BrandOnSurfaceVariant
+/** 封面取色失败时使用的回退 CoverColors（仅用于判定取色是否成功）。 */
+private val brandFallbackColors = CoverColors(
+    accent = BrandAccent,
+    muted = Color(0xFF5A546A),
+    background = Color(0xFFFEF7FF),
+    surface = Color(0xFFF7F2FA),
 )
 
 /**
- * PureMusic 应用主题 Composable。
- * 支持动态取色（Android 12+）、明暗模式切换、状态栏/导航栏颜色同步。
+ * 应用级 Miuix 根主题。
+ *
+ * 把应用设置映射到 [ThemeController]：
+ * - [theme]："system"/"light"/"dark" → System/Light/Dark（非取色模式）
+ * - [colorSource]："monet" → Monet*（keyColor 为空，跟随系统壁纸色）；
+ *   "cover" → Monet* + keyColor 取封面主色，由 Miuix 生成动态配色
+ *
+ * 状态栏/导航栏外观随明暗同步。
  */
 @Composable
 fun PureMusicTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
-    colorSource: String = "monet",
-    coverAlbumId: Long? = null,
-    content: @Composable () -> Unit
+    theme: String,
+    colorSource: String,
+    coverAlbumId: Long?,
+    content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    val fallback = CoverColors(BrandPrimary, BrandOnSurfaceVariant, BrandSurface, BrandSurface)
-    var coverColors by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(fallback) }
-    androidx.compose.runtime.LaunchedEffect(colorSource, coverAlbumId, darkTheme) {
-        coverColors = if (colorSource == "cover" && coverAlbumId != null) loadCoverColors(context, coverAlbumId, fallback, darkTheme) else fallback
+    val controller = remember { ThemeController(ColorSchemeMode.System) }
+    val dark = when (theme) {
+        "light" -> false
+        "dark" -> true
+        else -> isSystemInDarkTheme()
     }
-    val colorScheme = when {
-        // Android 12+ 使用系统动态取色
-        dynamicColor && colorSource == "monet" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+
+    LaunchedEffect(theme, colorSource, coverAlbumId) {
+        val isDynamicSource = colorSource == "monet" || colorSource == "cover"
+        controller.colorSchemeMode = when {
+            theme == "light" -> if (isDynamicSource) ColorSchemeMode.MonetLight else ColorSchemeMode.Light
+            theme == "dark" -> if (isDynamicSource) ColorSchemeMode.MonetDark else ColorSchemeMode.Dark
+            else -> if (isDynamicSource) ColorSchemeMode.MonetSystem else ColorSchemeMode.System
         }
-        colorSource == "cover" -> if (darkTheme) darkColorScheme(
-            primary = coverColors.accent, onPrimary = onColor(coverColors.accent),
-            primaryContainer = coverColors.surface, onPrimaryContainer = onColor(coverColors.surface),
-            secondary = coverColors.muted, onSecondary = onColor(coverColors.muted),
-            secondaryContainer = coverColors.surface, onSecondaryContainer = onColor(coverColors.surface),
-            tertiary = coverColors.accent, onTertiary = onColor(coverColors.accent),
-            background = coverColors.background, onBackground = Color(0xFFE6E1E5),
-            surface = coverColors.surface, onSurface = Color(0xFFE6E1E5),
-            surfaceVariant = coverColors.background, onSurfaceVariant = Color(0xFFCAC4D0)
-        ) else lightColorScheme(
-            primary = coverColors.accent, onPrimary = onColor(coverColors.accent),
-            primaryContainer = coverColors.surface, onPrimaryContainer = onColor(coverColors.surface),
-            secondary = coverColors.muted, onSecondary = onColor(coverColors.muted),
-            secondaryContainer = coverColors.surface, onSecondaryContainer = onColor(coverColors.surface),
-            tertiary = coverColors.accent, onTertiary = onColor(coverColors.accent),
-            background = coverColors.background, onBackground = Color(0xFF1D1B20),
-            surface = coverColors.surface, onSurface = Color(0xFF1D1B20),
-            surfaceVariant = coverColors.background, onSurfaceVariant = Color(0xFF49454F)
-        )
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        if (colorSource == "cover" && coverAlbumId != null) {
+            val loaded = loadCoverColors(context, coverAlbumId, brandFallbackColors, dark)
+            // 取色成功（与回退不同）时以封面主色作为 Miuix 动态色种子；失败/无封面回退系统壁纸取色
+            controller.keyColor = if (loaded == brandFallbackColors) null else loaded.accent
+        } else {
+            controller.keyColor = null
+        }
     }
 
     // 同步状态栏和导航栏外观
     val view = LocalView.current
     if (!view.isInEditMode) {
-        val window = (view.context as Activity).window
+        val window = (view.context as? android.app.Activity)?.window ?: return
         val insetsController = WindowCompat.getInsetsController(window, view)
-        insetsController.isAppearanceLightStatusBars = !darkTheme
-        insetsController.isAppearanceLightNavigationBars = !darkTheme
+        insetsController.isAppearanceLightStatusBars = !dark
+        insetsController.isAppearanceLightNavigationBars = !dark
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    MiuixTheme(controller = controller) { content() }
 }
 
-private fun onColor(color: Color): Color {
-    val r = color.red * .2126f + color.green * .7152f + color.blue * .0722f
-    return if (r > .58f) Color(0xFF1D1B20) else Color.White
-}

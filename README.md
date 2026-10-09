@@ -10,7 +10,7 @@ PureMusic 是一款面向 Android 的本地音乐播放器，使用 Jetpack Comp
 - 顺序、随机、列表循环和单曲循环
 - MediaSession 后台播放，支持通知栏、锁屏、蓝牙和耳机控制
 - 封面图片优先使用音频内嵌封面（TagLib 提取并经 Coil 加载），缺失时回退 MediaStore 专辑封面，加载失败显示回退图标；播放器配色取自实际加载的封面
-- 跟随系统、亮色和暗色主题；Android 12+ 支持动态取色
+- Miuix（HyperOS 设计体系）界面与主题；跟随系统、亮色和暗色主题；动态取色（Monet）与根据封面取色
 
 ## 音频标签与歌词
 
@@ -27,19 +27,21 @@ PureMusic 是一款面向 Android 的本地音乐播放器，使用 Jetpack Comp
 
 | 项目 | 配置 |
 | --- | --- |
-| Kotlin / Compose | Kotlin 2.3.21、Compose BOM 2026.08.00 |
+| 界面 | Miuix 0.9.4（HyperOS 设计体系 Compose 组件）、Compose BOM 2026.08.00（Compose 1.12.0） |
+| Kotlin | 2.4.20（jvmTarget 17） |
 | 播放 | AndroidX Media3 1.11.0 |
 | 数据 | Room 2.8.4、DataStore Preferences 1.2.1 |
 | 图片 | Coil 3.6.0 |
 | 原生标签 | TagLib 2.3.2、CMake、JNI |
-| 构建 | AGP 9.4.0、Gradle 9.6.0、Java 11 |
+| 构建 | AGP 9.4.1、Gradle 9.7.1、KSP 2.3.12、Java 17 |
 
 ## 模块与数据流
 
 ```text
 PureMusic/
-├── app/       # 主应用、媒体库、播放器、Compose UI、Room、设置和小组件
-└── taglib/    # TagLib 原生库、JNI 和 AudioMetadata 封装
+├── app/       # 主应用、媒体库、播放器、Miuix Compose UI、Room、设置和小组件
+├── taglib/    # TagLib 原生库、JNI 和 AudioMetadata 封装
+└── lyric/     # 歌词解析/转换（LRC/TTML/纯文本，逐字时间轴），零第三方依赖
 ```
 
 媒体库流程：`MediaStore` 查询 → `:taglib` 解析内置标签 → 合并并缓存到 Room → `StateFlow` 更新界面。播放由 `PlayerManager` 连接 `PlaybackService`，通过 MediaSession 暴露系统控制。
@@ -47,9 +49,9 @@ PureMusic/
 ## 应用规格与权限
 
 - Application ID：`com.pure.music`
-- minSdk 28（Android 9），targetSdk 35，compileSdk 37
+- minSdk 33（Android 13，Miuix miuix-blur 动态模糊要求），targetSdk 35，compileSdk 37
 - 当前仅打包 `arm64-v8a`
-- Android 13+ 使用 `READ_MEDIA_AUDIO`，Android 9–12 使用 `READ_EXTERNAL_STORAGE`
+- 使用 `READ_MEDIA_AUDIO` 权限
 - 后台播放使用前台媒体服务和必要的唤醒锁权限
 
 ## 构建
@@ -67,12 +69,11 @@ gradle :app:assembleRelease
 
 - 仅 arm64 模拟器/设备可直接运行，x86/x86_64 需要调整 ABI 配置
 - 受限存储场景下可能无法取得真实文件路径，此时仅使用 MediaStore 元数据
-- 当前歌词按文本行展示，不包含逐行时间轴同步
+- Miuix 为 0.x 实验性版本（v0.9.4），组件 API 可能随上游演进
 - 暂无崩溃收集和正式发布签名配置
 
 ## 后续计划
 
-- 支持 LRC 时间轴歌词
 - 完善多 ABI / APK 拆分与构建缓存
 - 增加播放器、媒体库和 Compose UI 测试
 - 配置正式签名、AAB 构建和发布流程

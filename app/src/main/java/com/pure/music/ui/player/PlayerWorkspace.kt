@@ -1,77 +1,135 @@
 package com.pure.music.ui.player
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.*
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.automirrored.filled.QueueMusic
+import androidx.compose.material.icons.automirrored.filled.SkipNext
+import androidx.compose.material.icons.automirrored.filled.SkipPrevious
+import androidx.compose.material.icons.filled.FormatListNumbered
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.RepeatOne
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Text
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.media3.common.Player
-import kotlin.math.abs
-import kotlin.math.roundToInt
 import com.pure.music.data.Song
+import com.pure.music.ffmpeg.player.EqualizerController
 import com.pure.music.lyric.LyricData
 import com.pure.music.lyric.LyricsCodec
-import com.pure.music.lyric.format.LrcTime
 import com.pure.music.lyric.model.LyricFormat
 import com.pure.music.lyric.model.LyricLine
 import com.pure.music.lyric.model.LyricsDocument
-import com.pure.music.lyric.model.visibleText
 import com.pure.music.player.LyricsTagService
-import com.pure.music.player.PlayerManager
+import com.pure.music.player.Player
 import com.pure.music.player.PlaybackState
-import com.pure.music.player.EqualizerController
+import com.pure.music.player.PlayerManager
 import com.pure.music.ui.components.AlbumArt
 import com.pure.music.ui.library.formatDuration
 import com.pure.music.ui.utils.CoverColors
 import com.pure.music.ui.utils.loadCoverColors
-import android.widget.Toast
-import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.Button
+import top.yukonga.miuix.kmp.basic.ButtonColors
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.Slider
+import top.yukonga.miuix.kmp.basic.SliderColors
+import top.yukonga.miuix.kmp.basic.SliderDefaults
+import top.yukonga.miuix.kmp.basic.Switch
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.textureBlur
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Close
+import top.yukonga.miuix.kmp.icon.extended.Pause
+import top.yukonga.miuix.kmp.icon.extended.Play
+import top.yukonga.miuix.kmp.icon.extended.Timer
+import top.yukonga.miuix.kmp.icon.extended.Tune
+import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
+import top.yukonga.miuix.kmp.shader.isRuntimeShaderSupported
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-private val PlayerSheetHeight = 480.dp
+// 播放页弹层高度已由 Miuix OverlayBottomSheet 接管
+private enum class PlaybackMode(val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    SHUFFLE("随机播放", Icons.Default.Shuffle),
+    SEQUENTIAL("顺序播放", Icons.Default.FormatListNumbered),
+    LIST_LOOP("列表循环", Icons.Default.Repeat),
+    SINGLE_LOOP("单曲循环", Icons.Default.RepeatOne)
+}
 
-@OptIn(ExperimentalMaterial3Api::class)
+private fun playbackMode(state: PlaybackState): PlaybackMode = when {
+    state.shuffleModeEnabled -> PlaybackMode.SHUFFLE
+    state.repeatMode == Player.REPEAT_MODE_ONE -> PlaybackMode.SINGLE_LOOP
+    state.repeatMode == Player.REPEAT_MODE_ALL -> PlaybackMode.LIST_LOOP
+    else -> PlaybackMode.SEQUENTIAL
+}
+
+/**
+ * 全屏播放界面（Miuix 风格）。
+ *
+ * 背景由封面取色（CoverColors）驱动：渐变背景之上，顶/底栏在支持时叠加
+ * Miuix textureBlur 动态模糊；不支持时回退纯色/渐变背景。
+ */
 @Composable
 fun PlayerWorkspace(
     state: PlaybackState,
@@ -97,18 +155,19 @@ fun PlayerWorkspace(
         if (lyricsJumpNonce > 0) pagerState.animateScrollToPage(2)
     }
 
-    // 兜底颜色：当封面取色失败或尚未加载完成时，使用系统 Material 颜色防止界面纯黑/纯白
+    // 兜底颜色：当封面取色失败或尚未加载完成时，防止界面纯黑/纯白
     // 一旦加载成功，CoverColors 将完全接管所有 UI 颜色
+    val miuixColors = MiuixTheme.colorScheme
     val fallback = CoverColors(
-        accent = MaterialTheme.colorScheme.primary,
-        muted = MaterialTheme.colorScheme.onSurfaceVariant,
-        background = MaterialTheme.colorScheme.background,
-        surface = MaterialTheme.colorScheme.surface
+        accent = miuixColors.primary,
+        muted = miuixColors.onSurfaceVariantSummary,
+        background = miuixColors.background,
+        surface = miuixColors.surface
     )
 
     val context = LocalContext.current
     var colors by remember(song.albumId) { mutableStateOf(fallback) }
-    
+
     // 异步加载封面提取的颜色
     val darkTheme = isSystemInDarkTheme()
     LaunchedEffect(song.albumId, darkTheme) {
@@ -123,7 +182,7 @@ fun PlayerWorkspace(
             else -> LyricsPage(song, state.position, state.isPlaying, colors, onSeek = onSeek)
         }
     }
-    // 底部播放控制栏（横屏时堆叠在右侧，竖屏时由 Scaffold 承载）
+    // 底部播放控制栏（横屏时堆叠在右侧，竖屏时贴底）
     val playerBottomBar: @Composable () -> Unit = {
         PlayerBottomBar(
             state = state,
@@ -139,8 +198,26 @@ fun PlayerWorkspace(
             onCancelSleepTimer = onCancelSleepTimer
         )
     }
+    // Miuix 动态模糊：运行时能力检测，支持则叠加 textureBlur，否则回退渐变背景
+    val blurSupported = remember { isRuntimeShaderSupported() }
+    val backdrop = rememberLayerBackdrop()
+
+    // 顶/底栏统一：支持模糊时叠加 Miuix textureBlur，否则透明（渐变背景直接透出）
+    fun Modifier.barBackdrop() = if (blurSupported) textureBlur(backdrop, RectangleShape) else this
 
     BoxWithConstraints {
+        // 背景层：封面取色渐变 + 播放中旋转封面，并捕获进 backdrop 供顶/底栏模糊
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Brush.linearGradient(listOf(colors.gradientStart, colors.gradientEnd)))
+                .layerBackdrop(backdrop)
+        ) {
+            if (state.isPlaying) {
+                AlbumArt(song, Modifier.fillMaxSize())
+            }
+        }
+
         // 横屏：左侧为页面内容，右侧为竖屏的 TopBar 与 BottomBar 堆叠
         val isLandscape = maxWidth > maxHeight
         if (isLandscape) {
@@ -165,66 +242,43 @@ fun PlayerWorkspace(
                 }
             }
         } else {
-            // 竖屏：使用 Scaffold 划分三大组件区域
-            Scaffold(
-                containerColor = colors.background, // 整体背景：由封面背景色决定
-                contentWindowInsets = WindowInsets(0, 0, 0, 0), // 移除默认 Insets，交给子组件自行处理
-                topBar = {
-                    // 1. TopBar 组件
+            // 竖屏：顶栏贴顶、内容居中、底栏贴底；顶/底栏叠加 Miuix 动态模糊
+            Column(Modifier.fillMaxSize()) {
+                Box(Modifier.fillMaxWidth().statusBarsPadding().barBackdrop()) {
                     PlayerTopBar(song = song, colors = colors)
-                },
-                bottomBar = {
-                    // 3. BottomBar 组件
-                    playerBottomBar()
                 }
-            ) { paddingValues ->
-                // 2. Content (中间内容) 组件
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
+                        .fillMaxWidth()
+                        .weight(1f)
                 ) { page -> playerPages(page) }
-            }
-        }
-    }
-    if (showQueue) {
-        ModalBottomSheet(onDismissRequest = { showQueue = false }) {
-            Column(Modifier.fillMaxWidth().height(PlayerSheetHeight).padding(horizontal = 20.dp)) {
-                Text("播放队列", style = MaterialTheme.typography.headlineSmall)
-                Text("${state.queue.size} 首歌曲", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(12.dp))
-                LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 24.dp)) {
-                    itemsIndexed(state.queue, key = { _, item -> item.id }) { index, item ->
-                        QueueSongRow(item, index == state.queueIndex) {
-                            onPlayQueueSong(item, state.queue)
-                            showQueue = false
-                        }
-                    }
+                Box(Modifier.fillMaxWidth().navigationBarsPadding().barBackdrop()) {
+                    playerBottomBar()
                 }
             }
         }
     }
+
+    if (showQueue) QueueSheet(state, onPlayQueueSong) { showQueue = false }
     if (showLyricsOps) LyricsOpsSheet(song) { showLyricsOps = false }
 }
 
 // ---------------------------------------------------------
-// 1. TopBar 组件 (包含歌名、歌手)
+// 1. TopBar 组件 (包含歌名、歌手与操作按钮)
 // ---------------------------------------------------------
 @Composable
 private fun PlayerTopBar(song: Song, colors: CoverColors) {
     Row(
         Modifier
             .fillMaxWidth()
-            .background(colors.background) // 与页面主体保持同一背景，避免顶部割裂
-            .statusBarsPadding() // 内容避开状态栏
             .padding(start = 25.dp, end = 25.dp, top = 5.dp, bottom = 10.dp),
-        verticalAlignment = Alignment.Top
+        verticalAlignment = Alignment.Top,
     ) {
         Column(Modifier.weight(1f)) {
             Text(
                 song.title,
-                color = colors.accent, // 封面主色
+                color = colors.accent,
                 fontSize = 25.sp,
                 fontWeight = FontWeight.Black,
                 maxLines = 1,
@@ -233,7 +287,7 @@ private fun PlayerTopBar(song: Song, colors: CoverColors) {
             )
             Text(
                 song.artist,
-                color = colors.accent.copy(alpha = 0.85f), // 封面主色（淡化）
+                color = colors.accent.copy(alpha = 0.85f),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -251,46 +305,83 @@ private fun CoverAndLyricsPage(song: Song, position: Long, isPlaying: Boolean, c
     val doc = rememberLyricsDocument(song)
     // 帧级平滑播放位置：与全屏歌词页同源，上一句/当前句/下一句的切换时刻完全一致
     val smoothPos = rememberSmoothPosition(position, isPlaying, song.id)
-    Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        // 歌曲封面
-        Box(
+    val lines = doc.original
+    val currentIndex = lines.indexOfLast { it.startMs?.let { ms -> ms <= smoothPos } ?: false }
+    val previous = lines.getOrNull(currentIndex - 1)?.visibleText().orEmpty()
+    val current = lines.getOrNull(currentIndex)
+    val next = lines.getOrNull(currentIndex + 1)?.visibleText().orEmpty()
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
             Modifier
                 .fillMaxWidth()
-                .height(350.dp)
-                .shadow(15.dp, RoundedCornerShape(15.dp))
-                .clip(RoundedCornerShape(15.dp))
-                .background(Brush.verticalGradient(listOf(colors.gradientStart.copy(alpha = .18f), colors.surface))) // 封面渐变色衬底
+                .padding(horizontal = 25.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            AlbumArt(song, Modifier.fillMaxSize())
+            AlbumArt(
+                song,
+                Modifier
+                    .size(260.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .clickable(onClick = onOpenLyrics)
+            )
+            Spacer(Modifier.height(28.dp))
+            MiniLyricsWindow(previous, current, next, smoothPos, colors, onOpenLyrics)
         }
-        Spacer(Modifier.height(15.dp))
-        // 迷你歌词窗：取播放进度之前最近的一行；使用 lastOrNull 避免始终停留在第一行
-        val timedLines = doc.original.filter { it.startMs != null }
-        val current = timedLines.lastOrNull { it.startMs!! <= smoothPos } ?: doc.original.firstOrNull()
-        val index = current?.let { timedLines.indexOf(it) }?.coerceAtLeast(0) ?: -1
-        val textOf: (LyricLine?) -> String = { it?.let { line -> line.visibleText() } ?: "" }
-        MiniLyricsWindow(
-            textOf(timedLines.getOrNull(index - 1)),
-            current,
-            textOf(timedLines.getOrNull(index + 1)),
-            smoothPos,
-            colors,
-            onOpenLyrics
-        )
     }
 }
 
 @Composable
-private fun MiniLyricsWindow(previous: String, current: LyricLine?, next: String, smoothPos: Long, colors: CoverColors, onCurrentClick: () -> Unit) {
+private fun MiniLyricsWindow(
+    previous: String,
+    current: LyricLine?,
+    next: String,
+    smoothPos: Long,
+    colors: CoverColors,
+    onCurrentClick: () -> Unit
+) {
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-        Text(previous, color = colors.muted.copy(alpha = 0.55f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 4.dp))
+        Text(
+            previous,
+            color = colors.muted.copy(alpha = 0.55f),
+            fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(vertical = 4.dp)
+        )
         if (current != null && current.words.isNotEmpty()) {
             // 有逐字时间轴：与全屏歌词页同款动画（accent 从左往右填充 + 抬升）
-            WordLevelLine(current, true, smoothPos, colors, Modifier.fillMaxWidth().clickable { onCurrentClick() }.padding(vertical = 6.dp), fontSize = 14.sp, alignCenter = false)
+            WordLevelLine(
+                current,
+                true,
+                smoothPos,
+                colors,
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { onCurrentClick() }
+                    .padding(vertical = 6.dp),
+                fontSize = 14.sp,
+                alignCenter = false
+            )
         } else {
-            Text(current?.visibleText().orEmpty(), color = colors.accent, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onCurrentClick() }.padding(vertical = 6.dp))
+            Text(
+                current?.visibleText().orEmpty(),
+                color = colors.accent,
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .clickable { onCurrentClick() }
+                    .padding(vertical = 6.dp)
+            )
         }
-        Text(next, color = colors.muted.copy(alpha = 0.75f), fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 4.dp))
+        Text(
+            next,
+            color = colors.muted.copy(alpha = 0.75f),
+            fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(vertical = 4.dp)
+        )
     }
 }
 
@@ -298,7 +389,6 @@ private fun MiniLyricsWindow(previous: String, current: LyricLine?, next: String
 // 3. BottomBar 组件 (包含进度条、时间、播放键、工具栏)
 // ---------------------------------------------------------
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 private fun PlayerBottomBar(
     state: PlaybackState,
     colors: CoverColors,
@@ -316,37 +406,28 @@ private fun PlayerBottomBar(
     var showEqualizer by remember { mutableStateOf(false) }
     var equalizerEnabled by remember { mutableStateOf(EqualizerController.isEnabled) }
     var bandLevels by remember { mutableStateOf(EqualizerController.bandLevels) }
-    var sleepSelection by remember { mutableFloatStateOf(5f) }
-    val sliderColors = SliderDefaults.colors(
-        thumbColor = colors.accent,
-        activeTrackColor = colors.accent,
-        inactiveTrackColor = colors.accent.copy(alpha = .22f)
-    )
-    val seekSliderState = remember(state.currentSong?.id, state.duration) {
-        SliderState(
-            value = state.position.toFloat(),
-            valueRange = 0f..state.duration.coerceAtLeast(1).toFloat()
-        )
+
+    // Miuix Slider（值驱动 + 拖拽中不回写播放位置）
+    var seekValue by remember(state.currentSong?.id, state.duration) {
+        mutableFloatStateOf(state.position.toFloat())
     }
-    LaunchedEffect(state.position, seekSliderState.isDragging) {
-        if (!seekSliderState.isDragging) {
-            seekSliderState.value = state.position.toFloat()
-        }
-    }
-    LaunchedEffect(seekSliderState) {
-        seekSliderState.onValueChangeFinished = { onSeek(seekSliderState.value.toLong()) }
+    var seekDragging by remember { mutableStateOf(false) }
+    LaunchedEffect(state.position, seekDragging) {
+        if (!seekDragging) seekValue = state.position.toFloat()
     }
 
     Column(
         Modifier
             .fillMaxWidth()
-            .background(colors.background) // 底部背景：与 TopBar 保持一致
-            .navigationBarsPadding() // 内容避开底部导航栏
+            .background(colors.background)
             .padding(start = 25.dp, end = 25.dp, top = 5.dp, bottom = 15.dp)
     ) {
         Slider(
-            state = seekSliderState,
-            colors = sliderColors
+            value = seekValue,
+            onValueChange = { seekDragging = true; seekValue = it },
+            onValueChangeFinished = { seekDragging = false; onSeek(seekValue.toLong()) },
+            valueRange = 0f..state.duration.coerceAtLeast(1).toFloat(),
+            colors = accentSliderColors(colors.accent)
         )
 
         // 时间
@@ -354,8 +435,18 @@ private fun PlayerBottomBar(
             Modifier.fillMaxWidth().padding(top = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(formatDuration(seekSliderState.value.toLong()), color = colors.accent, fontWeight = FontWeight.Black, fontSize = 14.sp)
-            Text(formatDuration(state.duration), color = colors.accent, fontWeight = FontWeight.Black, fontSize = 14.sp)
+            Text(
+                formatDuration(seekValue.toLong()),
+                color = colors.accent,
+                fontWeight = FontWeight.Black,
+                fontSize = 14.sp
+            )
+            Text(
+                formatDuration(state.duration),
+                color = colors.accent,
+                fontWeight = FontWeight.Black,
+                fontSize = 14.sp
+            )
         }
 
         Spacer(Modifier.height(15.dp))
@@ -367,15 +458,30 @@ private fun PlayerBottomBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onPrevious, modifier = Modifier.size(35.dp)) {
-                Icon(Icons.Default.SkipPrevious, "上一首", tint = colors.accent, modifier = Modifier.size(35.dp))
+                Icon(
+                    Icons.AutoMirrored.Filled.SkipPrevious,
+                    "上一首",
+                    tint = colors.accent,
+                    modifier = Modifier.size(35.dp)
+                )
             }
             Spacer(Modifier.width(70.dp))
             IconButton(onClick = onTogglePlayPause, modifier = Modifier.size(45.dp)) {
-                Icon(if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, "播放", tint = colors.accent, modifier = Modifier.size(45.dp))
+                Icon(
+                    if (state.isPlaying) MiuixIcons.Pause else MiuixIcons.Play,
+                    "播放",
+                    tint = colors.accent,
+                    modifier = Modifier.size(45.dp)
+                )
             }
             Spacer(Modifier.width(70.dp))
             IconButton(onClick = onNext, modifier = Modifier.size(35.dp)) {
-                Icon(Icons.Default.SkipNext, "下一首", tint = colors.accent, modifier = Modifier.size(35.dp))
+                Icon(
+                    Icons.AutoMirrored.Filled.SkipNext,
+                    "下一首",
+                    tint = colors.accent,
+                    modifier = Modifier.size(35.dp)
+                )
             }
         }
 
@@ -390,107 +496,246 @@ private fun PlayerBottomBar(
             val mode = playbackMode(state)
             IconButton(onClick = {
                 when (mode) {
-                    PlaybackMode.SHUFFLE -> { onShuffleMode(false); onRepeatMode(Player.REPEAT_MODE_OFF) }
+                    PlaybackMode.SHUFFLE -> {
+                        onShuffleMode(false); onRepeatMode(Player.REPEAT_MODE_OFF)
+                    }
                     PlaybackMode.SEQUENTIAL -> onRepeatMode(Player.REPEAT_MODE_ALL)
                     PlaybackMode.LIST_LOOP -> onRepeatMode(Player.REPEAT_MODE_ONE)
-                    PlaybackMode.SINGLE_LOOP -> { onRepeatMode(Player.REPEAT_MODE_OFF); onShuffleMode(true) }
+                    PlaybackMode.SINGLE_LOOP -> {
+                        onRepeatMode(Player.REPEAT_MODE_OFF); onShuffleMode(true)
+                    }
                 }
             }) {
                 Icon(mode.icon, mode.label, tint = colors.accent, modifier = Modifier.size(25.dp))
             }
-            IconButton(onClick = { sleepSelection = state.sleepMinutes.takeIf { it > 0 }?.toFloat() ?: 5f; showSleepTimer = true }) { Icon(Icons.Default.Alarm, "睡眠定时", tint = if (state.sleepMinutes > 0) MaterialTheme.colorScheme.primary else colors.accent, modifier = Modifier.size(25.dp)) }
-            IconButton(onClick = { showEqualizer = true }) { Icon(Icons.Default.GraphicEq, "均衡器", tint = colors.accent, modifier = Modifier.size(25.dp)) }
-            IconButton(onClick = onQueueClick) { Icon(Icons.AutoMirrored.Filled.QueueMusic, "播放列表", tint = colors.accent, modifier = Modifier.size(25.dp)) }
-            IconButton(onClick = {}) { Icon(Icons.Default.MoreHoriz, "更多", tint = colors.accent, modifier = Modifier.size(25.dp)) }
-        }
-    }
-    if (showSleepTimer) {
-        ModalBottomSheet(onDismissRequest = { showSleepTimer = false }) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .height(PlayerSheetHeight)
-                    .padding(horizontal = 20.dp)
-            ) {
-                Text("睡眠定时", style = MaterialTheme.typography.headlineSmall)
-                Spacer(Modifier.height(8.dp))
-                Text(if (state.sleepMinutes > 0) "剩余 ${state.sleepMinutes} 分钟" else "设置自动暂停时间")
-                Spacer(Modifier.height(12.dp))
-                val sleepSliderState = remember {
-                    SliderState(value = sleepSelection, valueRange = 5f..60f, steps = 10)
-                }
-                LaunchedEffect(sleepSliderState) {
-                    sleepSliderState.onValueChange = { sleepSelection = (it / 5f).roundToInt() * 5f }
-                }
-                Slider(
-                    state = sleepSliderState
+            IconButton(onClick = { showSleepTimer = true }) {
+                Icon(
+                    MiuixIcons.Timer,
+                    "睡眠定时",
+                    tint = if (state.sleepMinutes > 0) MiuixTheme.colorScheme.primary else colors.accent,
+                    modifier = Modifier.size(25.dp)
                 )
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("5 分钟")
-                    Text("${sleepSelection.toInt()} 分钟")
-                    Text("60 分钟")
-                }
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, bottom = 24.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = { onCancelSleepTimer(); showSleepTimer = false }) {
-                        Text(if (state.sleepMinutes > 0) "取消定时" else "关闭")
-                    }
-                    TextButton(onClick = { onSetSleepTimer(sleepSelection.toInt().coerceIn(5, 60)); showSleepTimer = false }) {
-                        Text("开始")
-                    }
-                }
+            }
+            IconButton(onClick = { showEqualizer = true }) {
+                Icon(MiuixIcons.Tune, "均衡器", tint = colors.accent, modifier = Modifier.size(25.dp))
+            }
+            IconButton(onClick = onQueueClick) {
+                Icon(
+                    Icons.AutoMirrored.Filled.QueueMusic,
+                    "播放列表",
+                    tint = colors.accent,
+                    modifier = Modifier.size(25.dp)
+                )
+            }
+            IconButton(onClick = {}) {
+                Icon(Icons.Default.MoreHoriz, "更多", tint = colors.accent, modifier = Modifier.size(25.dp))
             }
         }
     }
-    if (showEqualizer) {
-        ModalBottomSheet(onDismissRequest = { showEqualizer = false }) {
-            Column(Modifier.fillMaxWidth().height(PlayerSheetHeight).padding(20.dp)) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("DSP 均衡器", style = MaterialTheme.typography.headlineSmall)
-                    Switch(
-                        checked = equalizerEnabled,
-                        enabled = EqualizerController.isAvailable,
-                        onCheckedChange = { equalizerEnabled = it; EqualizerController.setEnabled(it) }
-                    )
+
+    // 睡眠定时（Miuix 底部弹层 + keyPoints 磁吸到 5 分钟档位）
+    var sleepSelection by remember {
+        mutableFloatStateOf(state.sleepMinutes.takeIf { it > 0 }?.toFloat() ?: 5f)
+    }
+    OverlayBottomSheet(
+        show = showSleepTimer,
+        title = "睡眠定时",
+        onDismissRequest = { showSleepTimer = false },
+        startAction = {
+            IconButton(onClick = { showSleepTimer = false }) { Icon(MiuixIcons.Close, "关闭") }
+        },
+        endAction = {
+            TextButton(
+                text = "开始",
+                onClick = {
+                    onSetSleepTimer(sleepSelection.toInt().coerceIn(5, 60))
+                    showSleepTimer = false
                 }
-                Spacer(Modifier.height(12.dp))
-                Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).height(220.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            )
+        }
+    ) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+            Text(
+                if (state.sleepMinutes > 0) "剩余 ${state.sleepMinutes} 分钟" else "设置自动暂停时间",
+                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+            Slider(
+                value = sleepSelection,
+                onValueChange = { sleepSelection = it },
+                valueRange = 5f..60f,
+                keyPoints = (5..60 step 5).map { it.toFloat() },
+                magnetThreshold = 0.45f,
+                colors = accentSliderColors(MiuixTheme.colorScheme.primary)
+            )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("5 分钟", fontSize = 13.sp, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+                Text("${sleepSelection.toInt()} 分钟", fontSize = 13.sp, color = MiuixTheme.colorScheme.primary)
+                Text("60 分钟", fontSize = 13.sp, color = MiuixTheme.colorScheme.onSurfaceVariantSummary)
+            }
+            TextButton(
+                text = if (state.sleepMinutes > 0) "取消定时" else "关闭",
+                onClick = {
+                    onCancelSleepTimer()
+                    showSleepTimer = false
+                },
+                modifier = Modifier.padding(start = 0.dp, top = 16.dp, bottom = 24.dp)
+            )
+        }
+    }
+
+    // DSP 均衡器（Miuix 底部弹层 + 旋转 Miuix Slider 呈现竖直滑块）
+    if (showEqualizer) {
+        OverlayBottomSheet(
+            show = showEqualizer,
+            title = "DSP 均衡器",
+            onDismissRequest = { showEqualizer = false },
+            startAction = {
+                IconButton(onClick = { showEqualizer = false }) { Icon(MiuixIcons.Close, "关闭") }
+            },
+            endAction = {
+                Switch(
+                    checked = equalizerEnabled,
+                    onCheckedChange = { equalizerEnabled = it; EqualizerController.setEnabled(it) },
+                    enabled = EqualizerController.isAvailable
+                )
+            }
+        ) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .height(220.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     bandLevels.forEachIndexed { index, level ->
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            // 横排 Slider 按 180x42 布局后旋转 270° 呈现为竖直滑块，
+                            // 横排 Miuix Slider 按 180x42 布局后旋转 270° 呈现为竖直滑块，
                             // 外层 Box 预留 42x180 的占位，避免旋转后的绘制压到频段标签
                             Box(Modifier.size(42.dp, 180.dp)) {
-                                val eqSliderState = remember(index) {
-                                    SliderState(value = if (equalizerEnabled) level else 0f, valueRange = -1f..1f)
-                                }
-                                LaunchedEffect(eqSliderState) {
-                                    eqSliderState.onValueChange = { value ->
+                                Slider(
+                                    value = if (equalizerEnabled) level else 0f,
+                                    onValueChange = { value ->
                                         bandLevels = bandLevels.toMutableList().also { it[index] = value }
                                         EqualizerController.setBandLevel(index, value)
-                                    }
-                                }
-                                Slider(
-                                    state = eqSliderState,
-                                    modifier = Modifier.size(width = 180.dp, height = 42.dp).align(Alignment.Center).graphicsLayer { rotationZ = 270f }
+                                    },
+                                    valueRange = -1f..1f,
+                                    colors = accentSliderColors(MiuixTheme.colorScheme.primary),
+                                    modifier = Modifier
+                                        .size(width = 180.dp, height = 42.dp)
+                                        .align(Alignment.Center)
+                                        .graphicsLayer { rotationZ = 270f }
                                 )
                             }
-                            Text(listOf("31", "62", "125", "250", "500", "1k", "2k", "4k", "8k", "16k")[index], style = MaterialTheme.typography.labelSmall)
+                            Text(
+                                listOf("31", "62", "125", "250", "500", "1k", "2k", "4k", "8k", "16k")[index],
+                                fontSize = 11.sp,
+                                color = MiuixTheme.colorScheme.onSurfaceVariantSummary
+                            )
                         }
                     }
                 }
-                Text("调整各频段增益（dB）", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(20.dp))
+                Text(
+                    "调整各频段增益（dB）",
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(top = 12.dp, bottom = 12.dp)
+                )
             }
         }
     }
 }
 
+/** 封面取色主题下的 Miuix Slider 配色 */
+@Composable
+private fun accentSliderColors(accent: Color): SliderColors =
+    SliderDefaults.sliderColors(
+        foregroundColor = accent,
+        backgroundColor = accent.copy(alpha = 0.22f),
+        thumbColor = accent
+    )
+
+
 // ---------------------------------------------------------
-// 辅助页面 (详情页 / 全屏歌词页 / 占位歌词)
+// 播放队列弹层（Miuix OverlayBottomSheet）
+// ---------------------------------------------------------
+@Composable
+private fun QueueSheet(
+    state: PlaybackState,
+    onPlayQueueSong: (Song, List<Song>) -> Unit,
+    onDismiss: () -> Unit
+) {
+    OverlayBottomSheet(
+        show = true,
+        title = "播放队列",
+        onDismissRequest = onDismiss,
+        startAction = {
+            IconButton(onClick = onDismiss) { Icon(MiuixIcons.Close, "关闭") }
+        }
+    ) {
+        Column(Modifier.fillMaxWidth()) {
+            Text(
+                "${state.queue.size} 首歌曲",
+                fontSize = 13.sp,
+                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
+            )
+            LazyColumn(
+                Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                itemsIndexed(state.queue, key = { _, item -> item.id }) { index, item ->
+                    QueueSongRow(item, index == state.queueIndex) {
+                        onPlayQueueSong(item, state.queue)
+                        onDismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QueueSongRow(song: Song, isCurrent: Boolean, onClick: () -> Unit) {
+    val colors = MiuixTheme.colorScheme
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (isCurrent) colors.primaryContainer else colors.surface)
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AlbumArt(song, Modifier.size(50.dp).clip(RoundedCornerShape(8.dp)))
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(song.title, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 15.sp)
+            Text(
+                song.artist,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 13.sp,
+                color = colors.onSurfaceVariantSummary
+            )
+        }
+        if (isCurrent) {
+            Icon(
+                MiuixIcons.Tune,
+                "正在播放",
+                tint = colors.primary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+
+// ---------------------------------------------------------
+// 辅助页面 (详情页 / 占位歌词)
 // ---------------------------------------------------------
 /**
  * 歌词解析结果缓存：解析只随歌词原文变化执行一次，播放进度（position）
@@ -522,159 +767,12 @@ private fun rememberSmoothPosition(position: Long, isPlaying: Boolean, key: Any)
     return value.value
 }
 
-
-/** 歌词列表滚动来源：区分用户浏览与播放自动跟随，只有用户滚动停下才触发跳转 */
-private enum class ScrollSource { Idle, User, Programmatic }
-
-@Composable
-private fun LyricsPage(song: Song, position: Long, isPlaying: Boolean, colors: CoverColors, onSeek: (Long) -> Unit) {
-    val doc = rememberLyricsDocument(song)
-    val lines = doc.original
-    // 帧级平滑播放位置：粗位置每 500ms 才更新一次，逐字进度需要逐帧连续
-    val smoothPos = rememberSmoothPosition(position, isPlaying, song.id)
-    val currentIndex = lines.indexOfLast { it.startMs?.let { ms -> ms <= smoothPos } ?: false }
-    val listState = rememberLazyListState()
-    // 滚动来源状态机：用户 fling/拖拽停下时，seek 到列表垂直中心处的歌词行；
-    // 当前行自动跟随的滚动不触发 seek，且用户浏览期间挂起自动跟随，避免播放把列表拽回
-    val scrollSource = remember { mutableStateOf(ScrollSource.Idle) }
-    val isScrolling = derivedStateOf { listState.isScrollInProgress }.value
-    fun seekToCenteredLine() {
-        val info = listState.layoutInfo
-        val centerY = (info.viewportStartOffset + info.viewportEndOffset) / 2
-        val centered = info.visibleItemsInfo.minByOrNull { abs(it.offset + it.size / 2 - centerY) } ?: return
-        // 与当前行相同则不重复跳转（避免误触重启）；无时轴行不可跳
-        if (centered.index != currentIndex) lines[centered.index].startMs?.let { onSeek(it) }
-    }
-    LaunchedEffect(song.id, currentIndex) {
-        if (currentIndex >= 0 && scrollSource.value != ScrollSource.User) {
-            scrollSource.value = ScrollSource.Programmatic
-            listState.animateScrollToItem(currentIndex)
-        }
-    }
-    LaunchedEffect(isScrolling) {
-        when {
-            isScrolling -> if (scrollSource.value == ScrollSource.Idle) scrollSource.value = ScrollSource.User
-            scrollSource.value == ScrollSource.User -> seekToCenteredLine()
-        }
-        if (!isScrolling) scrollSource.value = ScrollSource.Idle
-    }
-    // 音译/翻译轨按行关联键对齐主行
-    val romanByKey = remember(doc) { doc.romanization.filter { it.linkKey != null }.groupBy { it.linkKey!! } }
-    val transByKey = remember(doc) { doc.translation.filter { it.linkKey != null }.groupBy { it.linkKey!! } }
-    Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        LazyColumn(state = listState, modifier = Modifier.fillMaxWidth().weight(1f), horizontalAlignment = Alignment.CenterHorizontally, contentPadding = PaddingValues(vertical = 180.dp)) {
-            itemsIndexed(lines) { index, line ->
-                val roman = romanByKey[line.linkKey]?.firstOrNull()?.text
-                val translation = transByKey[line.linkKey]?.firstOrNull()?.text
-                roman?.let { Text(it, color = colors.muted.copy(alpha = .5f), fontSize = 15.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 2.dp)) }
-                val isCurrent = index == currentIndex
-                val seekToLine: () -> Unit = { line.startMs?.let(onSeek) }
-                if (line.words.isEmpty()) Text(
-                    line.visibleText(),
-                    color = if (isCurrent) colors.accent else colors.muted.copy(alpha = .45f),
-                    fontSize = 23.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .padding(vertical = 14.dp)
-                        .clickable(enabled = line.startMs != null) { seekToLine() }
-                ) else WordLevelLine(
-                    line,
-                    isCurrent,
-                    smoothPos,
-                    colors,
-                    Modifier.padding(vertical = 14.dp).clickable(enabled = line.startMs != null) { seekToLine() }
-                )
-                translation?.let { Text(it, color = colors.muted.copy(alpha = .6f), fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 12.dp)) }
-            }
-        }
-        Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("词", color = colors.accent, modifier = Modifier.clip(RoundedCornerShape(5.dp)).background(colors.surface.copy(alpha = .7f)).padding(horizontal = 7.dp, vertical = 4.dp))
-            Spacer(Modifier.width(10.dp))
-            Text(doc.format?.label() ?: "纯文本", color = colors.muted, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        }
-    }
-}
-
-/**
- * 逐字歌词行（全屏歌词页与迷你歌词窗共用）：进行中的词由 accent 从左往右
- * 随词内进度填充（硬边扫过）；已唱词全词填充并保持抬升不回落；
- * 未唱词基线下方、底色。超宽时 FlowRow 自动换行、逐行居中，不挤压末尾。
- */
-@Composable
-private fun WordLevelLine(
-    line: LyricLine,
-    isCurrent: Boolean,
-    smoothPos: Long,
-    colors: CoverColors,
-    modifier: Modifier = Modifier,
-    fontSize: TextUnit = 21.sp,
-    alignCenter: Boolean = true
-) {
-    FlowRow(
-        modifier = modifier,
-        horizontalArrangement = if (alignCenter) Arrangement.Center else Arrangement.Start,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        line.words.forEachIndexed { wordIndex, word ->
-            // 逐字匹配：词区间 [wordStart, wordEnd)。LRC 系格式词无 end 时退回"下一词起点"；
-            // 末词用 LrcTime 缺省 +500ms 时长收口，不再永久 active（TTML 词起点缺失时同样兜底）
-            val wordStart = word.startMs ?: line.startMs ?: 0L
-            val nextStart = line.words.getOrNull(wordIndex + 1)?.startMs
-            val wordEnd = LrcTime.wordEndMs(word, nextStart) ?: wordStart + LrcTime.DEFAULT_WORD_DURATION_MS
-            val active = isCurrent && smoothPos in wordStart until wordEnd
-            val sung = smoothPos >= wordEnd
-            // 唱完后字词保持在抬升位不再回落；历史行已唱词以更低透明度
-            // 与当前行区分层次，整行不回到基线下方
-            val progress = if (active) {
-                ((smoothPos - wordStart).toFloat() / (wordEnd - wordStart).coerceAtLeast(1L)).coerceIn(0f, 1f)
-            } else 0f
-            val targetLift = when {
-                active -> -8f - progress * 5f
-                sung -> -8f
-                else -> 4f
-            }
-            val targetAlpha = when {
-                active -> 1f
-                sung -> if (isCurrent) .86f else .5f
-                else -> .48f
-            }
-            val animation = tween<Float>(180, easing = FastOutSlowInEasing)
-            val lift by animateFloatAsState(targetLift, animation, label = "word-lift")
-            val alpha by animateFloatAsState(targetAlpha, animation, label = "word-alpha")
-            // 高光填充：进行中的词由 accent 从左往右随词内进度扫过（硬边），
-            // 未扫到的部分保持底色；已唱词全词填充，未唱词底色
-            val wordStyle = when {
-                active -> TextStyle(
-                    fontSize = fontSize,
-                    fontWeight = FontWeight.Medium,
-                    brush = Brush.linearGradient(
-                        0f to colors.accent,
-                        progress to colors.accent,
-                        progress to colors.muted,
-                        1f to colors.muted,
-                        start = Offset.Zero,
-                        end = Offset(Float.POSITIVE_INFINITY, 0f)
-                    )
-                )
-                sung -> TextStyle(
-                    fontSize = fontSize,
-                    fontWeight = FontWeight.Medium,
-                    color = colors.accent
-                )
-                else -> TextStyle(
-                    fontSize = fontSize,
-                    fontWeight = FontWeight.Medium,
-                    color = colors.muted
-                )
-            }
-            Text(
-                word.text,
-                style = wordStyle,
-                modifier = Modifier.graphicsLayer { translationY = lift; this.alpha = alpha }
-            )
-        }
-    }
+/** 将声道数转为可读标签 */
+private fun Int.toChannelLabel(): String = when (this) {
+    1 -> "单声道"
+    2 -> "双声道"
+    in 3..6 -> "$this 声道"
+    else -> "$this 声道"
 }
 
 @Composable
@@ -699,9 +797,11 @@ private fun DetailPage(song: Song, colors: CoverColors, onOpenLyricsOps: () -> U
             DetailRow("格式", doc.format?.label() ?: "纯文本", colors)
             DetailRow("行数", "${doc.original.size} 行", colors)
             DetailRow("逐字", if (doc.hasWordTiming) "支持" else "无逐字时间轴", colors)
-            TextButton(onClick = onOpenLyricsOps, enabled = song.lyrics.orEmpty().isNotBlank() || song.path.isNotBlank()) {
-                Text("歌词选项（导入 / 偏移 / 转换 / 写入标签）", color = colors.accent)
-            }
+            TextButton(
+                text = "歌词选项（导入 / 偏移 / 转换 / 写入标签）",
+                onClick = onOpenLyricsOps,
+                enabled = song.lyrics.orEmpty().isNotBlank() || song.path.isNotBlank()
+            )
         }
 
         // 基本标签
@@ -754,8 +854,248 @@ private fun DetailPage(song: Song, colors: CoverColors, onOpenLyricsOps: () -> U
     }
 }
 
-/** 歌词操作面板：导入外部歌词文件、时间轴偏移、格式转换，结果写回音频内嵌标签（Lyrico 同款交互） */
-@OptIn(ExperimentalMaterial3Api::class)
+
+@Composable
+private fun DetailRow(key: String, value: String, colors: CoverColors) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        Text(
+            key,
+            color = colors.muted,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.width(72.dp)
+        )
+        if (value.isNotBlank()) {
+            Text(
+                value,
+                color = colors.accent,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.weight(1f)
+            )
+        } else {
+            Text("—", color = colors.muted.copy(alpha = 0.4f), fontSize = 15.sp)
+        }
+    }
+}
+
+@Composable
+private fun InfoCard(title: String, colors: CoverColors, content: @Composable () -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(colors.surface.copy(alpha = 0.7f))
+            .padding(24.dp)
+    ) {
+        Text(
+            title,
+            color = colors.accent,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+        content()
+    }
+}
+
+
+/** 歌词列表滚动来源：区分用户浏览与播放自动跟随，只有用户滚动停下才触发跳转 */
+private enum class ScrollSource { Idle, User, Programmatic }
+
+@Composable
+private fun LyricsPage(song: Song, position: Long, isPlaying: Boolean, colors: CoverColors, onSeek: (Long) -> Unit) {
+    val doc = rememberLyricsDocument(song)
+    val lines = doc.original
+    // 帧级平滑播放位置：粗位置每 500ms 才更新一次，逐字进度需要逐帧连续
+    val smoothPos = rememberSmoothPosition(position, isPlaying, song.id)
+    val currentIndex = lines.indexOfLast { it.startMs?.let { ms -> ms <= smoothPos } ?: false }
+    val listState = rememberLazyListState()
+    // 滚动来源状态机：用户 fling/拖拽停下时，seek 到列表垂直中心处的歌词行；
+    // 当前行自动跟随的滚动不触发 seek，且用户浏览期间挂起自动跟随，避免播放把列表拽回
+    val scrollSource = remember { mutableStateOf(ScrollSource.Idle) }
+    val isScrolling = androidx.compose.runtime.derivedStateOf { listState.isScrollInProgress }.value
+    fun seekToCenteredLine() {
+        val info = listState.layoutInfo
+        val centerY = (info.viewportStartOffset + info.viewportEndOffset) / 2
+        val centered = info.visibleItemsInfo.minByOrNull { kotlin.math.abs(it.offset + it.size / 2 - centerY) } ?: return
+        // 与当前行相同则不重复跳转（避免误触重启）；无时轴行不可跳
+        if (centered.index != currentIndex) lines[centered.index].startMs?.let { onSeek(it) }
+    }
+    LaunchedEffect(song.id, currentIndex) {
+        if (currentIndex >= 0 && !listState.isScrollInProgress) {
+            scrollSource.value = ScrollSource.Programmatic
+            listState.animateScrollToItem(currentIndex)
+        }
+    }
+    LaunchedEffect(isScrolling) {
+        when {
+            isScrolling -> if (scrollSource.value == ScrollSource.Idle) scrollSource.value = ScrollSource.User
+            scrollSource.value == ScrollSource.User -> seekToCenteredLine()
+        }
+        if (!isScrolling) scrollSource.value = ScrollSource.Idle
+    }
+    // 音译/翻译轨按行关联键对齐主行
+    val romanByKey = remember(doc) { doc.romanization.filter { it.linkKey != null }.groupBy { it.linkKey!! } }
+    val transByKey = remember(doc) { doc.translation.filter { it.linkKey != null }.groupBy { it.linkKey!! } }
+    Column(Modifier.fillMaxSize().padding(horizontal = 25.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(vertical = 180.dp)
+        ) {
+            itemsIndexed(lines) { index, line ->
+                val roman = romanByKey[line.linkKey]?.firstOrNull()?.text
+                val translation = transByKey[line.linkKey]?.firstOrNull()?.text
+                val isCurrent = index == currentIndex
+                val seekToLine: () -> Unit = { line.startMs?.let(onSeek) }
+                roman?.let {
+                    Text(
+                        it,
+                        color = colors.muted.copy(alpha = 0.5f),
+                        fontSize = 15.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 2.dp)
+                    )
+                }
+                if (line.words.isEmpty()) {
+                    Text(
+                        line.visibleText(),
+                        color = if (isCurrent) colors.accent else colors.muted.copy(alpha = 0.45f),
+                        fontSize = 23.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .padding(vertical = 14.dp)
+                            .clickable(enabled = line.startMs != null) { seekToLine() }
+                    )
+                } else {
+                    WordLevelLine(
+                        line,
+                        isCurrent,
+                        smoothPos,
+                        colors,
+                        Modifier
+                            .padding(vertical = 14.dp)
+                            .clickable(enabled = line.startMs != null) { seekToLine() }
+                    )
+                }
+                translation?.let {
+                    Text(
+                        it,
+                        color = colors.muted.copy(alpha = 0.6f),
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                }
+            }
+        }
+        Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "词",
+                color = colors.accent,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(colors.surface.copy(alpha = 0.7f))
+                    .padding(horizontal = 7.dp, vertical = 4.dp)
+            )
+            Spacer(Modifier.width(10.dp))
+            Text(
+                doc.format?.label() ?: "纯文本",
+                color = colors.muted,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+        }
+    }
+}
+
+
+/**
+ * 逐字歌词行（全屏歌词页与迷你歌词窗共用）：进行中的词由 accent 从左往右
+ * 随词内进度填充（硬边扫过）；已唱词全词填充并保持抬升不回落；
+ * 未唱词基线下方、底色。超宽时 FlowRow 自动换行、逐行居中，不挤压末尾。
+ */
+@Composable
+private fun WordLevelLine(
+    line: LyricLine,
+    isCurrent: Boolean,
+    smoothPos: Long,
+    colors: CoverColors,
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit = 21.sp,
+    alignCenter: Boolean = true
+) {
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = if (alignCenter) Arrangement.Center else Arrangement.Start,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        line.words.forEachIndexed { wordIndex, word ->
+            // 逐字匹配：词区间 [wordStart, wordEnd)。LRC 系格式词无 end 时退回"下一词起点"；
+            // 末词用 LrcTime 缺省 +500ms 时长收口，不再永久 active（TTML 词起点缺失时同样兜底）
+            val wordStart = word.startMs ?: line.startMs ?: 0L
+            val nextStart = line.words.getOrNull(wordIndex + 1)?.startMs
+            val wordEnd = com.pure.music.lyric.format.LrcTime.wordEndMs(word, nextStart) ?: wordStart + com.pure.music.lyric.format.LrcTime.DEFAULT_WORD_DURATION_MS
+            val active = isCurrent && smoothPos in wordStart until wordEnd
+            val sung = smoothPos >= wordEnd
+            // 唱完后字词保持在抬升位不再回落；历史行已唱词以更低透明度
+            // 与当前行区分层次，整行不回到基线下方
+            val progress = if (active) {
+                ((smoothPos - wordStart).toFloat() / (wordEnd - wordStart).coerceAtLeast(1L)).coerceIn(0f, 1f)
+            } else 0f
+            val targetLift = when {
+                active -> -8f - progress * 5f
+                sung -> -8f
+                else -> 4f
+            }
+            val targetAlpha = when {
+                active -> 1f
+                sung -> if (isCurrent) 0.86f else 0.5f
+                else -> 0.48f
+            }
+            val animation = tween<Float>(180, easing = FastOutSlowInEasing)
+            val lift by animateFloatAsState(targetLift, animation, label = "word-lift")
+            val alpha by animateFloatAsState(targetAlpha, animation, label = "word-alpha")
+            // 高光填充：进行中的词由 accent 从左往右随词内进度扫过（硬边），
+            // 未扫到的部分保持底色；已唱词全词填充，未唱词底色
+            val wordStyle = when {
+                active -> androidx.compose.ui.text.TextStyle(
+                    fontSize = fontSize,
+                    fontWeight = FontWeight.Medium,
+                    brush = Brush.linearGradient(
+                        0f to colors.accent,
+                        progress to colors.accent,
+                        progress to colors.muted,
+                        1f to colors.muted,
+                        start = Offset.Zero,
+                        end = Offset(Float.POSITIVE_INFINITY, 0f)
+                    )
+                )
+                sung -> androidx.compose.ui.text.TextStyle(
+                    fontSize = fontSize,
+                    fontWeight = FontWeight.Medium,
+                    color = colors.accent
+                )
+                else -> androidx.compose.ui.text.TextStyle(
+                    fontSize = fontSize,
+                    fontWeight = FontWeight.Medium,
+                    color = colors.muted
+                )
+            }
+            Text(
+                word.text,
+                style = wordStyle,
+                modifier = Modifier.graphicsLayer { translationY = lift; this.alpha = alpha }
+            )
+        }
+    }
+}
+
+
+/** 歌词操作面板（Miuix 底部弹层）：导入外部歌词文件、时间轴偏移、格式转换，结果写回音频内嵌标签 */
 @Composable
 private fun LyricsOpsSheet(song: Song, onDismiss: () -> Unit) {
     val context = LocalContext.current
@@ -767,6 +1107,7 @@ private fun LyricsOpsSheet(song: Song, onDismiss: () -> Unit) {
     var offsetMs by remember { mutableLongStateOf(0L) }
     var targetFormat by remember { mutableStateOf(LyricFormat.ENHANCED_LRC) }
     var busy by remember { mutableStateOf(false) }
+    val scheme = MiuixTheme.colorScheme
 
     fun toast(message: String) = Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 
@@ -795,63 +1136,70 @@ private fun LyricsOpsSheet(song: Song, onDismiss: () -> Unit) {
         }
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(Modifier.fillMaxWidth().height(PlayerSheetHeight).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Text("歌词选项", style = MaterialTheme.typography.headlineSmall)
+    OverlayBottomSheet(
+        show = true,
+        title = "歌词选项",
+        onDismissRequest = onDismiss,
+        startAction = {
+            IconButton(onClick = onDismiss) { Icon(MiuixIcons.Close, "关闭") }
+        }
+    ) {
+        Column(
+            Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
             Text(
                 when {
                     raw.isBlank() -> "当前歌曲暂无内嵌歌词，可导入外部歌词文件写入"
                     doc?.hasWordTiming == true -> "当前为逐字歌词（${doc.format?.label() ?: "格式未知"}），支持转换与偏移"
                     else -> "当前为行级歌词（${doc?.format?.label() ?: "纯文本"}），无逐字时间轴"
                 },
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = scheme.onSurfaceVariantSummary,
                 fontSize = 14.sp
             )
 
             // 导入外部歌词
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("导入外部歌词文件", style = MaterialTheme.typography.bodyLarge)
-                TextButton(onClick = { importLauncher.launch(arrayOf("text/*", "*/*")) }, enabled = !busy) {
-                    Text("导入")
-                }
+                Text("导入外部歌词文件", fontSize = 15.sp, modifier = Modifier.weight(1f))
+                TextButton(text = "导入", onClick = { importLauncher.launch(arrayOf("text/*", "*/*")) }, enabled = !busy)
             }
 
             // 时间轴偏移（-10s ~ +10s，步进 100ms，与 Lyrico 一致）
             if (raw.isNotBlank()) {
-                Text("时间轴偏移", style = MaterialTheme.typography.bodyLarge)
+                Text("时间轴偏移", fontSize = 15.sp)
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = { offsetMs = (offsetMs - 100L).coerceAtLeast(-10_000L) }) { Text("-100ms") }
-                    Text("${offsetMs}ms", modifier = Modifier.weight(1f))
-                    TextButton(onClick = { offsetMs = (offsetMs + 100L).coerceAtMost(10_000L) }) { Text("+100ms") }
-                    TextButton(onClick = { offsetMs = 0L }, enabled = offsetMs != 0L) { Text("重置") }
+                    TextButton(text = "-100ms", onClick = { offsetMs = (offsetMs - 100L).coerceAtLeast(-10_000L) })
+                    Text("${offsetMs}ms", modifier = Modifier.weight(1f), fontSize = 14.sp, color = scheme.onSurfaceVariantSummary)
+                    TextButton(text = "+100ms", onClick = { offsetMs = (offsetMs + 100L).coerceAtMost(10_000L) })
+                    TextButton(text = "重置", onClick = { offsetMs = 0L }, enabled = offsetMs != 0L)
                 }
-                TextButton(onClick = { write(LyricsCodec.shiftText(raw, offsetMs)) }, enabled = offsetMs != 0L && !busy) {
-                    Text("应用偏移并写入")
-                }
+                TextButton(
+                    text = "应用偏移并写入",
+                    onClick = { write(LyricsCodec.shiftText(raw, offsetMs)) },
+                    enabled = offsetMs != 0L && !busy
+                )
             }
-
-            // 格式转换
+            // 格式转换（Miuix 文本按钮组替代 Material FilterChip）
             if (raw.isNotBlank()) {
-                Text("转换歌词格式", style = MaterialTheme.typography.bodyLarge)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("转换歌词格式", fontSize = 15.sp)
+                Row(
+                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     LyricFormat.entries.forEach { format ->
                         val enabled = !format.usesWordTiming || hasWordTiming
-                        FilterChip(
-                            selected = targetFormat == format,
-                            onClick = { targetFormat = format },
-                            enabled = enabled,
-                            label = { Text(format.label()) }
-                        )
+                        MiuixFormatChip(format.label(), targetFormat == format, enabled) { targetFormat = format }
                     }
                 }
                 Text(
                     if (targetFormat.usesWordTiming && !hasWordTiming) {
                         "源歌词没有逐字时间轴，无法转换到" + targetFormat.label()
                     } else "将转换为 " + targetFormat.label() + " 并写入标签",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = scheme.onSurfaceVariantSummary,
                     fontSize = 12.sp
                 )
                 TextButton(
+                    text = "转换并写入",
                     onClick = {
                         val encoded = doc?.let { LyricsCodec.encode(it, targetFormat) }
                         when {
@@ -860,81 +1208,37 @@ private fun LyricsOpsSheet(song: Song, onDismiss: () -> Unit) {
                         }
                     },
                     enabled = (targetFormat.usesWordTiming && hasWordTiming) || !targetFormat.usesWordTiming
-                ) {
-                    Text("转换并写入")
-                }
+                )
             }
         }
     }
 }
 
-/** 将声道数转为可读标签 */
-private fun Int.toChannelLabel(): String = when (this) {
-    1 -> "单声道"
-    2 -> "双声道"
-    in 3..6 -> "$this 声道"
-    else -> "$this 声道"
-}
-
+/** 格式选择小按钮（Miuix 胶囊按钮） */
 @Composable
-private fun DetailRow(key: String, value: String, colors: CoverColors) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        Text(key, color = colors.muted, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.width(72.dp))
-        if (value.isNotBlank()) {
-            Text(value, color = colors.accent, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-        } else {
-            Text("—", color = colors.muted.copy(alpha = 0.4f), fontSize = 15.sp)
-        }
-    }
-}
-
-@Composable
-private fun DetailCard(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String, colors: CoverColors) {
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.surface.copy(alpha = .7f)).padding(22.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, contentDescription = null, tint = colors.accent, modifier = Modifier.size(28.dp))
-        Spacer(Modifier.width(20.dp))
-        Text(text, color = colors.accent, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
-private fun InfoCard(title: String, colors: CoverColors, content: @Composable () -> Unit) {
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.surface.copy(alpha = .7f)).padding(24.dp)) {
-        Text(title, color = colors.accent, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
-        content()
-    }
-}
-
-private enum class PlaybackMode(val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    SHUFFLE("随机播放", Icons.Default.Shuffle),
-    SEQUENTIAL("顺序播放", Icons.Default.FormatListNumbered),
-    LIST_LOOP("列表循环", Icons.Default.Repeat),
-    SINGLE_LOOP("单曲循环", Icons.Default.RepeatOne)
-}
-
-private fun playbackMode(state: PlaybackState): PlaybackMode = when {
-    state.shuffleModeEnabled -> PlaybackMode.SHUFFLE
-    state.repeatMode == Player.REPEAT_MODE_ONE -> PlaybackMode.SINGLE_LOOP
-    state.repeatMode == Player.REPEAT_MODE_ALL -> PlaybackMode.LIST_LOOP
-    else -> PlaybackMode.SEQUENTIAL
-}
-
-@Composable
-private fun QueueSongRow(song: Song, isCurrent: Boolean, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
-            .background(if (isCurrent) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface)
-            .clickable(onClick = onClick).padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+private fun MiuixFormatChip(
+    label: String,
+    selected: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    val scheme = MiuixTheme.colorScheme
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        cornerRadius = 14.dp,
+        colors = remember(selected) {
+            ButtonColors(
+                color = if (selected) scheme.primaryContainer else scheme.surfaceContainer,
+                contentColor = if (selected) scheme.onPrimaryContainer else scheme.onSurface,
+                disabledColor = scheme.disabledPrimary,
+                disabledContentColor = scheme.disabledOnSurface,
+            )
+        },
+        insideMargin = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 6.dp)
     ) {
-        AlbumArt(song, Modifier.size(50.dp).clip(RoundedCornerShape(8.dp)))
-        Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            Text(song.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
-            Text(song.artist, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        if (isCurrent) Icon(Icons.Default.GraphicEq, "正在播放", tint = MaterialTheme.colorScheme.primary)
-        Icon(Icons.Default.MoreVert, "更多操作")
+        Text(label, fontSize = 13.sp)
     }
-
 }
+
+

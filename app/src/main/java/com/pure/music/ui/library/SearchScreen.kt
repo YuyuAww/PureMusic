@@ -2,67 +2,120 @@ package com.pure.music.ui.library
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pure.music.data.Song
 import com.pure.music.library.LibraryViewModel
 import com.pure.music.library.libraryViewModelFactory
+import top.yukonga.miuix.kmp.basic.InputField
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SearchBar
+import top.yukonga.miuix.kmp.basic.SmallTopAppBar
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** 搜索页：Miuix SearchBar + 歌曲卡片结果列表 */
 @Composable
 fun SearchScreen(
     onBack: () -> Unit,
     onPlaySong: (Song, List<Song>) -> Unit,
-    viewModel: LibraryViewModel = viewModel(factory = libraryViewModelFactory)
+    viewModel: LibraryViewModel = viewModel(factory = libraryViewModelFactory),
 ) {
     val songs by viewModel.songs.collectAsStateWithLifecycle()
     val favoriteIds by viewModel.favoriteSongIds.collectAsStateWithLifecycle()
     var query by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(true) }
     val context = LocalContext.current
-    val permission = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE
-    var granted by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it; if (it) viewModel.refresh() }
+    var granted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_MEDIA_AUDIO) ==
+                PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
+        granted = result
+        if (result) viewModel.refresh()
+    }
 
+    val colors = MiuixTheme.colorScheme
     Scaffold(
+        containerColor = colors.background,
         topBar = {
-            TopAppBar(
-                title = { Text("搜索") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } }
+            SmallTopAppBar(
+                title = "搜索",
+                navigationIcon = {
+                    IconButton(onClick = onBack) { Icon(MiuixIcons.Back, "返回") }
+                },
             )
-        }
+        },
     ) { padding ->
         if (!granted) {
-            PermissionPanel(padding) { launcher.launch(permission) }
+            PermissionPanel(padding) { launcher.launch(Manifest.permission.READ_MEDIA_AUDIO) }
         } else {
-            val results = songs.filter { query.isBlank() || it.title.contains(query, true) || it.artist.contains(query, true) || it.album.contains(query, true) }
+            val results = songs
+                .filter {
+                    query.isBlank() ||
+                        it.title.contains(query, true) ||
+                        it.artist.contains(query, true) ||
+                        it.album.contains(query, true)
+                }
                 .sortedBy { it.title.trim().lowercase() }
             Column(Modifier.fillMaxSize().padding(padding).imePadding()) {
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    singleLine = true,
-                    placeholder = { Text("搜索歌曲、专辑或艺术家") },
-                    leadingIcon = { Icon(Icons.Default.Search, null) },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)
-                )
-                if (query.isNotBlank()) Text("${results.size} 首结果", modifier = Modifier.padding(horizontal = 18.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 8.dp)) {
-                    items(results, key = { it.id }) { song -> SongRow(song, song.id in favoriteIds, viewModel::toggleFavorite) { onPlaySong(song, results) } }
+                SearchBar(
+                    inputField = {
+                        InputField(
+                            query = query,
+                            onQueryChange = { query = it },
+                            onSearch = {},
+                            expanded = expanded,
+                            onExpandedChange = { expanded = it },
+                            label = "搜索歌曲、专辑或艺术家",
+                        )
+                    },
+                    expanded = false,
+                    onExpandedChange = {},
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+                ) {
+                    // 结果直接在下方列表展示，弹层内容留空
+                }
+                if (query.isNotBlank()) {
+                    Text(
+                        "${results.size} 首结果",
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp),
+                        fontSize = 13.sp,
+                        color = colors.onSurfaceVariantSummary,
+                    )
+                }
+                LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(vertical = 8.dp)) {
+                    items(results, key = { it.id }) { song ->
+                        SongRow(song, song.id in favoriteIds, viewModel::toggleFavorite) {
+                            onPlaySong(song, results)
+                        }
+                    }
                 }
             }
         }

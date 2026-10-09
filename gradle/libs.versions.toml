@@ -1,8 +1,8 @@
 [versions]
 junit = "4.13.2"
-agp = "9.4.0"
-kotlin = "2.3.21"
-ksp = "2.3.11"
+agp = "9.4.1"
+kotlin = "2.4.20"
+ksp = "2.3.12"
 coreKtx = "1.19.0"
 lifecycle = "2.11.0"
 activityCompose = "1.13.0"
@@ -12,7 +12,8 @@ room = "2.8.4"
 datastore = "1.2.1"
 coroutines = "1.11.0"
 coil = "3.6.0"
-navigationevent = "1.0.0"
+navigationevent = "1.1.2"
+miuix = "0.9.4"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -33,6 +34,11 @@ androidx-compose-material-icons-extended = { group = "androidx.compose.material"
 androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3" }
 androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
+
+miuix-ui = { group = "top.yukonga.miuix.kmp", name = "miuix-ui-android", version.ref = "miuix" }
+miuix-preference = { group = "top.yukonga.miuix.kmp", name = "miuix-preference-android", version.ref = "miuix" }
+miuix-icons = { group = "top.yukonga.miuix.kmp", name = "miuix-icons-android", version.ref = "miuix" }
+miuix-blur = { group = "top.yukonga.miuix.kmp", name = "miuix-blur-android", version.ref = "miuix" }
 
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }

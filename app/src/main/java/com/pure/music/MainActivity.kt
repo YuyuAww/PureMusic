@@ -5,26 +5,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.navigationevent.compose.NavigationBackHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
-import androidx.navigationevent.NavigationEventInfo
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pure.music.data.Song
@@ -41,131 +30,86 @@ import com.pure.music.ui.player.MiniPlayerBar
 import com.pure.music.ui.player.PlayerWorkspace
 import com.pure.music.ui.settings.SettingsScreen
 import com.pure.music.ui.theme.PureMusicTheme
-import com.pure.music.ui.utils.CoverColors
-import com.pure.music.ui.utils.loadCoverColors
+import top.yukonga.miuix.kmp.basic.Scaffold
 
-/** 主界面 Activity，承载所有 Compose UI */
+/** 主界面 Activity，承载所有 Miuix Compose UI */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 全面屏 Edge-to-Edge：状态栏透明，内容绘制到系统栏后方，
-        // 同时设置 BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE 实现向后兼容
+        // 全面屏 Edge-to-Edge：状态栏透明，内容绘制到系统栏后方
         enableEdgeToEdge()
         // 移除导航栏半透明遮罩，让底部栏背景色完全延伸至屏幕底部
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
         }
-        setContent {
-            MainContent()
-        }
+        setContent { MainContent() }
     }
 }
 
-/** 根 Composable，根据设置切换主题 */
+/** 根 Composable：Miuix 根主题 + Miuix Scaffold（宿主弹窗层 + 迷你播放器浮动工具栏） */
 @Composable
 private fun MainContent() {
     val settingsViewModel: SettingsViewModel = viewModel(factory = settingsViewModelFactory)
+    val libraryViewModel: LibraryViewModel = viewModel(factory = libraryViewModelFactory)
+    val playerViewModel: PlayerViewModel = viewModel(factory = playerViewModelFactory)
     val theme by settingsViewModel.theme.collectAsStateWithLifecycle()
     val colorSource by settingsViewModel.colorSource.collectAsStateWithLifecycle()
-    val playerViewModel: PlayerViewModel = viewModel(factory = playerViewModelFactory)
     val playerState by playerViewModel.state.collectAsStateWithLifecycle()
 
-    // 根据主题设置决定明暗模式
-    val darkTheme = when (theme) {
-        "light" -> false
-        "dark" -> true
-        else -> isSystemInDarkTheme()
-    }
-
-    // 使用应用品牌色，避免设备动态取色导致界面风格不一致
-        PureMusicTheme(darkTheme = darkTheme, dynamicColor = true, colorSource = colorSource, coverAlbumId = playerState.currentSong?.albumId) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            MainUI(settingsViewModel, playerViewModel)
-        }
-    }
-}
-
-/** 主 UI 层，组装媒体库、播放器、设置等界面 */
-@Composable
-private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: PlayerViewModel) {
-    val libraryViewModel: LibraryViewModel = viewModel(factory = libraryViewModelFactory)
-    val state by playerViewModel.state.collectAsStateWithLifecycle()
-    val theme by settingsViewModel.theme.collectAsStateWithLifecycle()
-    val darkTheme = theme == "dark" || (theme == "system" && isSystemInDarkTheme())
-    val context = LocalContext.current
-    val colorScheme = MaterialTheme.colorScheme
-    val albumId = state.currentSong?.albumId
-    var coverAccent by remember(albumId, darkTheme) { mutableStateOf(colorScheme.primary) }
-    androidx.compose.runtime.LaunchedEffect(albumId, darkTheme) {
-        coverAccent = if (albumId != null) {
-            loadCoverColors(
-                context,
-                albumId,
-                CoverColors(colorScheme.primary, colorScheme.onSurfaceVariant, colorScheme.background, colorScheme.surface),
-                darkTheme
-                    ).accent
-        } else colorScheme.primary
-    }
-    var showNowPlaying by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
     var showScan by remember { mutableStateOf(false) }
+    var showNowPlaying by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
-    val backEventState = rememberNavigationEventState(currentInfo = NavigationEventInfo.None)
-    NavigationBackHandler(
-        state = backEventState,
-        isBackEnabled = showNowPlaying || showSettings || showSearch || showScan,
-        onBackCompleted = {
-            when {
-                showSettings -> showSettings = false
-                showSearch -> showSearch = false
-                showScan -> showScan = false
-                else -> showNowPlaying = false
-            }
-        }
-    )
-
-    Scaffold { padding ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            // 正常内容区，带系统栏 padding
-            Box(
-                modifier = Modifier.fillMaxSize().padding(
-                    start = padding.calculateLeftPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
-                    top = 0.dp,
-                    end = padding.calculateRightPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
-                    bottom = 0.dp
-                )
-            ) {
-                if (showSettings) {
-                    SettingsScreen(
-                        viewModel = settingsViewModel,
-                        onBack = { showSettings = false }
+    // 应用级 Miuix 主题：明暗与取色来源跟随设置
+    PureMusicTheme(
+        theme = theme,
+        colorSource = colorSource,
+        coverAlbumId = playerState.currentSong?.albumId,
+    ) {
+        // 根 Miuix Scaffold：为 Overlay 弹窗提供 popup host，并承载迷你播放器浮动工具栏
+        Scaffold(
+            floatingToolbar = {
+                if (playerState.currentSong != null && !showNowPlaying) {
+                    MiniPlayerBar(
+                        state = playerState,
+                        onPrevious = { playerViewModel.previous() },
+                        onTogglePlayPause = { playerViewModel.togglePlayPause() },
+                        onNext = { playerViewModel.next() },
+                        onExpand = { showNowPlaying = true },
+                        isFavorite = playerViewModel.isFavorite(playerState.currentSong?.id ?: -1L),
+                        onToggleFavorite = {
+                            playerViewModel.toggleFavorite(playerState.currentSong?.id ?: -1L)
+                        },
                     )
-                } else if (showSearch) {
-                    SearchScreen(
+                }
+            },
+        ) {
+            Box(Modifier.fillMaxSize()) {
+                when {
+                    showSettings -> SettingsScreen(
+                        viewModel = settingsViewModel,
+                        onBack = { showSettings = false },
+                    )
+                    showSearch -> SearchScreen(
                         onBack = { showSearch = false },
                         onPlaySong = { song: Song, queue: List<Song> ->
-                            val isCurrentSong = state.currentSong?.id == song.id
                             playerViewModel.playSong(song, queue)
-                            if (isCurrentSong) showNowPlaying = true
-                        }
+                        },
+                        viewModel = libraryViewModel,
                     )
-                } else if (showScan) {
-                    ScanScreen(
+                    showScan -> ScanScreen(
                         onBack = { showScan = false },
                         onScan = {
                             libraryViewModel.refresh()
                             showScan = false
                         },
-                        viewModel = settingsViewModel
+                        viewModel = settingsViewModel,
                     )
-                } else {
-                    LibraryScreen(
+                    else -> LibraryScreen(
                         onPlaySong = { song: Song, queue: List<Song> ->
-                            val isCurrentSong = state.currentSong?.id == song.id
+                            val isCurrentSong = playerState.currentSong?.id == song.id
                             playerViewModel.playSong(song, queue)
                             if (isCurrentSong) showNowPlaying = true
                         },
@@ -173,47 +117,32 @@ private fun MainUI(settingsViewModel: SettingsViewModel, playerViewModel: Player
                         onShowSearch = { showSearch = true },
                         onShowScan = { showScan = true },
                         onExit = { (context as? ComponentActivity)?.finish() },
-                        isDarkTheme = theme == "dark" || (theme == "system" && isSystemInDarkTheme()),
-                        onToggleTheme = { settingsViewModel.setTheme(if (theme == "dark") "light" else "dark") },
-                        onShowEqualizer = { showSettings = true },
-                        drawerAccent = coverAccent
+                        viewModel = libraryViewModel,
                     )
                 }
-            }
 
-            // 全屏播放器，不经过 padding，延伸至系统栏后方
-            if (showNowPlaying) {
-                PlayerWorkspace(
-                    state = state,
-                    onDismiss = { showNowPlaying = false },
-                    onTogglePlayPause = { playerViewModel.togglePlayPause() },
-                    onNext = { playerViewModel.next() },
-                    onPrevious = { playerViewModel.previous() },
-                    onSeek = { playerViewModel.seekTo(it) },
-                    onRepeatMode = { playerViewModel.setRepeatMode(it) },
-                    onShuffleMode = { playerViewModel.setShuffleMode(it) },
-                    isFavorite = playerViewModel.isFavorite(state.currentSong?.id ?: -1L),
-                    onToggleFavorite = { playerViewModel.toggleFavorite(state.currentSong?.id ?: -1L) },
-                    onPlayQueueSong = { song, queue -> playerViewModel.playQueue(queue, queue.indexOf(song)) },
-                    onSetSleepTimer = playerViewModel::setSleepTimer,
-                    onCancelSleepTimer = playerViewModel::cancelSleepTimer,
-                )
-            }
-
-            if (state.currentSong != null && !showNowPlaying) {
-                MiniPlayerBar(
-                    state = state,
-                    onPrevious = { playerViewModel.previous() },
-                    onTogglePlayPause = { playerViewModel.togglePlayPause() },
-                    onNext = { playerViewModel.next() },
-                    onExpand = { showNowPlaying = true },
-                    isFavorite = playerViewModel.isFavorite(state.currentSong?.id ?: -1L),
-                    onToggleFavorite = { playerViewModel.toggleFavorite(state.currentSong?.id ?: -1L) },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(horizontal = 12.dp, vertical = 12.dp)
-                        .navigationBarsPadding()
-                )
+                // 全屏播放器（Miuix Overlay 弹层以根 Scaffold 为宿主）
+                if (showNowPlaying) {
+                    PlayerWorkspace(
+                        state = playerState,
+                        onDismiss = { showNowPlaying = false },
+                        onTogglePlayPause = { playerViewModel.togglePlayPause() },
+                        onNext = { playerViewModel.next() },
+                        onPrevious = { playerViewModel.previous() },
+                        onSeek = { playerViewModel.seekTo(it) },
+                        onRepeatMode = { playerViewModel.setRepeatMode(it) },
+                        onShuffleMode = { playerViewModel.setShuffleMode(it) },
+                        isFavorite = playerViewModel.isFavorite(playerState.currentSong?.id ?: -1L),
+                        onToggleFavorite = {
+                            playerViewModel.toggleFavorite(playerState.currentSong?.id ?: -1L)
+                        },
+                        onPlayQueueSong = { song, queue ->
+                            playerViewModel.playQueue(queue, queue.indexOf(song))
+                        },
+                        onSetSleepTimer = playerViewModel::setSleepTimer,
+                        onCancelSleepTimer = playerViewModel::cancelSleepTimer,
+                    )
+                }
             }
         }
     }

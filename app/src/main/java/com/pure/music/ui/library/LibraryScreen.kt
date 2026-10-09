@@ -2,38 +2,90 @@ package com.pure.music.ui.library
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberModalDrawerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.*
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.pure.music.data.*
-import com.pure.music.library.*
+import com.pure.music.data.Album
+import com.pure.music.data.Artist
+import com.pure.music.data.MusicFolder
+import com.pure.music.data.Song
+import com.pure.music.library.LibraryViewModel
+import com.pure.music.library.libraryViewModelFactory
 import com.pure.music.ui.components.AlbumArt
+import com.pure.music.ui.components.MiuixDrawer
+import com.pure.music.ui.components.MiuixDrawerItem
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Button
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SmallTopAppBar
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.Sidebar
+import top.yukonga.miuix.kmp.icon.extended.Album
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Contacts
+import top.yukonga.miuix.kmp.icon.extended.Favorites
+import top.yukonga.miuix.kmp.icon.extended.FavoritesFill
+import top.yukonga.miuix.kmp.icon.extended.Folder
+import top.yukonga.miuix.kmp.icon.extended.Music
+import top.yukonga.miuix.kmp.icon.extended.Recent
+import top.yukonga.miuix.kmp.icon.extended.Refresh
+import top.yukonga.miuix.kmp.icon.extended.Search
+import top.yukonga.miuix.kmp.icon.extended.Settings
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-private enum class LibrarySection(val title: String) { SONGS("歌曲"), ALBUMS("专辑"), ARTISTS("艺术家"), FOLDERS("文件夹"), FAVORITES("收藏"), RECENT("最近播放") }
+private enum class LibrarySection(val title: String) {
+    SONGS("歌曲"), ALBUMS("专辑"), ARTISTS("艺术家"), FOLDERS("文件夹"), FAVORITES("收藏"), RECENT("最近播放")
+}
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** 媒体库页：Miuix 风格侧边抽屉（应用自有封装 MiuixDrawer）+ Miuix 顶栏与卡片列表 */
 @Composable
 fun LibraryScreen(
     onPlaySong: (Song, List<Song>) -> Unit,
@@ -41,159 +93,380 @@ fun LibraryScreen(
     onShowSearch: () -> Unit,
     onShowScan: () -> Unit,
     onExit: () -> Unit,
-    isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit,
-    onShowEqualizer: () -> Unit,
-    drawerAccent: Color = MaterialTheme.colorScheme.primary,
-    viewModel: LibraryViewModel = viewModel(factory = libraryViewModelFactory)
+    viewModel: LibraryViewModel = viewModel(factory = libraryViewModelFactory),
 ) {
-    val songs by viewModel.songs.collectAsStateWithLifecycle(); val albums by viewModel.albums.collectAsStateWithLifecycle(); val artists by viewModel.artists.collectAsStateWithLifecycle(); val folders by viewModel.folders.collectAsStateWithLifecycle(); val favoriteIds by viewModel.favoriteSongIds.collectAsStateWithLifecycle(); val recentIds by viewModel.recentSongIds.collectAsStateWithLifecycle()
-    val drawer = rememberDrawerState(DrawerValue.Closed); val scope = rememberCoroutineScope(); var section by remember { mutableStateOf(LibrarySection.SONGS) }; var folderPath by remember { mutableStateOf<String?>(null) }
-    val context = androidx.compose.ui.platform.LocalContext.current; val permission = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE; var granted by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it; if (it) viewModel.refresh() }
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val compactDrawerWidth = (maxWidth * 0.5f).coerceIn(160.dp, 320.dp)
-        val drawerItems: @Composable ColumnScope.() -> Unit = {
-            Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = onExit) { Icon(Icons.AutoMirrored.Filled.ExitToApp, "退出应用", tint = drawerAccent) }
-                        IconButton(onClick = onToggleTheme) { Icon(if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode, if (isDarkTheme) "切换浅色模式" else "切换深色模式", tint = drawerAccent) }
-                        IconButton(onClick = { scope.launch { drawer.close() }; onShowEqualizer() }) { Icon(Icons.Default.Equalizer, "均衡器", tint = drawerAccent) }
-                    }
-                }
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Column(Modifier.padding(vertical = 8.dp)) {
-                        LibrarySection.entries.forEach { item -> NavigationDrawerItem(label = { Text(item.title) }, selected = false, colors = NavigationDrawerItemDefaults.colors(unselectedIconColor = drawerAccent, selectedIconColor = drawerAccent), onClick = { section = item; folderPath = null; scope.launch { drawer.close() } }, icon = { Icon(if (item == LibrarySection.ALBUMS) Icons.Default.Album else if (item == LibrarySection.ARTISTS) Icons.Default.Person else if (item == LibrarySection.FOLDERS) Icons.Default.Folder else if (item == LibrarySection.FAVORITES) Icons.Default.Favorite else if (item == LibrarySection.RECENT) Icons.Default.History else Icons.Default.MusicNote, null) }) }
-                    }
-                }
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Column(Modifier.padding(vertical = 8.dp)) {
-                        NavigationDrawerItem(label = { Text("扫描音乐") }, selected = false, colors = NavigationDrawerItemDefaults.colors(unselectedIconColor = drawerAccent, selectedIconColor = drawerAccent), onClick = { scope.launch { drawer.close() }; onShowScan() }, icon = { Icon(Icons.Default.Refresh, null) })
-                        NavigationDrawerItem(label = { Text("设置") }, selected = false, colors = NavigationDrawerItemDefaults.colors(unselectedIconColor = drawerAccent, selectedIconColor = drawerAccent), onClick = { scope.launch { drawer.close() }; onShowSettings() }, icon = { Icon(Icons.Default.Settings, null) })
-                    }
-                }
-            }
-        }
-        val content: @Composable () -> Unit = {
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { Text(if (folderPath == null) section.title else folders.firstOrNull { it.path == folderPath }?.name ?: "文件夹") },
-                        navigationIcon = {
-                            if (folderPath != null) IconButton(onClick = { folderPath = null }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") }
-                            else if (maxWidth < 600.dp) {
-                                IconButton(onClick = { scope.launch { if (drawer.isOpen) drawer.close() else drawer.open() } }) {
-                                    Icon(Icons.Default.Menu, "导航")
-                                }
-                            }
+    val songs by viewModel.songs.collectAsStateWithLifecycle()
+    val albums by viewModel.albums.collectAsStateWithLifecycle()
+    val artists by viewModel.artists.collectAsStateWithLifecycle()
+    val folders by viewModel.folders.collectAsStateWithLifecycle()
+    val favoriteIds by viewModel.favoriteSongIds.collectAsStateWithLifecycle()
+    val recentIds by viewModel.recentSongIds.collectAsStateWithLifecycle()
+    var section by remember { mutableStateOf(LibrarySection.SONGS) }
+    var folderPath by remember { mutableStateOf<String?>(null) }
+    val drawerState = rememberModalDrawerState()
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    var granted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_MEDIA_AUDIO) ==
+                PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
+        granted = result
+        if (result) viewModel.refresh()
+    }
+
+    MiuixDrawer(
+        drawerState = drawerState,
+        items = buildList {
+            LibrarySection.entries.forEach { s ->
+                add(
+                    MiuixDrawerItem(
+                        icon = sectionIcon(s),
+                        title = s.title,
+                        selected = section == s && folderPath == null,
+                        onClick = {
+                            section = s
+                            folderPath = null
+                            scope.launch { drawerState.close() }
                         },
-                        actions = { IconButton(onClick = onShowSearch) { Icon(Icons.Default.Search, "搜索") } }
                     )
-                }
-            ) { padding ->
-                Box(Modifier.fillMaxSize().imePadding()) {
-                    if (!granted) PermissionPanel(padding) { launcher.launch(permission) }
-                    else LibraryContent(section, songs, albums, artists, folders, favoriteIds, recentIds, folderPath, "", padding, onPlaySong, viewModel::toggleFavorite) { folderPath = it }
-                }
+                )
             }
+            add(
+                MiuixDrawerItem(MiuixIcons.Refresh, "扫描媒体", false) {
+                    scope.launch { drawerState.close() }
+                    onShowScan()
+                }
+            )
+            add(
+                MiuixDrawerItem(MiuixIcons.Settings, "设置", false) {
+                    scope.launch { drawerState.close() }
+                    onShowSettings()
+                }
+            )
+            add(
+                MiuixDrawerItem(
+                    icon = Icons.AutoMirrored.Filled.ExitToApp,
+                    title = "退出",
+                    selected = false,
+                    onClick = onExit,
+                )
+            )
+        },
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding)) {
+            MiuixLibraryContent(
+                onOpenDrawer = { scope.launch { drawerState.open() } },
+                onShowSearch = onShowSearch,
+                onShowScan = onShowScan,
+                granted = granted,
+                onRequestPermission = { launcher.launch(Manifest.permission.READ_MEDIA_AUDIO) },
+                songs = songs,
+                albums = albums,
+                artists = artists,
+                folders = folders,
+                favoriteIds = favoriteIds,
+                recentIds = recentIds,
+                section = section,
+                folderPath = folderPath,
+                onOpenFolder = { folderPath = it },
+                onCloseFolder = { folderPath = null },
+                onPlaySong = onPlaySong,
+                onToggleFavorite = viewModel::toggleFavorite,
+            )
         }
-        if (maxWidth >= 600.dp) {
-            PermanentNavigationDrawer(
-                drawerContent = {
-                    PermanentDrawerSheet(
-                        modifier = Modifier.width(compactDrawerWidth),
-                        content = drawerItems
-                    )
+    }
+}
+
+private fun sectionIcon(section: LibrarySection): ImageVector = when (section) {
+    LibrarySection.SONGS -> MiuixIcons.Music
+    LibrarySection.ALBUMS -> MiuixIcons.Album
+    LibrarySection.ARTISTS -> MiuixIcons.Contacts
+    LibrarySection.FOLDERS -> MiuixIcons.Folder
+    LibrarySection.FAVORITES -> MiuixIcons.Favorites
+    LibrarySection.RECENT -> MiuixIcons.Recent
+}
+
+
+@Composable
+private fun MiuixLibraryContent(
+    onOpenDrawer: () -> Unit,
+    onShowSearch: () -> Unit,
+    onShowScan: () -> Unit,
+    granted: Boolean,
+    onRequestPermission: () -> Unit,
+    songs: List<Song>,
+    albums: List<Album>,
+    artists: List<Artist>,
+    folders: List<MusicFolder>,
+    favoriteIds: Set<Long>,
+    recentIds: List<Long>,
+    section: LibrarySection,
+    folderPath: String?,
+    onOpenFolder: (String) -> Unit,
+    onCloseFolder: () -> Unit,
+    onPlaySong: (Song, List<Song>) -> Unit,
+    onToggleFavorite: (Long) -> Unit,
+) {
+    val colors = MiuixTheme.colorScheme
+    val title = when {
+        folderPath != null -> "文件夹"
+        else -> section.title
+    }
+    Scaffold(
+        containerColor = colors.background,
+        topBar = {
+            SmallTopAppBar(
+                title = title,
+                navigationIcon = {
+                    IconButton(onClick = { if (folderPath != null) onCloseFolder() else onOpenDrawer() }) {
+                        Icon(
+                            imageVector = if (folderPath != null) MiuixIcons.Back else MiuixIcons.Basic.Sidebar,
+                            contentDescription = if (folderPath != null) "返回" else "菜单",
+                        )
+                    }
                 },
-                content = content
+                actions = {
+                    IconButton(onClick = onShowSearch) { Icon(MiuixIcons.Search, "搜索") }
+                    IconButton(onClick = onShowScan) { Icon(MiuixIcons.Refresh, "扫描") }
+                },
             )
-        } else {
-            DismissibleNavigationDrawer(
-                drawerState = drawer,
-                drawerContent = { DismissibleDrawerSheet(modifier = Modifier.width(compactDrawerWidth), content = drawerItems) },
-                content = content
-            )
-        }
-    }
-}
-
-@Composable fun PermissionPanel(padding: PaddingValues, onGrant: () -> Unit) { Column(Modifier.fillMaxSize().padding(padding).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Icon(Icons.Default.MusicNote, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.height(16.dp)); Text("允许访问本地音乐后开始扫描", style = MaterialTheme.typography.titleMedium); Spacer(Modifier.height(16.dp)); Button(onClick = onGrant) { Text("授予权限") } } }
-
-@Composable private fun LibraryContent(section: LibrarySection, songs: List<Song>, albums: List<Album>, artists: List<Artist>, folders: List<MusicFolder>, favoriteIds: Set<Long>, recentIds: List<Long>, folderPath: String?, query: String, padding: PaddingValues, onPlaySong: (Song, List<Song>) -> Unit, onToggleFavorite: (Long) -> Unit, onOpenFolder: (String) -> Unit) {
-    val filtered = songs
-        .filter { query.isBlank() || it.title.contains(query, true) || it.artist.contains(query, true) || it.album.contains(query, true) }
-        .sortedBy { it.title.trim().lowercase() }
-    when (section) {
-        LibrarySection.SONGS -> Column(Modifier.fillMaxSize().padding(padding)) {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Shuffle, null, tint = MaterialTheme.colorScheme.onSurface)
-                Text("${filtered.size}", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 28.dp).weight(1f))
-                Icon(Icons.Default.SortByAlpha, null, tint = MaterialTheme.colorScheme.onSurface)
-                Spacer(Modifier.width(22.dp)); Icon(Icons.AutoMirrored.Filled.FormatListBulleted, null)
+        },
+    ) { padding ->
+        if (!granted) {
+            PermissionPanel(padding, onRequestPermission)
+        } else when {
+            folderPath != null -> {
+                val folderSongs = songs.filter { it.path.substringBeforeLast('/', "") == folderPath }
+                SongList(folderSongs, favoriteIds, onToggleFavorite, onPlaySong, padding)
             }
-            Box(Modifier.weight(1f)) {
-                val listState = rememberLazyListState()
-                LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 8.dp)) {
-                    items(filtered, key = { it.id }) { SongRow(it, it.id in favoriteIds, onToggleFavorite) { onPlaySong(it, filtered) } }
+            else -> when (section) {
+                LibrarySection.SONGS -> SongSection(songs, favoriteIds, onToggleFavorite, onPlaySong, padding)
+                LibrarySection.ALBUMS -> LazyColumn(
+                    Modifier.fillMaxSize().padding(padding),
+                    contentPadding = PaddingValues(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(albums, key = { it.albumId }) { album -> AlbumCard(album) }
                 }
-                AlphabetIndex(filtered, listState, Modifier.align(Alignment.CenterEnd).padding(end = 4.dp))
+                LibrarySection.ARTISTS -> LazyColumn(
+                    Modifier.fillMaxSize().padding(padding),
+                    contentPadding = PaddingValues(12.dp),
+                ) {
+                    items(artists, key = { it.name }) { artist -> ArtistCard(artist) }
+                }
+                LibrarySection.FOLDERS -> LazyColumn(
+                    Modifier.fillMaxSize().padding(padding),
+                    contentPadding = PaddingValues(12.dp),
+                ) {
+                    items(folders, key = { it.path }) { folder ->
+                        Card(
+                            onClick = { onOpenFolder(folder.path) },
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            insideMargin = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
+                        ) {
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Icon(MiuixIcons.Folder, null, Modifier.size(34.dp), tint = colors.primary)
+                                Spacer(Modifier.width(14.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(folder.name, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                                    Text(
+                                        text = folder.path,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        fontSize = 13.sp,
+                                        color = colors.onSurfaceVariantSummary,
+                                    )
+                                }
+                                Text("${folder.songCount} 首", fontSize = 13.sp, color = colors.onSurfaceVariantSummary)
+                            }
+                        }
+                    }
+                }
+                LibrarySection.FAVORITES -> SongList(
+                    songs.filter { it.id in favoriteIds },
+                    favoriteIds, onToggleFavorite, onPlaySong, padding
+                )
+                LibrarySection.RECENT -> SongList(
+                    recentIds.mapNotNull { id -> songs.firstOrNull { it.id == id } },
+                    favoriteIds, onToggleFavorite, onPlaySong, padding
+                )
             }
-        }
-        LibrarySection.ALBUMS -> LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) { items(albums, key = { it.albumId }) { album -> Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainerLow).padding(12.dp), verticalAlignment = Alignment.CenterVertically) { AlbumArt(album, Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))); Spacer(Modifier.width(14.dp)); Column { Text(album.name, style = MaterialTheme.typography.titleMedium); Text("${album.artist} · ${album.songCount} 首", color = MaterialTheme.colorScheme.onSurfaceVariant) } } } }
-        LibrarySection.ARTISTS -> LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(12.dp)) { items(artists, key = { it.name }) { artist -> Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Person, null, Modifier.size(32.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.width(16.dp)); Column { Text(artist.name, style = MaterialTheme.typography.titleMedium); Text("${artist.albumCount} 张专辑 · ${artist.songCount} 首歌曲", color = MaterialTheme.colorScheme.onSurfaceVariant) } } } }
-        LibrarySection.FAVORITES -> SongList(songs.filter { it.id in favoriteIds }, favoriteIds, onToggleFavorite, onPlaySong, padding)
-        LibrarySection.RECENT -> {
-            val recentSongs = recentIds.mapNotNull { id -> songs.firstOrNull { it.id == id } }
-            SongList(recentSongs, favoriteIds, onToggleFavorite, onPlaySong, padding)
-        }
-        LibrarySection.FOLDERS -> if (folderPath == null) {
-            LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { items(folders, key = { it.path }) { folder -> Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { onOpenFolder(folder.path) }.background(MaterialTheme.colorScheme.surfaceContainerLow).padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Folder, null, Modifier.size(34.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.width(14.dp)); Column(Modifier.weight(1f)) { Text(folder.name, style = MaterialTheme.typography.titleMedium); Text(folder.path, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant) }; Text("${folder.songCount} 首") } } }
-        } else {
-            val folderSongs = songs.filter { it.path.substringBeforeLast('/', "") == folderPath }
-            LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(vertical = 8.dp)) { items(folderSongs, key = { it.id }) { SongRow(it, it.id in favoriteIds, onToggleFavorite) { onPlaySong(it, folderSongs) } } }
         }
     }
 }
 
-@Composable private fun SongList(songs: List<Song>, favoriteIds: Set<Long>, onToggleFavorite: (Long) -> Unit, onPlaySong: (Song, List<Song>) -> Unit, padding: PaddingValues) {
-    LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(vertical = 8.dp)) {
-        items(songs, key = { it.id }) { song -> SongRow(song, song.id in favoriteIds, onToggleFavorite) { onPlaySong(song, songs) } }
-    }
-}
 
-@Composable fun SongRow(song: Song, isFavorite: Boolean = false, onToggleFavorite: (Long) -> Unit = {}, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        AlbumArt(song, Modifier.size(50.dp).clip(RoundedCornerShape(8.dp)))
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text(song.title, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(3.dp)) { Text("SQ", Modifier.padding(horizontal = 5.dp, vertical = 1.dp), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall) }
-                Spacer(Modifier.width(7.dp)); Text("${song.artist} · ${song.album}", maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+@Composable
+private fun SongSection(
+    songs: List<Song>,
+    favoriteIds: Set<Long>,
+    onToggleFavorite: (Long) -> Unit,
+    onPlaySong: (Song, List<Song>) -> Unit,
+    padding: PaddingValues,
+) {
+    val colors = MiuixTheme.colorScheme
+    val listState = rememberLazyListState()
+    val filtered = songs.filter { it.durationMs > 30_000 }
+    Box(Modifier.fillMaxSize()) {
+        SongList(filtered, favoriteIds, onToggleFavorite, onPlaySong, padding, listState)
+        if (filtered.size > 1) AlphabetIndex(filtered, listState, Modifier.align(Alignment.CenterEnd))
+        Column(
+            Modifier
+                .align(Alignment.TopStart)
+                .padding(padding)
+                .padding(horizontal = 18.dp, vertical = 8.dp)
+                .background(color = colors.background),
+        ) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Shuffle, null, Modifier.size(20.dp), tint = colors.onSurface)
+                Spacer(Modifier.width(24.dp))
+                Text(
+                    "${filtered.size} 首",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f),
+                )
+                Icon(Icons.Default.SortByAlpha, null, Modifier.size(20.dp), tint = colors.onSurface)
+                Spacer(Modifier.width(18.dp))
+                Icon(Icons.AutoMirrored.Filled.FormatListBulleted, null, Modifier.size(20.dp), tint = colors.onSurface)
             }
         }
-        IconButton(onClick = { onToggleFavorite(song.id) }) { Icon(Icons.AutoMirrored.Filled.PlaylistAdd, "添加到歌单", tint = MaterialTheme.colorScheme.onSurfaceVariant) }
-        Icon(Icons.Default.MoreVert, "更多操作")
     }
 }
 
 @Composable
-private fun AlphabetIndex(songs: List<Song>, listState: androidx.compose.foundation.lazy.LazyListState, modifier: Modifier = Modifier) {
+private fun SongList(
+    songs: List<Song>,
+    favoriteIds: Set<Long>,
+    onToggleFavorite: (Long) -> Unit,
+    onPlaySong: (Song, List<Song>) -> Unit,
+    padding: PaddingValues,
+    listState: LazyListState? = null,
+) {
+    LazyColumn(
+        Modifier.fillMaxSize().padding(padding),
+        contentPadding = PaddingValues(vertical = 8.dp),
+        state = listState ?: rememberLazyListState(),
+    ) {
+        items(songs, key = { it.id }) { song ->
+            SongRow(song, song.id in favoriteIds, onToggleFavorite) { onPlaySong(song, songs) }
+        }
+    }
+}
+
+/** Miuix 卡片风格的歌曲行：点击整卡播放，右侧可收藏 */
+@Composable
+fun SongRow(
+    song: Song,
+    isFavorite: Boolean = false,
+    onToggleFavorite: (Long) -> Unit = {},
+    onClick: () -> Unit,
+) {
+    val colors = MiuixTheme.colorScheme
+    Card(
+        onClick = onClick,
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        insideMargin = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+    ) {
+        BasicComponent(
+            title = song.title,
+            summary = "${song.artist} · ${song.album}",
+            startAction = {
+                AlbumArt(song, Modifier.size(50.dp).clip(RoundedCornerShape(8.dp)))
+            },
+            endActions = {
+                IconButton(onClick = { onToggleFavorite(song.id) }) {
+                    Icon(
+                        if (isFavorite) MiuixIcons.FavoritesFill else MiuixIcons.Favorites,
+                        if (isFavorite) "取消收藏" else "收藏",
+                        tint = colors.primary,
+                    )
+                }
+            },
+        )
+    }
+}
+
+
+@Composable
+private fun AlbumCard(album: Album) {
+    val colors = MiuixTheme.colorScheme
+    Card(
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        insideMargin = PaddingValues(12.dp),
+    ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            AlbumArt(album, Modifier.size(64.dp).clip(RoundedCornerShape(12.dp)))
+            Spacer(Modifier.width(14.dp))
+            Column {
+                Text(album.name, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                Text(
+                    "${album.artist} · ${album.songCount} 首",
+                    fontSize = 13.sp,
+                    color = colors.onSurfaceVariantSummary,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArtistCard(artist: Artist) {
+    val colors = MiuixTheme.colorScheme
+    Card(
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        insideMargin = PaddingValues(12.dp),
+    ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Icon(MiuixIcons.Contacts, null, Modifier.size(32.dp), tint = colors.primary)
+            Spacer(Modifier.width(16.dp))
+            Column {
+                Text(artist.name, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                Text(
+                    "${artist.albumCount} 张专辑 · ${artist.songCount} 首歌曲",
+                    fontSize = 13.sp,
+                    color = colors.onSurfaceVariantSummary,
+                )
+            }
+        }
+    }
+}
+
+/** 权限申请占位页（minSdk 33 仅需 READ_MEDIA_AUDIO） */
+@Composable
+fun PermissionPanel(padding: PaddingValues, onGrant: () -> Unit) {
+    val colors = MiuixTheme.colorScheme
+    Column(
+        Modifier.fillMaxSize().padding(padding).padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Icon(Icons.Default.MusicNote, null, Modifier.size(56.dp), tint = colors.primary)
+        Spacer(Modifier.height(16.dp))
+        Text("允许访问本地音乐后开始扫描", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onGrant) {
+            Text("授予权限", fontSize = 15.sp)
+        }
+    }
+}
+
+@Composable
+private fun AlphabetIndex(
+    songs: List<Song>,
+    listState: LazyListState,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MiuixTheme.colorScheme
     val scope = rememberCoroutineScope()
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier
+            .padding(end = 6.dp, vertical = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         ('A'..'Z').forEach { letter ->
             Text(
                 letter.toString(),
@@ -204,11 +477,14 @@ private fun AlphabetIndex(songs: List<Song>, listState: androidx.compose.foundat
                     }
                     if (index >= 0) scope.launch { listState.animateScrollToItem(index) }
                 },
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                fontSize = 10.sp,
+                color = colors.onSurfaceVariantSummary,
             )
         }
     }
 }
 
-fun formatDuration(durationMs: Long): String { val seconds = durationMs / 1000; return "%d:%02d".format(seconds / 60, seconds % 60) }
+fun formatDuration(durationMs: Long): String {
+    val seconds = durationMs / 1000
+    return "%d:%02d".format(seconds / 60, seconds % 60)
+}

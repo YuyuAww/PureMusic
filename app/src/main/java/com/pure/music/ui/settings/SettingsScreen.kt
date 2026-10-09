@@ -1,64 +1,154 @@
 package com.pure.music.ui.settings
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.*
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pure.music.settings.SettingsViewModel
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.basic.SmallTopAppBar
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Info
+import top.yukonga.miuix.kmp.icon.extended.Theme
+import top.yukonga.miuix.kmp.icon.extended.Tune
+import top.yukonga.miuix.kmp.icon.extended.VolumeUp
+import top.yukonga.miuix.kmp.preference.ArrowPreference
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
+private val themeOptions = listOf("跟随系统" to "system", "浅色" to "light", "深色" to "dark")
+private val colorSourceOptions = listOf("Monet 取色" to "monet", "根据封面取色" to "cover")
+
+/** 设置页：Miuix 偏好设置组件（SmallTitle + Card + OverlayDropdownPreference/ArrowPreference） */
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
     val theme by viewModel.theme.collectAsStateWithLifecycle()
     val colorSource by viewModel.colorSource.collectAsStateWithLifecycle()
-    var showThemeDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-    var showColorDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState())) {
-        Row(Modifier.fillMaxWidth().padding(start = 20.dp, top = 24.dp, bottom = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") }
-            Text("设置", style = MaterialTheme.typography.headlineMedium)
+    val colors = MiuixTheme.colorScheme
+
+    Scaffold(
+        containerColor = colors.background,
+        topBar = {
+            SmallTopAppBar(
+                title = "设置",
+                navigationIcon = {
+                    IconButton(onClick = onBack) { Icon(MiuixIcons.Back, "返回") }
+                },
+            )
+        },
+    ) { padding ->
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(padding)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            SmallTitle("外观", modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Card(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                insideMargin = PaddingValues(vertical = 4.dp),
+            ) {
+                OverlayDropdownPreference(
+                    items = themeOptions.map { it.first },
+                    selectedIndex = themeOptions.indexOfFirst { it.second == theme }.coerceAtLeast(0),
+                    title = "主题",
+                    startAction = {
+                        Icon(
+                            MiuixIcons.Theme,
+                            null,
+                            Modifier.size(24.dp),
+                            tint = colors.onSurfaceVariantActions,
+                        )
+                    },
+                    onSelectedIndexChange = { index ->
+                        viewModel.setTheme(themeOptions[index].second)
+                    },
+                )
+                HorizontalDivider()
+                OverlayDropdownPreference(
+                    items = colorSourceOptions.map { it.first },
+                    selectedIndex = colorSourceOptions.indexOfFirst { it.second == colorSource }.coerceAtLeast(0),
+                    title = "主题颜色",
+                    startAction = {
+                        Icon(
+                            MiuixIcons.Theme,
+                            null,
+                            Modifier.size(24.dp),
+                            tint = colors.onSurfaceVariantActions,
+                        )
+                    },
+                    onSelectedIndexChange = { index ->
+                        viewModel.setColorSource(colorSourceOptions[index].second)
+                    },
+                )
+            }
+            SmallTitle("功能", modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Card(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                insideMargin = PaddingValues(vertical = 4.dp),
+            ) {
+                ArrowPreference(
+                    title = "DSP 均衡器",
+                    summary = "调整各频段增益",
+                    startAction = {
+                        Icon(
+                            MiuixIcons.Tune,
+                            null,
+                            Modifier.size(24.dp),
+                            tint = colors.onSurfaceVariantActions,
+                        )
+                    },
+                )
+                HorizontalDivider()
+                ArrowPreference(
+                    title = "音频输出",
+                    summary = "蓝牙与独占模式",
+                    startAction = {
+                        Icon(
+                            MiuixIcons.VolumeUp,
+                            null,
+                            Modifier.size(24.dp),
+                            tint = colors.onSurfaceVariantActions,
+                        )
+                    },
+                )
+            }
+
+            SmallTitle("其他", modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Card(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                insideMargin = PaddingValues(vertical = 4.dp),
+            ) {
+                ArrowPreference(
+                    title = "关于",
+                    summary = "版本与致谢",
+                    startAction = {
+                        Icon(
+                            MiuixIcons.Info,
+                            null,
+                            Modifier.size(24.dp),
+                            tint = colors.onSurfaceVariantActions,
+                        )
+                    },
+                )
+            }
+            Spacer(Modifier.height(24.dp))
         }
-        SettingsCard {
-            SettingRow("用户界面", Icons.Default.Palette)
-            SettingRow("歌词", Icons.Default.FormatQuote)
-            SettingRow("车载", Icons.Default.DirectionsCar)
-            SettingRow("音频输出", Icons.AutoMirrored.Filled.VolumeUp)
-            SettingRow("USB 独占模式", Icons.Default.Usb)
-            SettingRow("通知", Icons.Default.Notifications)
-        }
-        SettingsCard {
-            SettingRow("主题：${themeLabel(theme)}", Icons.Default.LightMode) { showThemeDialog = true }
-            SettingRow("主题颜色：${colorSourceLabel(colorSource)}", Icons.Default.Palette) { showColorDialog = true }
-            SettingRow("DSP 均衡器", Icons.Default.Equalizer)
-            SettingRow("关于", Icons.Default.Info)
-        }
-        Spacer(Modifier.height(24.dp))
     }
-    if (showThemeDialog) ChoiceDialog("主题", listOf("system" to "跟随系统", "light" to "浅色", "dark" to "深色"), theme, { viewModel.setTheme(it); showThemeDialog = false }) { showThemeDialog = false }
-    if (showColorDialog) ChoiceDialog("主题颜色", listOf("monet" to "Monet 取色", "cover" to "根据封面取色"), colorSource, { viewModel.setColorSource(it); showColorDialog = false }) { showColorDialog = false }
 }
-
-@Composable
-private fun ChoiceDialog(title: String, options: List<Pair<String, String>>, selected: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(onDismissRequest = onDismiss, title = { Text(title) }, text = {
-        Column { options.forEach { (value, label) -> ListItem(headlineContent = { Text(label) }, leadingContent = { RadioButton(selected = value == selected, onClick = { onSelect(value) }) }, modifier = Modifier.clickable { onSelect(value) }) } }
-    }, confirmButton = { TextButton(onClick = onDismiss) { Text("完成") } })
-}
-
-@Composable private fun SettingsCard(content: @Composable ColumnScope.() -> Unit) { Surface(Modifier.padding(horizontal = 16.dp, vertical = 6.dp).fillMaxWidth(), shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceVariant, content = { Column(Modifier.padding(vertical = 8.dp), content = content) }) }
-@Composable private fun SettingRow(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit = {}) { Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 22.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(icon, null, Modifier.size(28.dp), tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.width(20.dp)); Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f)); Icon(Icons.Default.ChevronRight, null) } }
-private fun themeLabel(theme: String) = when (theme) { "dark" -> "深色"; "light" -> "浅色"; else -> "跟随系统" }
-private fun colorSourceLabel(source: String) = if (source == "cover") "根据封面取色" else "Monet 取色"

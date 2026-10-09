@@ -2,10 +2,6 @@ package com.pure.music.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Album
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -17,6 +13,10 @@ import coil3.compose.SubcomposeAsyncImage
 import com.pure.music.data.Album
 import com.pure.music.data.Song
 import com.pure.music.library.MediaLibraryRepository
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Album
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun AlbumArt(albumId: Long, modifier: Modifier = Modifier, contentDescription: String? = null) {
@@ -41,7 +41,7 @@ fun AlbumArt(albumId: Long, modifier: Modifier = Modifier, contentDescription: S
 
 @Composable
 private fun FallbackIcon() {
-    Icon(Icons.Default.Album, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+    Icon(MiuixIcons.Album, null, tint = MiuixTheme.colorScheme.primary)
 }
 
 @Composable
