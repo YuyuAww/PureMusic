@@ -1,29 +1,69 @@
-# Gradle
-.gradle/
-build/
-!gradle/wrapper/gradle-wrapper.jar
-
-# IDE
+# IDEs and editors
 .idea/
+.vscode/
+.fleet/
 *.iml
-.kotlin/
+*.swp
+*~
+out/
 
-# Android Studio
-captures/
+# Local run configurations and editor recovery files
+.run/
+*.orig
+*.rej
+*.tmp
+
+# Keep README files in Git; other Markdown documents are local-only
+*.md
+!README.md
+!README.en.md
+
+# Gradle and Kotlin caches
+.gradle/
+.kotlin/
+**/build/
+local.properties
+
+# Native build output
 .externalNativeBuild/
 .cxx/
+scripts/
 
-# Android build
-local.properties
+# Generated packages and reports
+artifacts/
+captures/
+work/
 *.apk
 *.aab
 *.ap_
+*.idsig
+*.class
 *.dex
+*.hprof
+*.log
+*.trace
+*.prof
+*.profm
+hs_err_pid*
+replay_pid*
 
-# OS
+# Local secrets and signing material
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.cer
+*.crt
+*.der
+*.key
+keystore.properties
+signing.properties
+secrets.properties
+
+# Operating system files
 .DS_Store
 Thumbs.db
-
-# Logs
-*.log
-/AGENTS.md

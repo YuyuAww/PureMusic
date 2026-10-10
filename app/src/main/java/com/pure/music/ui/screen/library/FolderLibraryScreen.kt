@@ -1,0 +1,266 @@
+package com.pure.music.ui.screen.library
+
+import com.pure.music.ui.component.library.LocalAlphabetIndexBottomPadding
+import com.pure.music.ui.component.library.PreserveSortScrollPosition
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.pure.music.R
+import com.pure.music.data.library.FolderGroup
+import com.pure.music.data.library.FolderSortConfig
+import com.pure.music.data.library.FolderSortField
+import com.pure.music.model.ScanStatus
+import com.pure.music.ui.component.library.AlphabetSections
+import com.pure.music.ui.component.library.AlphabetSideBar
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.ArrowRight
+import top.yukonga.miuix.kmp.icon.extended.Folder
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
+
+@Composable
+fun FolderLibraryScreen(
+    displayedFolders: List<FolderGroup>,
+    sectionIndexMap: Map<String, Int>,
+    query: String,
+    scanStatus: ScanStatus,
+    sortConfig: FolderSortConfig,
+    onFolderClick: (FolderGroup) -> Unit,
+    onBlockFolder: (String) -> Unit = {},
+    scrollBehavior: ScrollBehavior,
+    indexTopPadding: Dp,
+    listState: LazyListState,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
+    showIndex: Boolean = true,
+) {
+    var pendingBlockFolder by remember { mutableStateOf<FolderGroup?>(null) }
+    val layoutDirection = LocalLayoutDirection.current
+    PreserveSortScrollPosition(
+        sortKey = sortConfig,
+        query = query,
+        itemCount = displayedFolders.size,
+        scrollState = listState,
+    ) {
+        listState.requestScrollToItem(
+            listState.firstVisibleItemIndex,
+            listState.firstVisibleItemScrollOffset,
+        )
+    }
+    val sections = remember(sortConfig.descending) {
+        if (sortConfig.descending) AlphabetSections.asReversed() else AlphabetSections
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .scrollEndHaptic()
+                .overScrollVertical()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            state = listState,
+            contentPadding = PaddingValues(
+                start = contentPadding.calculateStartPadding(layoutDirection),
+                top = contentPadding.calculateTopPadding() + 12.dp,
+                end = contentPadding.calculateEndPadding(layoutDirection),
+                bottom = contentPadding.calculateBottomPadding() + 12.dp,
+            ),
+            overscrollEffect = null,
+        ) {
+            if (displayedFolders.isEmpty()) {
+                item(key = "empty_folder") {
+                    Box(
+                        modifier = Modifier.fillParentMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        MusicLibraryEmptyState(
+                            scanStatus = scanStatus,
+                            query = query,
+                            emptyMessageRes = R.string.folder_empty,
+                            noSearchResultsRes = R.string.folder_no_search_results,
+                            icon = MiuixIcons.Folder,
+                        )
+                    }
+                }
+            } else {
+                items(
+                    items = displayedFolders,
+                    key = FolderGroup::key,
+                ) { folder ->
+                    FolderListItem(
+                        folder = folder,
+                        onClick = { onFolderClick(folder) },
+                        onLongClick = { pendingBlockFolder = folder },
+                    )
+                }
+            }
+        }
+
+        if (
+            showIndex &&
+            displayedFolders.isNotEmpty() &&
+            sortConfig.field == FolderSortField.NAME &&
+            query.isBlank()
+        ) {
+            AlphabetSideBar(
+                sectionIndexMap = sectionIndexMap,
+                itemCount = displayedFolders.size,
+                scrollStateKey = listState,
+                isAtTarget = { targetIndex ->
+                    listState.firstVisibleItemIndex == targetIndex &&
+                        listState.firstVisibleItemScrollOffset == 0
+                },
+                scrollToItem = listState::scrollToItem,
+                sections = sections,
+                onTargetIndexChanged = { _, restoreLargeTitle ->
+                    val state = scrollBehavior.state
+                    if (restoreLargeTitle && !scrollBehavior.isPinned) {
+                        state.heightOffset = 0f
+                        state.contentOffset = 0f
+                    } else if (state.heightOffsetLimit != -Float.MAX_VALUE) {
+                        state.heightOffset = state.heightOffsetLimit
+                        state.contentOffset = state.heightOffsetLimit
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(
+                        top = indexTopPadding + 4.dp,
+                        end = contentPadding.calculateEndPadding(layoutDirection),
+                        bottom = LocalAlphabetIndexBottomPadding.current,
+                    )
+                    .fillMaxHeight(),
+            )
+        }
+    }
+
+    OverlayDialog(
+        show = pendingBlockFolder != null,
+        title = stringResource(R.string.folder_block_title),
+        summary = stringResource(
+            R.string.folder_block_message,
+            pendingBlockFolder?.path.orEmpty(),
+        ),
+        enableWindowDim = true,
+        onDismissRequest = { pendingBlockFolder = null },
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            TextButton(
+                text = stringResource(R.string.clear_queue_confirm_cancel),
+                onClick = { pendingBlockFolder = null },
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(modifier = Modifier.width(20.dp))
+            TextButton(
+                text = stringResource(R.string.clear_queue_confirm_confirm),
+                onClick = {
+                    val path = pendingBlockFolder?.path
+                    pendingBlockFolder = null
+                    path?.let(onBlockFolder)
+                },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.textButtonColorsPrimary(),
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+internal fun FolderListItem(
+    folder: FolderGroup,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    val songCount = pluralStringResource(
+        R.plurals.folder_song_count,
+        folder.tracks.size,
+        folder.tracks.size,
+    )
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .padding(start = 30.dp, end = 28.dp, top = 16.dp, bottom = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(
+            painter = painterResource(R.drawable.ic_file),
+            contentDescription = null,
+            modifier = Modifier.size(32.dp),
+        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = folder.name ?: stringResource(R.string.folder_unknown),
+                style = MiuixTheme.textStyles.body1,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = songCount,
+                style = MiuixTheme.textStyles.footnote1.copy(fontSize = 12.sp),
+                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Icon(
+            imageVector = MiuixIcons.Basic.ArrowRight,
+            contentDescription = null,
+            modifier = Modifier.size(width = 10.dp, height = 16.dp),
+            tint = MiuixTheme.colorScheme.onSurfaceVariantActions,
+        )
+    }
+}

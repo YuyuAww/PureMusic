@@ -1,0 +1,419 @@
+package com.pure.music.ui.screen.settings
+
+import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.pure.music.R
+import com.pure.music.model.AppSettings
+import com.pure.music.model.DynamicColorSource
+import com.pure.music.model.NavigationTransitionStyle
+import com.pure.music.model.PlaybackBackgroundStyle
+import com.pure.music.model.ThemeMode
+import com.pure.music.ui.component.AdaptiveTopAppBar
+import com.pure.music.ui.component.BlurredBar
+import com.pure.music.ui.component.miuixBarColor
+import com.pure.music.ui.component.rememberBlurBackdrop
+import com.pure.music.ui.component.PageScaffold
+import com.pure.music.ui.component.PageCard as Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
+import top.yukonga.miuix.kmp.preference.SwitchPreference
+import top.yukonga.miuix.kmp.preference.ArrowPreference
+import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
+
+@Composable
+fun ThemeSettingsScreen(
+    settings: AppSettings,
+    bottomContentPadding: Dp,
+    liquidGlassSupported: Boolean,
+    listState: LazyListState,
+    scrollBehavior: ScrollBehavior,
+    onBack: () -> Unit,
+    onThemeModeChange: (ThemeMode) -> Unit,
+    onDynamicColorChange: (Boolean) -> Unit,
+    onDynamicColorSourceChange: (DynamicColorSource) -> Unit,
+    onPlaybackBackgroundStyleChange: (PlaybackBackgroundStyle) -> Unit,
+    onBlurChange: (Boolean) -> Unit,
+    onProgressiveTopBarBlurChange: (Boolean) -> Unit,
+    onSmallPlayerBarChange: (Boolean) -> Unit,
+    onHideBottomBarChange: (Boolean) -> Unit,
+    onFloatingBottomBarChange: (Boolean) -> Unit,
+    onLiquidGlassChange: (Boolean) -> Unit,
+    onPredictiveBackChange: (Boolean) -> Unit,
+    onNavigationTransitionStyleChange: (NavigationTransitionStyle) -> Unit,
+    onOpenMainBackground: () -> Unit,
+) {
+    val layoutDirection = LocalLayoutDirection.current
+    val dynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val blurSupported = liquidGlassSupported
+    var blurChecked by remember(settings.blurEnabled) {
+        mutableStateOf(settings.blurEnabled)
+    }
+    var progressiveTopBarBlurChecked by remember(settings.progressiveTopBarBlurEnabled) {
+        mutableStateOf(settings.progressiveTopBarBlurEnabled)
+    }
+    var smallPlayerBarChecked by remember(settings.smallPlayerBar) {
+        mutableStateOf(settings.smallPlayerBar)
+    }
+    var hideBottomBarChecked by remember(settings.hideBottomBar) {
+        mutableStateOf(settings.hideBottomBar)
+    }
+    var floatingBottomBarChecked by remember(settings.floatingBottomBar) {
+        mutableStateOf(settings.floatingBottomBar)
+    }
+    var liquidGlassChecked by remember(settings.liquidGlass) {
+        mutableStateOf(settings.liquidGlass)
+    }
+    var dynamicColorChecked by remember(settings.dynamicColorEnabled) {
+        mutableStateOf(settings.dynamicColorEnabled)
+    }
+    var dynamicColorSource by remember(settings.dynamicColorSource) {
+        mutableStateOf(settings.dynamicColorSource)
+    }
+    var playbackBackgroundStyle by remember(settings.playbackBackgroundStyle) {
+        mutableStateOf(settings.playbackBackgroundStyle)
+    }
+    var predictiveBackChecked by remember(settings.predictiveBackEnabled) {
+        mutableStateOf(settings.predictiveBackEnabled)
+    }
+    var navigationTransitionStyle by remember(settings.navigationTransitionStyle) {
+        mutableStateOf(settings.navigationTransitionStyle)
+    }
+    var selectedThemeMode by remember(settings.themeMode) {
+        mutableStateOf(settings.themeMode)
+    }
+    val systemDark = isSystemInDarkTheme()
+    val playbackBackgroundStyles = listOf(
+        PlaybackBackgroundStyle.BLURRED_ARTWORK to
+            stringResource(R.string.settings_playback_background_blurred_artwork),
+        PlaybackBackgroundStyle.DYNAMIC_FLOW to
+            stringResource(R.string.settings_playback_background_dynamic_flow),
+    )
+    val topBarBackdrop = rememberBlurBackdrop()
+    PageScaffold(
+            topBar = {
+            BlurredBar(
+                backdrop = topBarBackdrop,
+                blurEnabled = topBarBackdrop != null,
+                scrollBehavior = scrollBehavior,
+            ) {
+                AdaptiveTopAppBar(
+                    title = stringResource(R.string.settings_theme_settings_title),
+                    color = topBarBackdrop.miuixBarColor(),
+                    scrollBehavior = scrollBehavior,
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = MiuixIcons.Back,
+                                contentDescription = stringResource(R.string.back),
+                            )
+                        }
+                    },
+                )
+            }
+        },
+        ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    topBarBackdrop?.let { Modifier.layerBackdrop(it) } ?: Modifier,
+                ),
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .scrollEndHaptic()
+                    .overScrollVertical()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
+                state = listState,
+                contentPadding = PaddingValues(
+                    start = padding.calculateStartPadding(layoutDirection),
+                    top = padding.calculateTopPadding(),
+                    end = padding.calculateEndPadding(layoutDirection),
+                    bottom = maxOf(
+                        padding.calculateBottomPadding(),
+                        bottomContentPadding,
+                    ) + 16.dp,
+                ),
+                overscrollEffect = null,
+            ) {
+                item {
+                    ThemeModeSelector(
+                        themeMode = selectedThemeMode,
+                        systemDark = systemDark,
+                        onThemeModeChange = { mode ->
+                            if (mode != selectedThemeMode) {
+                                selectedThemeMode = mode
+                                onThemeModeChange(mode)
+                            }
+                        },
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+                    )
+                }
+                item {
+                    ThemeCard {
+                        SwitchPreference(
+                            title = stringResource(R.string.theme_mode_system),
+                            checked = selectedThemeMode == ThemeMode.SYSTEM,
+                            onCheckedChange = { checked ->
+                                val mode = themeModeFollowingSystem(checked, systemDark)
+                                selectedThemeMode = mode
+                                onThemeModeChange(mode)
+                            },
+                        )
+                    }
+                }
+                item {
+                    SmallTitle(text = stringResource(R.string.settings_section_appearance))
+                }
+                item {
+                    ThemeCard {
+                        ArrowPreference(
+                            title = stringResource(R.string.settings_custom_background_title),
+                            onClick = onOpenMainBackground,
+                        )
+                        SwitchPreference(
+                            checked = blurChecked && blurSupported,
+                            onCheckedChange = { checked ->
+                                blurChecked = checked
+                                onBlurChange(checked)
+                            },
+                            title = stringResource(R.string.settings_blur_title),
+                            summary = stringResource(
+                                if (blurSupported) {
+                                    R.string.settings_blur_summary
+                                } else {
+                                    R.string.settings_blur_unsupported
+                                },
+                            ),
+                            enabled = blurSupported,
+                        )
+                        AnimatedVisibility(
+                            visible = blurChecked && blurSupported,
+                            enter = fadeIn(animationSpec = tween(200)) +
+                                expandVertically(animationSpec = tween(250)),
+                            exit = fadeOut(animationSpec = tween(150)) +
+                                shrinkVertically(animationSpec = tween(200)),
+                            label = "progressiveTopBarBlurPreferenceVisibility",
+                        ) {
+                            SwitchPreference(
+                                checked = progressiveTopBarBlurChecked,
+                                onCheckedChange = { checked ->
+                                    progressiveTopBarBlurChecked = checked
+                                    onProgressiveTopBarBlurChange(checked)
+                                },
+                                title = stringResource(
+                                    R.string.settings_progressive_top_bar_blur_title,
+                                ),
+                            )
+                        }
+                        SwitchPreference(
+                            checked = floatingBottomBarChecked,
+                            onCheckedChange = { checked ->
+                                floatingBottomBarChecked = checked
+                                onFloatingBottomBarChange(checked)
+                            },
+                            title = stringResource(R.string.settings_floating_bottom_bar_title),
+                            summary = stringResource(R.string.settings_floating_bottom_bar_summary),
+                        )
+                        AnimatedVisibility(
+                            visible = floatingBottomBarChecked,
+                            enter = fadeIn(animationSpec = tween(200)) +
+                                expandVertically(animationSpec = tween(250)),
+                            exit = fadeOut(animationSpec = tween(150)) +
+                                shrinkVertically(animationSpec = tween(200)),
+                            label = "liquidGlassPreferenceVisibility",
+                        ) {
+                            SwitchPreference(
+                                checked = liquidGlassChecked && liquidGlassSupported,
+                                onCheckedChange = { checked ->
+                                    liquidGlassChecked = checked
+                                    onLiquidGlassChange(checked)
+                                },
+                                title = stringResource(R.string.settings_liquid_glass_title),
+                                summary = stringResource(
+                                    if (liquidGlassSupported) {
+                                        R.string.settings_liquid_glass_summary
+                                    } else {
+                                        R.string.settings_liquid_glass_unsupported
+                                    },
+                                ),
+                                enabled = liquidGlassSupported,
+                            )
+                        }
+                        SwitchPreference(
+                            checked = smallPlayerBarChecked,
+                            onCheckedChange = { checked ->
+                                smallPlayerBarChecked = checked
+                                onSmallPlayerBarChange(checked)
+                            },
+                            title = stringResource(R.string.settings_small_player_bar_title),
+                        )
+                        SwitchPreference(
+                            checked = hideBottomBarChecked,
+                            onCheckedChange = { checked ->
+                                hideBottomBarChecked = checked
+                                onHideBottomBarChange(checked)
+                            },
+                            title = stringResource(R.string.settings_hide_bottom_bar_title),
+                        )
+                        SwitchPreference(
+                            checked = dynamicColorChecked && dynamicColorSupported,
+                            onCheckedChange = { checked ->
+                                dynamicColorChecked = checked
+                                onDynamicColorChange(checked)
+                            },
+                            title = stringResource(R.string.settings_dynamic_color_title),
+                            summary = stringResource(
+                                if (dynamicColorSupported) {
+                                    R.string.settings_dynamic_color_summary
+                                } else {
+                                    R.string.settings_dynamic_color_unsupported
+                                },
+                            ),
+                            enabled = dynamicColorSupported,
+                        )
+                        AnimatedVisibility(
+                            visible = dynamicColorChecked && dynamicColorSupported,
+                            enter = fadeIn(animationSpec = tween(200)) +
+                                expandVertically(animationSpec = tween(250)),
+                            exit = fadeOut(animationSpec = tween(150)) +
+                                shrinkVertically(animationSpec = tween(200)),
+                            label = "dynamicColorSourceVisibility",
+                        ) {
+                            val sources = listOf(
+                                DynamicColorSource.PLAYBACK_ARTWORK to
+                                    stringResource(R.string.settings_dynamic_color_source_artwork),
+                                DynamicColorSource.DESKTOP to
+                                    stringResource(R.string.settings_dynamic_color_source_desktop),
+                            )
+                            OverlayDropdownPreference(
+                                items = sources.map { it.second },
+                                selectedIndex = sources.indexOfFirst {
+                                    it.first == dynamicColorSource
+                                }.coerceAtLeast(0),
+                                title = stringResource(R.string.settings_dynamic_color_source_title),
+                                onSelectedIndexChange = { index ->
+                                    sources.getOrNull(index)?.first?.let { source ->
+                                        dynamicColorSource = source
+                                        onDynamicColorSourceChange(source)
+                                    }
+                                },
+                            )
+                        }
+                    }
+                }
+                item {
+                    ThemeCard {
+                        OverlayDropdownPreference(
+                            items = playbackBackgroundStyles.map { it.second },
+                            selectedIndex = playbackBackgroundStyles.indexOfFirst {
+                                it.first == playbackBackgroundStyle
+                            }.coerceAtLeast(0),
+                            title = stringResource(R.string.settings_playback_background_title),
+                            onSelectedIndexChange = { index ->
+                                playbackBackgroundStyles.getOrNull(index)?.first?.let { style ->
+                                    if (style != playbackBackgroundStyle) {
+                                        playbackBackgroundStyle = style
+                                        onPlaybackBackgroundStyleChange(style)
+                                    }
+                                }
+                            },
+                        )
+                    }
+                }
+                item {
+                    SmallTitle(text = stringResource(R.string.settings_section_navigation))
+                }
+                item {
+                    ThemeCard {
+                        SwitchPreference(
+                            checked = predictiveBackChecked,
+                            onCheckedChange = { checked ->
+                                predictiveBackChecked = checked
+                                onPredictiveBackChange(checked)
+                            },
+                            title = stringResource(R.string.settings_predictive_back_title),
+                        )
+                        AnimatedVisibility(
+                            visible = predictiveBackChecked,
+                            enter = fadeIn(animationSpec = tween(200)) +
+                                expandVertically(animationSpec = tween(250)),
+                            exit = fadeOut(animationSpec = tween(150)) +
+                                shrinkVertically(animationSpec = tween(200)),
+                            label = "navigationTransitionStyleVisibility",
+                        ) {
+                            val transitionStyles = listOf(
+                                NavigationTransitionStyle.MIUIX to stringResource(
+                                    R.string.settings_navigation_transition_style_miuix,
+                                ),
+                                NavigationTransitionStyle.AOSP to stringResource(
+                                    R.string.settings_navigation_transition_style_aosp,
+                                ),
+                            )
+                            OverlayDropdownPreference(
+                                title = stringResource(
+                                    R.string.settings_navigation_transition_style_title,
+                                ),
+                                items = transitionStyles.map { it.second },
+                                selectedIndex = transitionStyles.indexOfFirst {
+                                    it.first == navigationTransitionStyle
+                                }.coerceAtLeast(0),
+                                onSelectedIndexChange = { index ->
+                                    transitionStyles.getOrNull(index)?.first?.let { style ->
+                                        navigationTransitionStyle = style
+                                        onNavigationTransitionStyleChange(style)
+                                    }
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ThemeCard(content: @Composable () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp)
+            .padding(bottom = 12.dp),
+        content = { content() },
+    )
+}
