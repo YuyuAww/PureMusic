@@ -64,7 +64,7 @@ if (releaseTaskRequested && !releaseSigningConfigured) {
                 .map { (name, _) -> name },
         )
     }.joinToString()
-    gradle.logger.warn(
+    project.logger.warn(
         "Release signing is not configured; building an unsigned release APK. Missing: $missingValues. " +
             "Set puremusic.keystore.path, puremusic.store.password, puremusic.key.password, and puremusic.key.alias in local.properties to sign release builds.",
     )
