@@ -186,6 +186,7 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.inspector)
     implementation(libs.androidx.media3.session)
+    implementation(libs.compose.material3)
     implementation(libs.material.color.utilities)
     implementation(libs.miuix.blur)
     implementation(libs.miuix.icons)

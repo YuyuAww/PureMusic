@@ -52,19 +52,25 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pure.music.R
 import com.pure.music.model.BottomBarStyle
-import com.pure.music.ui.component.GaussianBlurredBar
-import com.pure.music.ui.component.miuixBarColor
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DismissibleDrawerSheet
+import androidx.compose.material3.DismissibleNavigationDrawer
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.ui.draw.clip
 import com.pure.music.ui.component.playback.miniPlayerHeight
 import com.pure.music.ui.component.rememberBlurBackdrop
-import top.yukonga.miuix.kmp.basic.NavigationBar
-import top.yukonga.miuix.kmp.basic.NavigationBarItem
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.NavigationItem
 import top.yukonga.miuix.kmp.basic.NavigationRail
 import top.yukonga.miuix.kmp.basic.NavigationRailItem
 import top.yukonga.miuix.kmp.basic.NavigationRailValue
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.basic.DividerDefaults
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.highlight.Highlight
@@ -75,6 +81,7 @@ import top.yukonga.miuix.kmp.icon.extended.Music
 import top.yukonga.miuix.kmp.icon.extended.Settings
 import top.yukonga.miuix.kmp.layout.BottomSheetDefaults
 import top.yukonga.miuix.kmp.basic.rememberNavigationRailState
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 internal data class MiniPlayerChrome(
     val style: BottomBarStyle,
@@ -350,37 +357,19 @@ internal fun PlayerScaffold(
         return
     }
 
-    if (effectiveStyle != BottomBarStyle.NORMAL) {
-        IosLikeFloatingPlayerScaffold(
-            selectedTab = selectedTab,
-            onTabSelected = onTabSelected,
-            navigationItems = navigationItems,
-            blurEnabled = blurEnabled,
-            liquidGlassEnabled = bottomBarStyle == BottomBarStyle.LIQUID_GLASS,
-            smallPlayerBar = smallPlayerBar,
-            effectsSupported = liquidGlassSupported,
-            isDark = isDark,
-            showNavigation = showNavigation,
-            playerNavigationOffset = playerNavigationOffset,
-            miniPlayer = miniPlayer,
-            backdropRefreshSignal = backdropRefreshSignal,
-            content = { padding -> content(padding, false) },
-        )
-    } else {
-        BasePlayerScaffold(
-            smallPlayerBar = smallPlayerBar,
-            selectedTab = selectedTab,
-            onTabSelected = onTabSelected,
-            navigationItems = navigationItems,
-            blurEnabled = blurEnabled,
-            isDark = isDark,
-            showNavigation = showNavigation,
-            playerNavigationOffset = playerNavigationOffset,
-            miniPlayer = miniPlayer,
-            backdropRefreshSignal = backdropRefreshSignal,
-            content = { padding -> content(padding, false) },
-        )
-    }
+    DrawerPlayerScaffold(
+        selectedTab = selectedTab,
+        onTabSelected = onTabSelected,
+        navigationItems = navigationItems,
+        effectiveStyle = effectiveStyle,
+        blurEnabled = blurEnabled,
+        liquidGlassSupported = liquidGlassSupported,
+        isDark = isDark,
+        smallPlayerBar = smallPlayerBar,
+        miniPlayer = miniPlayer,
+        backdropRefreshSignal = backdropRefreshSignal,
+        content = { padding -> content(padding, false) },
+    )
 }
 
 internal fun resolveBottomBarStyle(
@@ -471,22 +460,23 @@ private fun Modifier.consumeNavigationRailStartInsets(
     this
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BasePlayerScaffold(
-    smallPlayerBar: Boolean,
+private fun DrawerPlayerScaffold(
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
     navigationItems: List<NavigationItem>,
+    effectiveStyle: BottomBarStyle,
     blurEnabled: Boolean,
+    liquidGlassSupported: Boolean,
     isDark: Boolean,
-    showNavigation: Boolean,
-    playerNavigationOffset: () -> Float,
+    smallPlayerBar: Boolean,
     miniPlayer: @Composable (MiniPlayerChrome) -> Unit,
     backdropRefreshSignal: () -> Float,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val bottomBarBackdrop = rememberBlurBackdrop()
-    val normalBarColor = bottomBarBackdrop.miuixBarColor()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val miniPlayerBackdrop = rememberBlurBackdrop()
     val density = LocalDensity.current
     val windowSize = LocalWindowInfo.current.containerSize
     val windowWidth = with(density) { windowSize.width.toDp() }
@@ -495,88 +485,122 @@ private fun BasePlayerScaffold(
         .only(WindowInsetsSides.Bottom)
         .asPaddingValues()
         .calculateBottomPadding()
-    val miniPlayerNavigationGap by animateDpAsState(
-        targetValue = if (showNavigation) 0.dp else normalMiniPlayerBottomPadding(
-            windowWidth, windowHeight, navigationBarBottomInset,
-        ),
-        animationSpec = tween(
-            if (showNavigation) NAVIGATION_ENTER_DURATION_MILLIS else NAVIGATION_EXIT_DURATION_MILLIS,
-        ),
-        label = "normalMiniPlayerNavigationGap",
+    val miniPlayerBottomPadding = normalMiniPlayerBottomPadding(
+        windowWidth, windowHeight, navigationBarBottomInset,
     )
+    val liquidGlassActive = effectiveStyle == BottomBarStyle.LIQUID_GLASS &&
+        liquidGlassSupported
 
-    Scaffold(
-        containerColor = Color.Transparent,
-        bottomBar = {
-            Column {
-                Box(modifier = Modifier.padding(bottom = miniPlayerNavigationGap)) {
-                    miniPlayer(
-                        MiniPlayerChrome(
-                            style = BottomBarStyle.NORMAL,
-                            smallPlayerBar = smallPlayerBar,
-                            backdrop = bottomBarBackdrop,
-                            blurActive = bottomBarBackdrop != null,
-                            liquidGlassActive = false,
-                            isDark = isDark,
-                        ),
-                    )
-                }
-                AnimatedVisibility(
-                    modifier = Modifier.graphicsLayer { translationY = playerNavigationOffset() },
-                    visible = showNavigation,
-                    enter = slideInVertically(
-                        animationSpec = tween(NAVIGATION_ENTER_DURATION_MILLIS),
-                        initialOffsetY = { it },
-                    ) + expandVertically(tween(NAVIGATION_ENTER_DURATION_MILLIS)) +
-                        fadeIn(tween(NAVIGATION_FADE_IN_DURATION_MILLIS)),
-                    exit = slideOutVertically(
-                        animationSpec = tween(NAVIGATION_EXIT_DURATION_MILLIS),
-                        targetOffsetY = { it },
-                    ) + shrinkVertically(tween(NAVIGATION_EXIT_DURATION_MILLIS)) +
-                        fadeOut(tween(NAVIGATION_FADE_OUT_DURATION_MILLIS)),
-                ) {
-                    Box(modifier = Modifier.background(normalBarColor)) {
-                        GaussianBlurredBar(backdrop = bottomBarBackdrop) {
-                            Column {
-                                HorizontalDivider(
-                                    thickness = DividerDefaults.Thickness,
-                                    color = DividerDefaults.DividerColor.copy(
-                                        alpha = NORMAL_BAR_STROKE_ALPHA,
-                                    ),
-                                )
-                                NavigationBar(
-                                    color = normalBarColor,
-                                    showDivider = false,
-                                ) {
-                                    navigationItems.forEachIndexed { index, item ->
-                                        NavigationBarItem(
-                                            selected = selectedTab == index,
-                                            onClick = { onTabSelected(index) },
-                                            icon = item.icon,
-                                            label = item.label,
-                                        )
-                                    }
-                                }
-                            }
+    DismissibleNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            DismissibleDrawerSheet(drawerState = drawerState) {
+                DrawerNavigationList(
+                    items = navigationItems,
+                    selectedIndex = selectedTab,
+                    onItemSelected = { index ->
+                        onTabSelected(index)
+                        drawerState.close()
+                    },
+                )
+            }
+        },
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .drawWithContent {
+                        @Suppress("UNUSED_VARIABLE")
+                        val refreshFrame = backdropRefreshSignal()
+                        drawContent()
+                    }
+                    .then(
+                        if (blurEnabled || liquidGlassActive) {
+                            miniPlayerBackdrop?.let { Modifier.layerBackdrop(it) } ?: Modifier
+                        } else {
+                            Modifier
+                        },
+                    ),
+            ) {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = Color.Transparent,
+                    bottomBar = {
+                        Box(
+                            modifier = Modifier
+                                .padding(bottom = miniPlayerBottomPadding),
+                        ) {
+                            miniPlayer(
+                                MiniPlayerChrome(
+                                    style = effectiveStyle,
+                                    smallPlayerBar = smallPlayerBar,
+                                    backdrop = miniPlayerBackdrop,
+                                    blurActive = blurEnabled,
+                                    liquidGlassActive = liquidGlassActive,
+                                    isDark = isDark,
+                                ),
+                            )
                         }
+                    },
+                ) { innerPadding ->
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        content(innerPadding)
                     }
                 }
             }
         },
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .drawWithContent {
-                    @Suppress("UNUSED_VARIABLE")
-                    val refreshFrame = backdropRefreshSignal()
-                    drawContent()
-                }
-                .then(
-                    bottomBarBackdrop?.let { Modifier.layerBackdrop(it) } ?: Modifier,
-                ),
-        ) {
-            content(innerPadding)
+    )
+}
+
+@Composable
+private fun DrawerNavigationList(
+    items: List<NavigationItem>,
+    selectedIndex: Int,
+    onItemSelected: (Int) -> Unit,
+) {
+    val colorScheme = MiuixTheme.colorScheme
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(horizontal = 8.dp, vertical = 16.dp),
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+        items.forEachIndexed { index, item ->
+            val selected = index == selectedIndex
+            val accentColor = if (selected) {
+                colorScheme.onSecondaryContainer
+            } else {
+                colorScheme.onSurface
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(
+                        if (selected) {
+                            colorScheme.secondaryContainer
+                        } else {
+                            Color.Transparent
+                        },
+                    )
+                    .clickable { onItemSelected(index) }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = item.icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = accentColor,
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = item.label,
+                    style = MiuixTheme.textStyles.body1,
+                    color = accentColor,
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
         }
     }
 }
