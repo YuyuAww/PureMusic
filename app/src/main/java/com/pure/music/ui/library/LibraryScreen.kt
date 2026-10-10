@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberModalDrawerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -30,6 +29,8 @@ import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -103,7 +104,7 @@ fun LibraryScreen(
     val recentIds by viewModel.recentSongIds.collectAsStateWithLifecycle()
     var section by remember { mutableStateOf(LibrarySection.SONGS) }
     var folderPath by remember { mutableStateOf<String?>(null) }
-    val drawerState = rememberModalDrawerState()
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var granted by remember {
@@ -155,8 +156,8 @@ fun LibraryScreen(
                 )
             )
         },
-    ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+    ) {
+        Box(Modifier.fillMaxSize()) {
             MiuixLibraryContent(
                 onOpenDrawer = { scope.launch { drawerState.open() } },
                 onShowSearch = onShowSearch,
@@ -309,7 +310,7 @@ private fun SongSection(
 ) {
     val colors = MiuixTheme.colorScheme
     val listState = rememberLazyListState()
-    val filtered = songs.filter { it.durationMs > 30_000 }
+    val filtered = songs.filter { it.duration > 30_000 }
     Box(Modifier.fillMaxSize()) {
         SongList(filtered, favoriteIds, onToggleFavorite, onPlaySong, padding, listState)
         if (filtered.size > 1) AlphabetIndex(filtered, listState, Modifier.align(Alignment.CenterEnd))
@@ -464,7 +465,7 @@ private fun AlphabetIndex(
     val scope = rememberCoroutineScope()
     Column(
         modifier
-            .padding(end = 6.dp, vertical = 40.dp),
+            .padding(top = 40.dp, end = 6.dp, bottom = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         ('A'..'Z').forEach { letter ->

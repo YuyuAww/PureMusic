@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.SkipNext
-import androidx.compose.material.icons.automirrored.filled.SkipPrevious
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -156,14 +156,14 @@ fun MiniPlayerBar(
                 }
                 IconButton(onClick = onPrevious) {
                     Icon(
-                        Icons.AutoMirrored.Filled.SkipPrevious,
+                        Icons.Filled.SkipPrevious,
                         "上一首",
                         tint = colors.onSurfaceVariantActions,
                     )
                 }
                 IconButton(onClick = onNext) {
                     Icon(
-                        Icons.AutoMirrored.Filled.SkipNext,
+                        Icons.Filled.SkipNext,
                         "下一首",
                         tint = colors.onSurfaceVariantActions,
                     )

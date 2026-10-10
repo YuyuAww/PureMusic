@@ -3,7 +3,10 @@ package com.pure.music.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -43,27 +46,31 @@ fun PureMusicTheme(
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    val controller = remember { ThemeController(ColorSchemeMode.System) }
     val dark = when (theme) {
         "light" -> false
         "dark" -> true
         else -> isSystemInDarkTheme()
     }
 
+    // Miuix v0.9.4 的 ThemeController 属性均为 val，主题变更需重建控制器（与 Miuix 示例 AppTheme 一致）
+    var keyColor by remember { mutableStateOf<Color?>(null) }
     LaunchedEffect(theme, colorSource, coverAlbumId) {
-        val isDynamicSource = colorSource == "monet" || colorSource == "cover"
-        controller.colorSchemeMode = when {
-            theme == "light" -> if (isDynamicSource) ColorSchemeMode.MonetLight else ColorSchemeMode.Light
-            theme == "dark" -> if (isDynamicSource) ColorSchemeMode.MonetDark else ColorSchemeMode.Dark
-            else -> if (isDynamicSource) ColorSchemeMode.MonetSystem else ColorSchemeMode.System
-        }
+        keyColor = null
         if (colorSource == "cover" && coverAlbumId != null) {
             val loaded = loadCoverColors(context, coverAlbumId, brandFallbackColors, dark)
             // 取色成功（与回退不同）时以封面主色作为 Miuix 动态色种子；失败/无封面回退系统壁纸取色
-            controller.keyColor = if (loaded == brandFallbackColors) null else loaded.accent
-        } else {
-            controller.keyColor = null
+            keyColor = if (loaded == brandFallbackColors) null else loaded.accent
         }
+    }
+
+    val isDynamicSource = colorSource == "monet" || colorSource == "cover"
+    val colorSchemeMode = when {
+        theme == "light" -> if (isDynamicSource) ColorSchemeMode.MonetLight else ColorSchemeMode.Light
+        theme == "dark" -> if (isDynamicSource) ColorSchemeMode.MonetDark else ColorSchemeMode.Dark
+        else -> if (isDynamicSource) ColorSchemeMode.MonetSystem else ColorSchemeMode.System
+    }
+    val controller = remember(theme, colorSource, colorSchemeMode, keyColor, dark) {
+        ThemeController(colorSchemeMode = colorSchemeMode, keyColor = keyColor, isDark = dark)
     }
 
     // 同步状态栏和导航栏外观

@@ -2,7 +2,6 @@ package com.pure.music.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -10,11 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.ModalNavigationDrawer
-import androidx.compose.foundation.ModalNavigationDrawerState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,14 +35,14 @@ data class MiuixDrawerItem(
 
 /**
  * 应用自有的 Miuix 风格侧边抽屉。
- * Miuix v0.9.4 没有官方 Drawer 组件，这里用 Compose Foundation 的
+ * Miuix v0.9.4 没有官方 Drawer 组件，这里用 material3 的
  * [ModalNavigationDrawer] 承载交互，内部行、文案、配色全部使用 Miuix 组件。
  */
 @Composable
 fun MiuixDrawer(
-    drawerState: ModalNavigationDrawerState,
+    drawerState: DrawerState,
     items: List<MiuixDrawerItem>,
-    content: @Composable (PaddingValues) -> Unit,
+    content: @Composable () -> Unit,
 ) {
     ModalNavigationDrawer(
         drawerState = drawerState,

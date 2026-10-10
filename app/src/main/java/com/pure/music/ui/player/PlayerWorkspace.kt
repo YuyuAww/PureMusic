@@ -37,13 +37,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
-import androidx.compose.material.icons.automirrored.filled.SkipNext
-import androidx.compose.material.icons.automirrored.filled.SkipPrevious
 import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -69,15 +69,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.Player
 import com.pure.music.data.Song
-import com.pure.music.ffmpeg.player.EqualizerController
 import com.pure.music.lyric.LyricData
 import com.pure.music.lyric.LyricsCodec
 import com.pure.music.lyric.model.LyricFormat
 import com.pure.music.lyric.model.LyricLine
 import com.pure.music.lyric.model.LyricsDocument
+import com.pure.music.lyric.model.visibleText
+import com.pure.music.player.EqualizerController
 import com.pure.music.player.LyricsTagService
-import com.pure.music.player.Player
 import com.pure.music.player.PlaybackState
 import com.pure.music.player.PlayerManager
 import com.pure.music.ui.components.AlbumArt
@@ -459,7 +460,7 @@ private fun PlayerBottomBar(
         ) {
             IconButton(onClick = onPrevious, modifier = Modifier.size(35.dp)) {
                 Icon(
-                    Icons.AutoMirrored.Filled.SkipPrevious,
+                    Icons.Filled.SkipPrevious,
                     "上一首",
                     tint = colors.accent,
                     modifier = Modifier.size(35.dp)
@@ -477,7 +478,7 @@ private fun PlayerBottomBar(
             Spacer(Modifier.width(70.dp))
             IconButton(onClick = onNext, modifier = Modifier.size(35.dp)) {
                 Icon(
-                    Icons.AutoMirrored.Filled.SkipNext,
+                    Icons.Filled.SkipNext,
                     "下一首",
                     tint = colors.accent,
                     modifier = Modifier.size(35.dp)
