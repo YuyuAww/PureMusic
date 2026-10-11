@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -81,6 +82,7 @@ import top.yukonga.miuix.kmp.icon.extended.Music
 import top.yukonga.miuix.kmp.icon.extended.Settings
 import top.yukonga.miuix.kmp.layout.BottomSheetDefaults
 import top.yukonga.miuix.kmp.basic.rememberNavigationRailState
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 internal data class MiniPlayerChrome(
@@ -476,6 +478,7 @@ private fun DrawerPlayerScaffold(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
     val miniPlayerBackdrop = rememberBlurBackdrop()
     val density = LocalDensity.current
     val windowSize = LocalWindowInfo.current.containerSize
@@ -500,7 +503,9 @@ private fun DrawerPlayerScaffold(
                     selectedIndex = selectedTab,
                     onItemSelected = { index ->
                         onTabSelected(index)
-                        drawerState.close()
+                        coroutineScope.launch {
+                            drawerState.close()
+                        }
                     },
                 )
             }
