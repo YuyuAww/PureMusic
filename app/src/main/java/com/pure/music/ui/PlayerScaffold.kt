@@ -77,6 +77,8 @@ import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.highlight.Highlight
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Album
+import top.yukonga.miuix.kmp.icon.extended.Contacts
+import top.yukonga.miuix.kmp.icon.extended.Folder
 import top.yukonga.miuix.kmp.icon.extended.Home
 import top.yukonga.miuix.kmp.icon.extended.Music
 import top.yukonga.miuix.kmp.icon.extended.Settings
@@ -127,18 +129,24 @@ internal fun PlayerScaffold(
 ) {
     val homeLabel = stringResource(R.string.navigation_home)
     val songsLabel = stringResource(R.string.navigation_music)
-    val libraryLabel = stringResource(R.string.navigation_library)
+    val albumsLabel = stringResource(R.string.navigation_albums)
+    val artistsLabel = stringResource(R.string.navigation_artists)
+    val foldersLabel = stringResource(R.string.navigation_folders)
     val settingsLabel = stringResource(R.string.navigation_settings)
     val navigationItems = remember(
         homeLabel,
         songsLabel,
-        libraryLabel,
+        albumsLabel,
+        artistsLabel,
+        foldersLabel,
         settingsLabel,
     ) {
         listOf(
             NavigationItem(label = homeLabel, icon = MiuixIcons.Home),
             NavigationItem(label = songsLabel, icon = MiuixIcons.Music),
-            NavigationItem(label = libraryLabel, icon = MiuixIcons.Album),
+            NavigationItem(label = albumsLabel, icon = MiuixIcons.Album),
+            NavigationItem(label = artistsLabel, icon = MiuixIcons.Contacts),
+            NavigationItem(label = foldersLabel, icon = MiuixIcons.Folder),
             NavigationItem(label = settingsLabel, icon = MiuixIcons.Settings),
         )
     }

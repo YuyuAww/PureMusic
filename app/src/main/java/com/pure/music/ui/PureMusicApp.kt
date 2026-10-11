@@ -19,14 +19,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.animateTo
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -39,12 +36,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.isImeVisible
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -64,7 +58,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -85,20 +78,10 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.boundsInRoot
-import androidx.compose.ui.semantics.CollectionInfo
-import androidx.compose.ui.semantics.CollectionItemInfo
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.collectionInfo
-import androidx.compose.ui.semantics.collectionItemInfo
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -134,8 +117,6 @@ import com.pure.music.ui.component.LocalPageCardBlurRadius
 import com.pure.music.ui.component.pageCardBlurRadius
 import com.pure.music.ui.component.LocalPageCardSurfaceAlpha
 import com.pure.music.ui.component.pageCardSurfaceAlpha
-import com.pure.music.ui.component.topBarContainerColor
-import com.pure.music.ui.component.tabSelectedContainerColor
 import com.pure.music.ui.component.FixedPageBackgroundHost
 import com.pure.music.ui.component.trackFixedWallpaperMotion
 import com.pure.music.ui.component.refreshFixedWallpaperSample
@@ -217,7 +198,6 @@ import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.NavigationRailDefaults
-import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
 import top.yukonga.miuix.kmp.blur.layerBackdrop
@@ -227,26 +207,22 @@ import top.yukonga.miuix.kmp.icon.extended.Search
 import top.yukonga.miuix.kmp.nav.core.NavBackStack
 import top.yukonga.miuix.kmp.nav.core.NavKey
 import top.yukonga.miuix.kmp.nav.core.rememberNavBackStack
-import top.yukonga.miuix.kmp.squircle.squircleBorder
-import top.yukonga.miuix.kmp.squircle.squircleBackground
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.MiuixPopupHost
 import top.yukonga.miuix.kmp.utils.overScrollHorizontal
 import kotlin.math.abs
 import kotlinx.serialization.Serializable
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val HOME_TAB_INDEX = 0
 private const val SONGS_TAB_INDEX = 1
-private const val LIBRARY_TAB_INDEX = 2
-private const val SETTINGS_TAB_INDEX = 3
+private const val ALBUMS_TAB_INDEX = 2
+private const val ARTISTS_TAB_INDEX = 3
+private const val FOLDERS_TAB_INDEX = 4
+private const val SETTINGS_TAB_INDEX = 5
 
-private const val LIBRARY_ALBUMS_TAB_INDEX = 0
-private const val LIBRARY_ARTISTS_TAB_INDEX = 1
-private const val LIBRARY_FOLDERS_TAB_INDEX = 2
 private const val LIBRARY_TAB_COUNT = 3
 
 @Serializable
@@ -412,11 +388,10 @@ fun PureMusicApp(
         when (settings.defaultHomePage) {
             DefaultHomePage.HOME -> HOME_TAB_INDEX
             DefaultHomePage.SONGS -> SONGS_TAB_INDEX
-            DefaultHomePage.LIBRARY -> LIBRARY_TAB_INDEX
+            DefaultHomePage.LIBRARY -> ALBUMS_TAB_INDEX
         }
     }
     var selectedRootPage by remember { mutableIntStateOf(initialRootPage) }
-    val libraryPagerState = rememberPagerState(pageCount = { LIBRARY_TAB_COUNT })
     val homeRecommendations = rememberHomeRecommendations(
         tracks = uiState.tracks,
         active = selectedRootPage == HOME_TAB_INDEX,
@@ -513,14 +488,10 @@ fun PureMusicApp(
     val audioPermission = remember { requiredAudioPermission() }
     val homeTitle = stringResource(R.string.navigation_home)
     val musicTitle = stringResource(R.string.navigation_music)
-    val libraryTitle = stringResource(R.string.navigation_library)
     val albumsTitle = stringResource(R.string.navigation_albums)
     val artistsTitle = stringResource(R.string.navigation_artists)
     val foldersTitle = stringResource(R.string.navigation_folders)
     val settingsTitle = stringResource(R.string.navigation_settings)
-    val libraryTabs = remember(albumsTitle, artistsTitle, foldersTitle) {
-        listOf(albumsTitle, artistsTitle, foldersTitle)
-    }
     val openPlayer = { playerTransition.open() }
     val closePlayer = { playerTransition.close() }
     var playerStatusBarBackgroundIsDark by remember { mutableStateOf(isDark) }
@@ -548,17 +519,24 @@ fun PureMusicApp(
             artistSortDescending = settings.artistSortDescending
             folderSortFieldOrdinal = settings.folderSortFieldOrdinal
             folderSortDescending = settings.folderSortDescending
-            libraryPagerState.scrollToPage(
-                settings.libraryTabIndex.coerceIn(0, LIBRARY_TAB_COUNT - 1),
-            )
+            selectedRootPage = when (settings.defaultHomePage) {
+                DefaultHomePage.HOME -> HOME_TAB_INDEX
+                DefaultHomePage.SONGS -> SONGS_TAB_INDEX
+                DefaultHomePage.LIBRARY ->
+                    ALBUMS_TAB_INDEX + settings.libraryTabIndex.coerceIn(
+                        0,
+                        LIBRARY_TAB_COUNT - 1,
+                    )
+            }
             libraryPreferencesHydrated = true
         }
     }
-    LaunchedEffect(libraryPreferencesHydrated, libraryPagerState) {
+    LaunchedEffect(selectedRootPage, libraryPreferencesHydrated) {
         if (!libraryPreferencesHydrated) return@LaunchedEffect
-        snapshotFlow { libraryPagerState.settledPage }
-            .distinctUntilChanged()
-            .collectLatest(viewModel::setLibraryTabIndex)
+        val libraryIndex = selectedRootPage - ALBUMS_TAB_INDEX
+        if (libraryIndex in 0 until LIBRARY_TAB_COUNT) {
+            viewModel.setLibraryTabIndex(libraryIndex)
+        }
     }
     LaunchedEffect(songSearchQuery, musicSortConfig) {
         viewModel.updateMusicPresentation(songSearchQuery, musicSortConfig)
@@ -702,7 +680,6 @@ fun PureMusicApp(
             }
             onDispose {}
         }
-        val rootScope = rememberCoroutineScope()
         val homeListState = rememberLazyListState()
         val songsListState = rememberLazyListState()
         val albumsGridState = rememberLazyGridState()
@@ -742,6 +719,55 @@ fun PureMusicApp(
         val homeScrollBehavior = MiuixScrollBehavior()
         val songsScrollBehavior = rememberSearchTopBarScrollBehavior(songSearchVisible)
         val libraryScrollBehavior = rememberSearchTopBarScrollBehavior(librarySearchVisible)
+        val onLibraryIndexTargetChanged: (Int, Boolean) -> Unit =
+            { _, restoreLargeTitle ->
+                val state = libraryScrollBehavior.state
+                if (restoreLargeTitle && !libraryScrollBehavior.isPinned) {
+                    state.heightOffset = 0f
+                    state.contentOffset = 0f
+                } else if (state.heightOffsetLimit != -Float.MAX_VALUE) {
+                    state.heightOffset = state.heightOffsetLimit
+                    state.contentOffset = state.heightOffsetLimit
+                }
+            }
+        val toggleLibrarySearch: () -> Unit = {
+            if (librarySearchVisible) {
+                librarySearchVisible = false
+                librarySearchFocused = false
+                librarySearchQuery = ""
+            } else {
+                librarySearchVisible = true
+                librarySearchFocused = true
+            }
+        }
+        val libraryPageBottomContent: @Composable () -> Unit = {
+            Column {
+                Box(
+                    modifier = Modifier.height(
+                        expandedTopBarBottomContentGap(
+                            libraryScrollBehavior,
+                            12.dp,
+                        ),
+                    ),
+                )
+                LibrarySearchBar(
+                    visible = librarySearchVisible,
+                    focused = librarySearchFocused,
+                    query = librarySearchQuery,
+                    label = stringResource(R.string.search_hint),
+                    topPadding = 6.dp,
+                    onQueryChange = { query -> librarySearchQuery = query },
+                    onFocusedChange = { librarySearchFocused = it },
+                    onVisibleChange = { visible ->
+                        librarySearchVisible = visible
+                        if (!visible) {
+                            librarySearchFocused = false
+                            librarySearchQuery = ""
+                        }
+                    },
+                )
+            }
+        }
         val settingsScrollBehavior = MiuixScrollBehavior()
         val themeSettingsScrollBehavior = MiuixScrollBehavior()
         val mainBackgroundScrollBehavior = MiuixScrollBehavior()
@@ -852,8 +878,7 @@ fun PureMusicApp(
             FixedPageBackgroundHost(
                 modifier = Modifier.fillMaxSize(),
                 refreshSignal = {
-                    selectedRootPage +
-                        libraryPagerState.currentPage + libraryPagerState.currentPageOffsetFraction
+                    selectedRootPage.toFloat()
                 },
             ) {
             // Single main page host: the sidebar selection injects the page content.
@@ -1051,8 +1076,8 @@ fun PureMusicApp(
                         )
                     }
 
-                    LIBRARY_TAB_INDEX -> PlayerPage(
-                        title = libraryTitle,
+                    ALBUMS_TAB_INDEX -> PlayerPage(
+                        title = albumsTitle,
                         outerPadding = outerPadding,
                         scrollBehavior = libraryScrollBehavior,
                         useSmallTopAppBar = useSmallTopAppBar,
@@ -1060,272 +1085,215 @@ fun PureMusicApp(
                             LibrarySearchButton(
                                 visible = librarySearchVisible,
                                 scrollBehavior = libraryScrollBehavior,
-                                contentDescription = when (libraryPagerState.currentPage) {
-                                    LIBRARY_ARTISTS_TAB_INDEX ->
-                                        stringResource(R.string.artist_search_hint)
-                                    LIBRARY_FOLDERS_TAB_INDEX ->
-                                        stringResource(R.string.folder_search_hint)
-                                    else -> stringResource(R.string.album_search_hint)
-                                },
-                                onClick = {
-                                    if (librarySearchVisible) {
-                                        librarySearchVisible = false
-                                        librarySearchFocused = false
-                                        librarySearchQuery = ""
-                                    } else {
-                                        librarySearchVisible = true
-                                        librarySearchFocused = true
+                                contentDescription = stringResource(R.string.album_search_hint),
+                                onClick = toggleLibrarySearch,
+                            )
+                            AlbumSortButton(
+                                config = albumSortConfig,
+                                onConfigChange = { config ->
+                                    val gridStyleChanged =
+                                        config.gridStyle != albumSortConfig.gridStyle
+                                    albumSortFieldOrdinal = config.field.ordinal
+                                    albumSortDescending = config.descending
+                                    albumGridStyleOrdinal = config.gridStyle.ordinal
+                                    viewModel.setAlbumSortConfig(config)
+                                    if (gridStyleChanged) {
+                                        pendingAlbumGridReset = config.gridStyle
                                     }
                                 },
                             )
-                            when (libraryPagerState.currentPage) {
-                                LIBRARY_ARTISTS_TAB_INDEX -> ArtistSortButton(
-                                    config = artistSortConfig,
-                                    onConfigChange = { config ->
-                                        artistSortFieldOrdinal = config.field.ordinal
-                                        artistSortDescending = config.descending
-                                        viewModel.setArtistSortConfig(config)
-                                    },
-                                )
-
-                                LIBRARY_FOLDERS_TAB_INDEX -> FolderSortButton(
-                                    config = folderSortConfig,
-                                    onConfigChange = { config ->
-                                        folderSortFieldOrdinal = config.field.ordinal
-                                        folderSortDescending = config.descending
-                                        viewModel.setFolderSortConfig(config)
-                                    },
-                                )
-
-                                else -> AlbumSortButton(
-                                    config = albumSortConfig,
-                                    onConfigChange = { config ->
-                                        val gridStyleChanged =
-                                            config.gridStyle != albumSortConfig.gridStyle
-                                        albumSortFieldOrdinal = config.field.ordinal
-                                        albumSortDescending = config.descending
-                                        albumGridStyleOrdinal = config.gridStyle.ordinal
-                                        viewModel.setAlbumSortConfig(config)
-                                        if (gridStyleChanged) {
-                                            pendingAlbumGridReset = config.gridStyle
-                                        }
-                                    },
-                                )
-                            }
                         },
-                        bottomContent = {
-                            Column {
-                                Box(
-                                    modifier = Modifier.height(
-                                        expandedTopBarBottomContentGap(
-                                            libraryScrollBehavior,
-                                            12.dp,
-                                        ),
-                                    ),
-                                )
-                                LibraryTabRow(
-                                    tabs = libraryTabs,
-                                    selectedTabIndex = libraryPagerState.targetPage,
-                                    onTabSelected = { selectedTab ->
-                                        rootScope.launch {
-                                            libraryPagerState.animateScrollToPage(selectedTab)
-                                        }
-                                        viewModel.setLibraryTabIndex(selectedTab)
-                                    },
-                                    blurred = settings.blurEnabled,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 20.dp),
-                                )
-                                Box(modifier = Modifier.height(6.dp))
-                                LibrarySearchBar(
-                                    visible = librarySearchVisible,
-                                    focused = librarySearchFocused,
-                                    query = librarySearchQuery,
-                                    label = stringResource(R.string.search_hint),
-                                    topPadding = 6.dp,
-                                    onQueryChange = { query -> librarySearchQuery = query },
-                                    onFocusedChange = { librarySearchFocused = it },
-                                    onVisibleChange = { visible ->
-                                        librarySearchVisible = visible
-                                        if (!visible) {
-                                            librarySearchFocused = false
-                                            librarySearchQuery = ""
-                                        }
-                                    },
-                                )
-                            }
-                        },
+                        bottomContent = libraryPageBottomContent,
                     ) { contentPadding, _, indexTopPadding ->
-                        val layoutDirection = LocalLayoutDirection.current
-                        val onLibraryIndexTargetChanged: (Int, Boolean) -> Unit =
-                            { _, restoreLargeTitle ->
-                                val state = libraryScrollBehavior.state
-                                if (restoreLargeTitle && !libraryScrollBehavior.isPinned) {
-                                    state.heightOffset = 0f
-                                    state.contentOffset = 0f
-                                } else if (state.heightOffsetLimit != -Float.MAX_VALUE) {
-                                    state.heightOffset = state.heightOffsetLimit
-                                    state.contentOffset = state.heightOffsetLimit
-                                }
-                            }
                         Box(modifier = Modifier.fillMaxSize()) {
-                            val libraryIndexModifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(
-                                    top = indexTopPadding + 4.dp,
-                                    end = contentPadding.calculateEndPadding(layoutDirection),
-                                    bottom = LocalAlphabetIndexBottomPadding.current,
+                            val indexModifier = libraryIndexModifier(contentPadding, indexTopPadding)
+                            AlbumLibraryScreen(
+                                displayedAlbums = albumPresentation.items,
+                                sectionIndexMap = albumPresentation.sectionIndexMap,
+                                query = albumPresentation.query,
+                                scanStatus = uiState.scanStatus,
+                                sortConfig = albumPresentation.sortConfig.copy(
+                                    gridStyle = albumSortConfig.gridStyle,
+                                ),
+                                onAlbumClick = { album ->
+                                    dismissLibrarySearchFocus()
+                                    selectedAlbumKey = album.key
+                                    albumParentRoute = AppRoute.ROOT
+                                    albumParentArtistKey = null
+                                    currentRoute = AppRoute.ALBUM_DETAIL
+                                },
+                                scrollBehavior = libraryScrollBehavior,
+                                indexTopPadding = indexTopPadding,
+                                gridState = albumsGridState,
+                                contentPadding = contentPadding,
+                                showIndex = false,
+                                landscape = landscape,
+                                navigationRailExpanded = navigationRailExpanded,
+                            )
+                            if (
+                                albumPresentation.items.isNotEmpty() &&
+                                librarySearchQuery.isBlank() &&
+                                (
+                                    albumSortConfig.field == AlbumSortField.ALBUM ||
+                                        albumSortConfig.field ==
+                                        AlbumSortField.ALBUM_ARTIST
                                 )
-                                .fillMaxHeight()
-                            HorizontalPager(
-                                state = libraryPagerState,
-                                modifier = Modifier.fillMaxSize(),
-                                userScrollEnabled = false,
-                                verticalAlignment = Alignment.Top,
-                                key = { it },
-                            ) { libraryPage ->
-                                when (libraryPage) {
-                                    LIBRARY_ALBUMS_TAB_INDEX -> AlbumLibraryScreen(
-                                        displayedAlbums = albumPresentation.items,
-                                        sectionIndexMap = albumPresentation.sectionIndexMap,
-                                        query = albumPresentation.query,
-                                        scanStatus = uiState.scanStatus,
-                                        sortConfig = albumPresentation.sortConfig.copy(
-                                            gridStyle = albumSortConfig.gridStyle,
-                                        ),
-                                        onAlbumClick = { album ->
-                                            dismissLibrarySearchFocus()
-                                            selectedAlbumKey = album.key
-                                            albumParentRoute = AppRoute.ROOT
-                                            albumParentArtistKey = null
-                                            currentRoute = AppRoute.ALBUM_DETAIL
-                                        },
-                                        scrollBehavior = libraryScrollBehavior,
-                                        indexTopPadding = indexTopPadding,
-                                        gridState = albumsGridState,
-                                        contentPadding = contentPadding,
-                                        showIndex = false,
-                                        landscape = landscape,
-                                        navigationRailExpanded = navigationRailExpanded,
-                                    )
-
-                                    LIBRARY_ARTISTS_TAB_INDEX -> ArtistLibraryScreen(
-                                        displayedArtists = artistPresentation.items,
-                                        sectionIndexMap = artistPresentation.sectionIndexMap,
-                                        query = artistPresentation.query,
-                                        scanStatus = uiState.scanStatus,
-                                        sortConfig = artistPresentation.sortConfig,
-                                        onArtistClick = { artist ->
-                                            dismissLibrarySearchFocus()
-                                            openTrackArtist(artist)
-                                        },
-                                        scrollBehavior = libraryScrollBehavior,
-                                        indexTopPadding = indexTopPadding,
-                                        listState = artistsListState,
-                                        contentPadding = contentPadding,
-                                        showIndex = false,
-                                    )
-
-                                                    LIBRARY_FOLDERS_TAB_INDEX -> FolderLibraryScreen(
-                                        displayedFolders = folderPresentation.items,
-                                        sectionIndexMap = folderPresentation.sectionIndexMap,
-                                        query = folderPresentation.query,
-                                        scanStatus = uiState.scanStatus,
-                                        sortConfig = folderPresentation.sortConfig,
-                                        onFolderClick = { folder ->
-                                            dismissLibrarySearchFocus()
-                                            selectedFolderKey = folder.key
-                                            currentRoute = AppRoute.FOLDER_DETAIL
-                                        },
-                                        onBlockFolder = { path ->
-                                            viewModel.addBlockedFolderPath(path)
-                                        },
-                                        scrollBehavior = libraryScrollBehavior,
-                                        indexTopPadding = indexTopPadding,
-                                        listState = foldersListState,
-                                        contentPadding = contentPadding,
-                                        showIndex = false,
-                                    )
-                                }
+                            ) {
+                                AlphabetSideBar(
+                                    sectionIndexMap = albumPresentation.sectionIndexMap,
+                                    itemCount = albumPresentation.items.size,
+                                    scrollStateKey = albumsGridState,
+                                    isAtTarget = { index ->
+                                        albumsGridState.firstVisibleItemIndex == index &&
+                                            albumsGridState.firstVisibleItemScrollOffset == 0
+                                    },
+                                    scrollToItem = albumsGridState::scrollToItem,
+                                    sections = if (albumSortConfig.descending) {
+                                        AlphabetSections.asReversed()
+                                    } else {
+                                        AlphabetSections
+                                    },
+                                    onTargetIndexChanged = onLibraryIndexTargetChanged,
+                                    modifier = indexModifier,
+                                )
                             }
+                        }
+                    }
 
-                            when (libraryPagerState.currentPage) {
-                                LIBRARY_ALBUMS_TAB_INDEX -> if (
-                                    albumPresentation.items.isNotEmpty() &&
-                                    librarySearchQuery.isBlank() &&
-                                    (
-                                        albumSortConfig.field == AlbumSortField.ALBUM ||
-                                            albumSortConfig.field ==
-                                            AlbumSortField.ALBUM_ARTIST
-                                    )
-                                ) {
-                                    AlphabetSideBar(
-                                        sectionIndexMap = albumPresentation.sectionIndexMap,
-                                        itemCount = albumPresentation.items.size,
-                                        scrollStateKey = albumsGridState,
-                                        isAtTarget = { index ->
-                                            albumsGridState.firstVisibleItemIndex == index &&
-                                                albumsGridState.firstVisibleItemScrollOffset == 0
-                                        },
-                                        scrollToItem = albumsGridState::scrollToItem,
-                                        sections = if (albumSortConfig.descending) {
-                                            AlphabetSections.asReversed()
-                                        } else {
-                                            AlphabetSections
-                                        },
-                                        onTargetIndexChanged = onLibraryIndexTargetChanged,
-                                        modifier = libraryIndexModifier,
-                                    )
-                                }
+                    ARTISTS_TAB_INDEX -> PlayerPage(
+                        title = artistsTitle,
+                        outerPadding = outerPadding,
+                        scrollBehavior = libraryScrollBehavior,
+                        useSmallTopAppBar = useSmallTopAppBar,
+                        actions = {
+                            LibrarySearchButton(
+                                visible = librarySearchVisible,
+                                scrollBehavior = libraryScrollBehavior,
+                                contentDescription = stringResource(R.string.artist_search_hint),
+                                onClick = toggleLibrarySearch,
+                            )
+                            ArtistSortButton(
+                                config = artistSortConfig,
+                                onConfigChange = { config ->
+                                    artistSortFieldOrdinal = config.field.ordinal
+                                    artistSortDescending = config.descending
+                                    viewModel.setArtistSortConfig(config)
+                                },
+                            )
+                        },
+                        bottomContent = libraryPageBottomContent,
+                    ) { contentPadding, _, indexTopPadding ->
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            val indexModifier = libraryIndexModifier(contentPadding, indexTopPadding)
+                            ArtistLibraryScreen(
+                                displayedArtists = artistPresentation.items,
+                                sectionIndexMap = artistPresentation.sectionIndexMap,
+                                query = artistPresentation.query,
+                                scanStatus = uiState.scanStatus,
+                                sortConfig = artistPresentation.sortConfig,
+                                onArtistClick = { artist ->
+                                    dismissLibrarySearchFocus()
+                                    openTrackArtist(artist)
+                                },
+                                scrollBehavior = libraryScrollBehavior,
+                                indexTopPadding = indexTopPadding,
+                                listState = artistsListState,
+                                contentPadding = contentPadding,
+                                showIndex = false,
+                            )
+                            if (
+                                artistPresentation.items.isNotEmpty() &&
+                                librarySearchQuery.isBlank() &&
+                                artistSortConfig.field == ArtistSortField.NAME
+                            ) {
+                                AlphabetSideBar(
+                                    sectionIndexMap = artistPresentation.sectionIndexMap,
+                                    itemCount = artistPresentation.items.size,
+                                    scrollStateKey = artistsListState,
+                                    isAtTarget = { index ->
+                                        artistsListState.firstVisibleItemIndex == index &&
+                                            artistsListState.firstVisibleItemScrollOffset == 0
+                                    },
+                                    scrollToItem = artistsListState::scrollToItem,
+                                    sections = if (artistSortConfig.descending) {
+                                        AlphabetSections.asReversed()
+                                    } else {
+                                        AlphabetSections
+                                    },
+                                    onTargetIndexChanged = onLibraryIndexTargetChanged,
+                                    modifier = indexModifier,
+                                )
+                            }
+                        }
+                    }
 
-                                LIBRARY_ARTISTS_TAB_INDEX -> if (
-                                    artistPresentation.items.isNotEmpty() &&
-                                    librarySearchQuery.isBlank() &&
-                                    artistSortConfig.field == ArtistSortField.NAME
-                                ) {
-                                    AlphabetSideBar(
-                                        sectionIndexMap = artistPresentation.sectionIndexMap,
-                                        itemCount = artistPresentation.items.size,
-                                        scrollStateKey = artistsListState,
-                                        isAtTarget = { index ->
-                                            artistsListState.firstVisibleItemIndex == index &&
-                                                artistsListState.firstVisibleItemScrollOffset == 0
-                                        },
-                                        scrollToItem = artistsListState::scrollToItem,
-                                        sections = if (artistSortConfig.descending) {
-                                            AlphabetSections.asReversed()
-                                        } else {
-                                            AlphabetSections
-                                        },
-                                        onTargetIndexChanged = onLibraryIndexTargetChanged,
-                                        modifier = libraryIndexModifier,
-                                    )
-                                }
-
-                                LIBRARY_FOLDERS_TAB_INDEX -> if (
-                                    folderPresentation.items.isNotEmpty() &&
-                                    librarySearchQuery.isBlank() &&
-                                    folderSortConfig.field == FolderSortField.NAME
-                                ) {
-                                    AlphabetSideBar(
-                                        sectionIndexMap = folderPresentation.sectionIndexMap,
-                                        itemCount = folderPresentation.items.size,
-                                        scrollStateKey = foldersListState,
-                                        isAtTarget = { index ->
-                                            foldersListState.firstVisibleItemIndex == index &&
-                                                foldersListState.firstVisibleItemScrollOffset == 0
-                                        },
-                                        scrollToItem = foldersListState::scrollToItem,
-                                        sections = if (folderSortConfig.descending) {
-                                            AlphabetSections.asReversed()
-                                        } else {
-                                            AlphabetSections
-                                        },
-                                        onTargetIndexChanged = onLibraryIndexTargetChanged,
-                                        modifier = libraryIndexModifier,
-                                    )
-                                }
+                    FOLDERS_TAB_INDEX -> PlayerPage(
+                        title = foldersTitle,
+                        outerPadding = outerPadding,
+                        scrollBehavior = libraryScrollBehavior,
+                        useSmallTopAppBar = useSmallTopAppBar,
+                        actions = {
+                            LibrarySearchButton(
+                                visible = librarySearchVisible,
+                                scrollBehavior = libraryScrollBehavior,
+                                contentDescription = stringResource(R.string.folder_search_hint),
+                                onClick = toggleLibrarySearch,
+                            )
+                            FolderSortButton(
+                                config = folderSortConfig,
+                                onConfigChange = { config ->
+                                    folderSortFieldOrdinal = config.field.ordinal
+                                    folderSortDescending = config.descending
+                                    viewModel.setFolderSortConfig(config)
+                                },
+                            )
+                        },
+                        bottomContent = libraryPageBottomContent,
+                    ) { contentPadding, _, indexTopPadding ->
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            val indexModifier = libraryIndexModifier(contentPadding, indexTopPadding)
+                            FolderLibraryScreen(
+                                displayedFolders = folderPresentation.items,
+                                sectionIndexMap = folderPresentation.sectionIndexMap,
+                                query = folderPresentation.query,
+                                scanStatus = uiState.scanStatus,
+                                sortConfig = folderPresentation.sortConfig,
+                                onFolderClick = { folder ->
+                                    dismissLibrarySearchFocus()
+                                    selectedFolderKey = folder.key
+                                    currentRoute = AppRoute.FOLDER_DETAIL
+                                },
+                                onBlockFolder = { path ->
+                                    viewModel.addBlockedFolderPath(path)
+                                },
+                                scrollBehavior = libraryScrollBehavior,
+                                indexTopPadding = indexTopPadding,
+                                listState = foldersListState,
+                                contentPadding = contentPadding,
+                                showIndex = false,
+                            )
+                            if (
+                                folderPresentation.items.isNotEmpty() &&
+                                librarySearchQuery.isBlank() &&
+                                folderSortConfig.field == FolderSortField.NAME
+                            ) {
+                                AlphabetSideBar(
+                                    sectionIndexMap = folderPresentation.sectionIndexMap,
+                                    itemCount = folderPresentation.items.size,
+                                    scrollStateKey = foldersListState,
+                                    isAtTarget = { index ->
+                                        foldersListState.firstVisibleItemIndex == index &&
+                                            foldersListState.firstVisibleItemScrollOffset == 0
+                                    },
+                                    scrollToItem = foldersListState::scrollToItem,
+                                    sections = if (folderSortConfig.descending) {
+                                        AlphabetSections.asReversed()
+                                    } else {
+                                        AlphabetSections
+                                    },
+                                    onTargetIndexChanged = onLibraryIndexTargetChanged,
+                                    modifier = indexModifier,
+                                )
                             }
                         }
                     }
@@ -1614,9 +1582,7 @@ fun PureMusicApp(
                             blurEnabled = settings.blurEnabled,
                             backdropRefreshKey = currentRoute,
                             backdropPagingSignal = {
-                                selectedRootPage +
-                                    libraryPagerState.currentPage +
-                                    libraryPagerState.currentPageOffsetFraction
+                                selectedRootPage.toFloat()
                             },
                             miniPlayer = { chrome ->
                                 MiniPlayerHost(
@@ -2714,91 +2680,6 @@ internal fun LibrarySearchButton(
     }
 }
 
-@Composable
-private fun LibraryTabRow(
-    tabs: List<String>,
-    selectedTabIndex: Int,
-    onTabSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    blurred: Boolean = false,
-) {
-    val hasWallpaper = LocalCustomPageBackground.current != null
-    val progressiveBlurActive = blurred &&
-        LocalTopBarBlurSettings.current.progressiveEnabled &&
-        isRuntimeShaderSupported()
-    Row(
-        modifier = modifier
-            .height(38.dp)
-            .background(
-                topBarContainerColor(hasWallpaper, blurred, MiuixTheme.colorScheme.surface),
-            )
-            .semantics {
-                collectionInfo = CollectionInfo(rowCount = 1, columnCount = tabs.size)
-            },
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        tabs.forEachIndexed { index, tab ->
-            val selected = selectedTabIndex == index
-            val interactionSource = remember { MutableInteractionSource() }
-            val outlineColor = MiuixTheme.colorScheme.outline
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .then(
-                        if (selected) {
-                            Modifier.squircleBackground(
-                                color = tabSelectedContainerColor(
-                                    hasWallpaper, progressiveBlurActive, MiuixTheme.colorScheme.surfaceContainer,
-                                ),
-                                cornerRadius = 12.dp,
-                            )
-                        } else {
-                            Modifier.squircleBorder(
-                                width = { 1.dp },
-                                color = { outlineColor },
-                                cornerRadius = 12.dp,
-                            )
-                        },
-                    )
-                    .selectable(
-                        selected = selected,
-                        onClick = {
-                            if (!selected) onTabSelected(index)
-                        },
-                        role = Role.Tab,
-                        interactionSource = interactionSource,
-                        indication = null,
-                    )
-                    .semantics {
-                        collectionItemInfo = CollectionItemInfo(
-                            rowIndex = 0,
-                            rowSpan = 1,
-                            columnIndex = index,
-                            columnSpan = 1,
-                        )
-                    },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = tab,
-                    color = if (selected) {
-                        MiuixTheme.colorScheme.onBackground
-                    } else {
-                        MiuixTheme.colorScheme.onSurfaceVariantSummary
-                    },
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 13.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center,
-                )
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun LibrarySearchBar(
@@ -2913,6 +2794,22 @@ private fun expandedTopBarBottomContentGap(
     scrollBehavior: ScrollBehavior,
     expandedGap: Dp,
 ): Dp = expandedGap * (1f - scrollBehavior.state.collapsedFraction.coerceIn(0f, 1f))
+
+@Composable
+private fun BoxScope.libraryIndexModifier(
+    contentPadding: PaddingValues,
+    indexTopPadding: Dp,
+): Modifier {
+    val layoutDirection = LocalLayoutDirection.current
+    return Modifier
+        .align(Alignment.TopEnd)
+        .padding(
+            top = indexTopPadding + 4.dp,
+            end = contentPadding.calculateEndPadding(layoutDirection),
+            bottom = LocalAlphabetIndexBottomPadding.current,
+        )
+        .fillMaxHeight()
+}
 
 @Composable
 private fun PlayerPage(
