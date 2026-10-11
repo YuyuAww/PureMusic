@@ -63,6 +63,7 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.ui.draw.clip
+import com.pure.music.ui.component.customPageBackground
 import com.pure.music.ui.component.playback.miniPlayerHeight
 import com.pure.music.ui.component.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.Icon
@@ -462,6 +463,21 @@ internal fun normalMiniPlayerBottomPadding(
         .coerceAtLeast(0.dp)
 }
 
+/**
+ * Sidebar (drawer) width as a function of window width.
+ *
+ * - < 360dp: 80% of the window width
+ * - 360dp..600dp: 50% of the window width, capped at 320dp
+ * - 600dp..840dp: fixed 320dp
+ * - >= 840dp: fixed 360dp
+ */
+internal fun drawerWidthFor(windowWidth: Dp): Dp = when {
+    windowWidth < 360.dp -> windowWidth * 0.8f
+    windowWidth < 600.dp -> (windowWidth * 0.5f).coerceAtMost(320.dp)
+    windowWidth < 840.dp -> 320.dp
+    else -> 360.dp
+}
+
 @Composable
 private fun Modifier.consumeNavigationRailStartInsets(
     navigationRailVisible: Boolean,
@@ -505,11 +521,19 @@ private fun DrawerPlayerScaffold(
     )
     val liquidGlassActive = effectiveStyle == BottomBarStyle.LIQUID_GLASS &&
         liquidGlassSupported
+    val drawerWidth = drawerWidthFor(windowWidth)
 
     DismissibleNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            DismissibleDrawerSheet(drawerState = drawerState) {
+            DismissibleDrawerSheet(
+                drawerState = drawerState,
+                modifier = Modifier
+                    .width(drawerWidth)
+                    .customPageBackground(),
+                drawerContainerColor = MiuixTheme.colorScheme.surface,
+                drawerTonalElevation = 0.dp,
+            ) {
                 DrawerNavigationList(
                     items = navigationItems,
                     selectedIndex = selectedTab,
