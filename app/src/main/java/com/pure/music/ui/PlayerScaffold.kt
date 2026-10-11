@@ -511,46 +511,41 @@ private fun DrawerPlayerScaffold(
             }
         },
         content = {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .drawWithContent {
-                        @Suppress("UNUSED_VARIABLE")
-                        val refreshFrame = backdropRefreshSignal()
-                        drawContent()
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                containerColor = Color.Transparent,
+                bottomBar = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = miniPlayerBottomPadding),
+                    ) {
+                        miniPlayer(
+                            MiniPlayerChrome(
+                                style = effectiveStyle,
+                                smallPlayerBar = smallPlayerBar,
+                                backdrop = miniPlayerBackdrop,
+                                blurActive = blurEnabled,
+                                liquidGlassActive = liquidGlassActive,
+                                isDark = isDark,
+                            ),
+                        )
                     }
-                    .then(
-                        if (blurEnabled || liquidGlassActive) {
-                            miniPlayerBackdrop?.let { Modifier.layerBackdrop(it) } ?: Modifier
-                        } else {
-                            Modifier
-                        },
-                    ),
-            ) {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    containerColor = Color.Transparent,
-                    bottomBar = {
-                        Box(
-                            modifier = Modifier
-                                .padding(bottom = miniPlayerBottomPadding),
-                        ) {
-                            miniPlayer(
-                                MiniPlayerChrome(
-                                    style = effectiveStyle,
-                                    smallPlayerBar = smallPlayerBar,
-                                    backdrop = miniPlayerBackdrop,
-                                    blurActive = blurEnabled,
-                                    liquidGlassActive = liquidGlassActive,
-                                    isDark = isDark,
-                                ),
-                            )
+                },
+            ) { innerPadding ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .drawWithContent {
+                            @Suppress("UNUSED_VARIABLE")
+                            val refreshFrame = backdropRefreshSignal()
+                            drawContent()
                         }
-                    },
-                ) { innerPadding ->
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        content(innerPadding)
-                    }
+                        .then(
+                            miniPlayerBackdrop?.let { Modifier.layerBackdrop(it) } ?: Modifier,
+                        ),
+                ) {
+                    content(innerPadding)
                 }
             }
         },
