@@ -236,7 +236,6 @@ import kotlin.math.abs
 import kotlinx.serialization.Serializable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -244,22 +243,11 @@ private const val HOME_TAB_INDEX = 0
 private const val SONGS_TAB_INDEX = 1
 private const val LIBRARY_TAB_INDEX = 2
 private const val SETTINGS_TAB_INDEX = 3
-private const val ROOT_TAB_COUNT = 4
 
 private const val LIBRARY_ALBUMS_TAB_INDEX = 0
 private const val LIBRARY_ARTISTS_TAB_INDEX = 1
 private const val LIBRARY_FOLDERS_TAB_INDEX = 2
 private const val LIBRARY_TAB_COUNT = 3
-
-internal fun rootPagerUserScrollEnabled(
-    selectedPage: Int,
-    homeRecommendationPage: Int,
-    homeRecommendationPageCount: Int,
-    homeRecommendationGestureActive: Boolean,
-): Boolean = selectedPage != HOME_TAB_INDEX ||
-    !homeRecommendationGestureActive ||
-    homeRecommendationPage <= 0 ||
-    homeRecommendationPage >= homeRecommendationPageCount - 1
 
 @Serializable
 private enum class AppRoute {
@@ -427,17 +415,11 @@ fun PureMusicApp(
             DefaultHomePage.LIBRARY -> LIBRARY_TAB_INDEX
         }
     }
-    val pagerState = rememberPagerState(
-        initialPage = initialRootPage,
-        pageCount = { ROOT_TAB_COUNT },
-    )
-    var homeRecommendationPage by remember { mutableIntStateOf(0) }
-    var homeRecommendationGestureActive by remember { mutableStateOf(false) }
+    var selectedRootPage by remember { mutableIntStateOf(initialRootPage) }
     val libraryPagerState = rememberPagerState(pageCount = { LIBRARY_TAB_COUNT })
-    val playerPagerState = rememberPlayerPagerState(pagerState)
     val homeRecommendations = rememberHomeRecommendations(
         tracks = uiState.tracks,
-        active = playerPagerState.selectedPage == HOME_TAB_INDEX,
+        active = selectedRootPage == HOME_TAB_INDEX,
         initialRecommendationCount = homeInitialRecommendationCount(
             recommendationViewportWidth,
         ),
@@ -590,11 +572,8 @@ fun PureMusicApp(
     LaunchedEffect(librarySearchQuery, folderSortConfig) {
         viewModel.updateFolderPresentation(librarySearchQuery, folderSortConfig)
     }
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.collectLatest(playerPagerState::syncPage)
-    }
-    LaunchedEffect(pagerState.currentPage, currentRoute) {
-        if (pagerState.currentPage != SONGS_TAB_INDEX || currentRoute != AppRoute.ROOT) {
+    LaunchedEffect(selectedRootPage, currentRoute) {
+        if (selectedRootPage != SONGS_TAB_INDEX || currentRoute != AppRoute.ROOT) {
             selectedSongUris = emptySet()
             songsSelectionMode = false
         }
@@ -610,7 +589,7 @@ fun PureMusicApp(
     }
     BackHandler(
         enabled = songsSelectionMode &&
-            pagerState.currentPage == SONGS_TAB_INDEX &&
+            selectedRootPage == SONGS_TAB_INDEX &&
             currentRoute == AppRoute.ROOT,
     ) {
         selectedSongUris = emptySet()
@@ -641,18 +620,11 @@ fun PureMusicApp(
         focusManager.clearFocus(force = true)
         softwareKeyboardController?.hide()
     }
-    var previousRootPage by remember { mutableIntStateOf(pagerState.currentPage) }
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }
-            .distinctUntilChanged()
-            .collectLatest { currentPage ->
-                if (currentPage == previousRootPage) return@collectLatest
-                songSearchFocused = false
-                librarySearchFocused = false
-                previousRootPage = currentPage
-                focusManager.clearFocus(force = true)
-                softwareKeyboardController?.hide()
-            }
+    LaunchedEffect(selectedRootPage) {
+        songSearchFocused = false
+        librarySearchFocused = false
+        focusManager.clearFocus(force = true)
+        softwareKeyboardController?.hide()
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -880,28 +852,18 @@ fun PureMusicApp(
             FixedPageBackgroundHost(
                 modifier = Modifier.fillMaxSize(),
                 refreshSignal = {
-                    pagerState.currentPage + pagerState.currentPageOffsetFraction +
+                    selectedRootPage +
                         libraryPagerState.currentPage + libraryPagerState.currentPageOffsetFraction
                 },
             ) {
-            // Each page owns its top bar so the title moves with the Pager, like the Miuix demo.
-            HorizontalPager(
-                state = pagerState,
+            // Single main page host: the sidebar selection injects the page content.
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .overScrollHorizontal()
                     .trackFixedWallpaperMotion(),
-                userScrollEnabled = rootPagerUserScrollEnabled(
-                    selectedPage = playerPagerState.selectedPage,
-                    homeRecommendationPage = homeRecommendationPage,
-                    homeRecommendationPageCount = homeRecommendations?.tracks?.size ?: 0,
-                    homeRecommendationGestureActive = homeRecommendationGestureActive,
-                ),
-                verticalAlignment = Alignment.Top,
-                overscrollEffect = null,
-                key = { it },
-            ) { page ->
-                when (page) {
+            ) {
+                when (selectedRootPage) {
                     HOME_TAB_INDEX -> PlayerPage(
                         title = homeTitle,
                         outerPadding = outerPadding,
@@ -934,10 +896,6 @@ fun PureMusicApp(
                                 openPlaylist(playlist.id, AppRoute.ROOT)
                             },
                             onRecommendationClick = viewModel::playHomeRecommendation,
-                            onRecommendationPageChanged = { page -> homeRecommendationPage = page },
-                            onRecommendationGestureActiveChanged = { active ->
-                                homeRecommendationGestureActive = active
-                            },
                             scrollBehavior = scrollBehavior,
                             listState = homeListState,
                             landscape = landscape,
@@ -1568,7 +1526,7 @@ fun PureMusicApp(
                 navBackStack.removeAt(navBackStack.lastIndex)
             }
             currentRoute = AppRoute.ROOT
-            playerPagerState.animateToPage(selectedTab)
+            selectedRootPage = selectedTab
         }
         var customBackgroundBlurPreview by remember(settings.customBackgroundId) {
             mutableStateOf<Int?>(null)
@@ -1631,7 +1589,7 @@ fun PureMusicApp(
                                     progress = playerTransition.progress,
                                 )
                             },
-                            selectedTab = playerPagerState.selectedPage,
+                            selectedTab = selectedRootPage,
                             onTabSelected = onNavigationTabSelected,
                             showNavigation = shouldShowNavigation(
                                 currentRouteIsRoot = currentRoute == AppRoute.ROOT,
@@ -1656,8 +1614,7 @@ fun PureMusicApp(
                             blurEnabled = settings.blurEnabled,
                             backdropRefreshKey = currentRoute,
                             backdropPagingSignal = {
-                                pagerState.currentPage +
-                                    pagerState.currentPageOffsetFraction +
+                                selectedRootPage +
                                     libraryPagerState.currentPage +
                                     libraryPagerState.currentPageOffsetFraction
                             },

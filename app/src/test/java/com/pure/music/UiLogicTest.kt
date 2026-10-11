@@ -151,7 +151,6 @@ import com.pure.music.ui.navigation.navigationTransitionCornerRadius
 import com.pure.music.ui.isMiuixWideLayout
 import com.pure.music.ui.requiredAudioPermission
 import com.pure.music.ui.resolveBottomBarStyle
-import com.pure.music.ui.rootPagerUserScrollEnabled
 import com.pure.music.ui.shouldUseNavigationRail
 import com.pure.music.ui.shouldShowNavigation
 import com.pure.music.ui.usesNormalMiniPlayerChrome
@@ -343,50 +342,6 @@ class UiLogicTest {
         assertEquals(0L, initial)
         assertEquals(42L, advanced)
         assertEquals(42L, resumed)
-    }
-
-    @Test
-    fun rootPagerOnlyYieldsAnActiveRecommendationGestureOnInteriorPages() {
-        assertTrue(
-            rootPagerUserScrollEnabled(
-                selectedPage = 0,
-                homeRecommendationPage = 0,
-                homeRecommendationPageCount = 4,
-                homeRecommendationGestureActive = true,
-            ),
-        )
-        assertFalse(
-            rootPagerUserScrollEnabled(
-                selectedPage = 0,
-                homeRecommendationPage = 1,
-                homeRecommendationPageCount = 4,
-                homeRecommendationGestureActive = true,
-            ),
-        )
-        assertTrue(
-            rootPagerUserScrollEnabled(
-                selectedPage = 0,
-                homeRecommendationPage = 3,
-                homeRecommendationPageCount = 4,
-                homeRecommendationGestureActive = true,
-            ),
-        )
-        assertTrue(
-            rootPagerUserScrollEnabled(
-                selectedPage = 0,
-                homeRecommendationPage = 1,
-                homeRecommendationPageCount = 4,
-                homeRecommendationGestureActive = false,
-            ),
-        )
-        assertTrue(
-            rootPagerUserScrollEnabled(
-                selectedPage = 1,
-                homeRecommendationPage = 1,
-                homeRecommendationPageCount = 4,
-                homeRecommendationGestureActive = true,
-            ),
-        )
     }
 
     @Test

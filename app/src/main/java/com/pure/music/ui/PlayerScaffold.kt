@@ -101,7 +101,11 @@ private const val NAVIGATION_EXIT_DURATION_MILLIS = 240
 private const val NAVIGATION_FADE_IN_DURATION_MILLIS = 180
 private const val NAVIGATION_FADE_OUT_DURATION_MILLIS = 140
 
-/** Holds the persistent bottom navigation while pages render inside the shared Pager. */
+/**
+ * Holds the persistent bottom navigation while pages render inside the shared main page host.
+ *
+ * The navigation selection injects the active page content; there is no parallel page pager.
+ */
 @Composable
 internal fun PlayerScaffold(
     selectedTab: Int,

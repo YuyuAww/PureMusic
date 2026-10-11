@@ -9,8 +9,6 @@ import android.graphics.RectF
 import android.graphics.Shader
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,13 +32,11 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -52,8 +48,6 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -129,8 +123,6 @@ fun HomeScreen(
     onCreatePlaylist: () -> Unit,
     onPlaylistClick: (LocalPlaylist) -> Unit,
     onRecommendationClick: (MusicTrack, List<MusicTrack>) -> Unit,
-    onRecommendationPageChanged: (Int) -> Unit,
-    onRecommendationGestureActiveChanged: (Boolean) -> Unit,
     scrollBehavior: ScrollBehavior,
     listState: LazyListState,
     landscape: Boolean,
@@ -139,9 +131,6 @@ fun HomeScreen(
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val recommendationTracks = recommendations?.tracks.orEmpty()
-    val currentOnRecommendationGestureActiveChanged by rememberUpdatedState(
-        onRecommendationGestureActiveChanged,
-    )
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val playlistGridColumns = homePlaylistGridColumnCount(
             landscape = landscape,
@@ -206,17 +195,10 @@ fun HomeScreen(
                             mutableIntStateOf(pagerState.currentPage)
                         }
                         LaunchedEffect(pagerState.currentPage) {
-                            onRecommendationPageChanged(pagerState.currentPage)
                             if (pagerState.currentPage > previousPage) {
                                 recommendations.requestMore()
                             }
                             previousPage = pagerState.currentPage
-                        }
-                        DisposableEffect(pagerState) {
-                            onDispose {
-                                onRecommendationPageChanged(0)
-                                currentOnRecommendationGestureActiveChanged(false)
-                            }
                         }
                         HorizontalPager(
                             state = pagerState,
@@ -229,29 +211,7 @@ fun HomeScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = HomeRecommendationSectionBottomSpacing)
-                                .height(HomeRecommendationArtworkSize + HomeRecommendationInfoHeight)
-                                .pointerInput(Unit) {
-                                    awaitEachGesture {
-                                        val down = awaitFirstDown(
-                                            requireUnconsumed = false,
-                                            pass = PointerEventPass.Initial,
-                                        )
-                                        currentOnRecommendationGestureActiveChanged(true)
-                                        try {
-                                            while (true) {
-                                                val event = awaitPointerEvent(
-                                                    pass = PointerEventPass.Initial,
-                                                )
-                                                val change = event.changes.firstOrNull {
-                                                    it.id == down.id
-                                                } ?: break
-                                                if (!change.pressed) break
-                                            }
-                                        } finally {
-                                            currentOnRecommendationGestureActiveChanged(false)
-                                        }
-                                    }
-                                },
+                                .height(HomeRecommendationArtworkSize + HomeRecommendationInfoHeight),
                             overscrollEffect = null,
                             key = { page -> "$page-${recommendationTracks[page].id}" },
                         ) { page ->
